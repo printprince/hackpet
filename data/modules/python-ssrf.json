@@ -1,0 +1,211 @@
+{
+  "id": "python-ssrf",
+  "title": "SSRF в Python: безопасные исходящие запросы",
+  "summary": "Как не превратить requests.get в туннель во внутреннюю сеть: валидация URL, allowlist хостов и таймауты.",
+  "difficulty": "medium",
+  "minutes": 15,
+  "topic": "Безопасность сетевого взаимодействия",
+  "steps": ["theory", "checkpoint_quiz", "lab", "fix_explanation", "final_quiz", "summary"],
+  "theory": {
+    "intro": "SSRF в Python обычно прячется там, где backend делает requests.get по URL, который прислал пользователь.",
+    "paragraphs": [
+      "Классический сценарий SSRF в Python — сервис, которому передают URL картинки или webhook’а, а он делает requests.get(user_url) или requests.post(user_url, json=...). Если URL не проходит строгую валидацию, злоумышленник может заставить сервис ходить на внутренние адреса: http://127.0.0.1:8000/admin, http://metadata.google.internal/ или приватные API в Kubernetes.",
+      "Опасность в том, что именно сервер имеет доступ к этим адресам, а не внешний пользователь. Через SSRF можно читать внутренние данные, вызывать административные методы и обходить сетевые ACL. Часто это сочетают с отсутствием аутентификации на внутренних сервисах или слабыми токенами.",
+      "Базовая защита в Python та же, что и в Go: парсить URL через urllib.parse.urlparse, разрешать только нужные схемы (обычно http/https), проверять hostname по allowlist и блокировать localhost и приватные диапазоны. Любой URL, не прошедший эти проверки, должен отклоняться до вызова requests.",
+      "Второй слой — конфигурация HTTP‑клиента: явные timeout и ограничения редиректов. Без таймаута requests.get может висеть бесконечно, а без ограничения редиректов — перепрыгнуть на неожиданный хост. В продакшене исходящие запросы должны быть такими же ограниченными, как и входящие."
+    ],
+    "consequences": "Успешный SSRF в Python‑сервисе позволяет получить метаданные облака, токены сервисных аккаунтов, конфиги внутренних сервисов и даже выполнять произвольные запросы к БД через внутренние API. Поэтому любые места, где используется requests с пользовательским URL, требуют строгой валидации и ограничений.",
+    "bad_example": "import requests\nfrom flask import request\n\n@app.route(\"/fetch\")\ndef fetch():\n    url = request.args.get(\"url\")\n    resp = requests.get(url)  # SSRF: произвольный URL из запроса\n    return resp.content",
+    "good_example": "import requests, ipaddress\nfrom urllib.parse import urlparse\nfrom flask import request, abort\n\nALLOWED_HOSTS = {\"api.example.com\", \"status.example.com\"}\n\ndef is_private(host):\n    try:\n        ip = ipaddress.ip_address(host)\n        return ip.is_private or ip.is_loopback\n    except ValueError:\n        return False\n\n@app.route(\"/fetch\")\ndef fetch():\n    raw = request.args.get(\"url\")\n    if not raw:\n        abort(400)\n    u = urlparse(raw)\n    if u.scheme not in (\"http\", \"https\"):\n        abort(400)\n    host = u.hostname or \"\"\n    if host not in ALLOWED_HOSTS or is_private(host):\n        abort(403)\n    resp = requests.get(u.geturl(), timeout=3)\n    return resp.content"
+  },
+  "checkpoint_quiz": {
+    "id": "python-ssrf-checkpoint",
+    "questions": [
+      {
+        "id": "q1",
+        "text": "Что по сути делает SSRF‑атака в Python‑сервисе?",
+        "options": [
+          "Ломает GIL",
+          "Заставляет сервер сделать запрос по URL, который контролирует атакующий, в том числе на внутренние адреса",
+          "Выполняет произвольный SQL"
+        ],
+        "correct": 1,
+        "explanation": "Через SSRF сервер работает как прокси во внутреннюю сеть за счёт requests к пользовательскому URL."
+      },
+      {
+        "id": "q2",
+        "text": "Какой минимум валидации нужен перед requests.get(user_url)?",
+        "options": [
+          "Проверить только длину строки",
+          "Распарсить URL, разрешить только http/https и проверять hostname по allowlist",
+          "Доверять клиенту"
+        ],
+        "correct": 1,
+        "explanation": "Без явной проверки схемы и hostname сервис может уйти на любой адрес, включая внутренние."
+      },
+      {
+        "id": "q3",
+        "text": "Почему localhost и приватные IP‑адреса особо опасны в контексте SSRF?",
+        "options": [
+          "Ответы от них всегда медленные",
+          "Часто за ними скрываются админ‑панели и служебные API",
+          "Python не умеет с ними работать"
+        ],
+        "correct": 1,
+        "explanation": "Внутренние адреса используют для сервисов, не рассчитанных на внешний мир; SSRF даёт к ним доступ."
+      },
+      {
+        "id": "q4",
+        "text": "Зачем указывать timeout в requests.get?",
+        "options": [
+          "Для красоты",
+          "Чтобы не позволить запросу висеть бесконечно и не выжечь пул соединений",
+          "Чтобы было больше логов"
+        ],
+        "correct": 1,
+        "explanation": "Таймаут ограничивает время запроса и защищает от висящих соединений и ресурсных атак."
+      },
+      {
+        "id": "q5",
+        "text": "Какой инструмент в Python используют для разбора URL перед проверкой?",
+        "options": [
+          "Только ручной split по символам",
+          "urllib.parse.urlparse",
+          "requests.get без проверок"
+        ],
+        "correct": 1,
+        "explanation": "urlparse даёт scheme, hostname, path и другие компоненты для валидации."
+      }
+    ]
+  },
+  "lab": {
+    "id": "python-ssrf-lab",
+    "language": "python",
+    "task": "Добавьте базовую защиту от SSRF в Python‑обработчик: валидация схемы и hostname + безопасный вызов requests.get.",
+    "acceptance_criteria": [
+      "URL парсится через urllib.parse.urlparse, а не через ручной разбор строкой",
+      "Разрешены только схемы http/https",
+      "Hostname проверяется по allowlist и/или блокируются приватные/loopback‑адреса",
+      "Запрос выполняется через requests с явным timeout"
+    ],
+    "files": [
+      {
+        "path": "app.py",
+        "content": "import requests\nfrom flask import Flask, request, abort\n\napp = Flask(__name__)\n\n@app.route(\"/proxy\")\ndef proxy():\n    url = request.args.get(\"url\")\n    if not url:\n        abort(400)\n    # TODO: добавить валидацию и защиту от SSRF\n    resp = requests.get(url)\n    return resp.content\n"
+      }
+    ],
+    "rules": [
+      {
+        "id": "rule_py_ssrf_parse",
+        "severity": "major",
+        "message": "URL должен парситься через urllib.parse.urlparse",
+        "hint1": "Используйте urllib.parse.urlparse(url) для разбора URL.",
+        "hint2": "Не разбирайте URL вручную по строке.",
+        "hint3": "Из результата берите u.scheme, u.hostname и т.д.",
+        "check": "py_ssrf_parse"
+      },
+      {
+        "id": "rule_py_ssrf_scheme",
+        "severity": "major",
+        "message": "Разрешены только схемы http и https",
+        "hint1": "Проверьте u.scheme in (\"http\", \"https\").",
+        "hint2": "При другой схеме (file, gopher и т.д.) — abort(400) или abort(403).",
+        "hint3": "Не полагайтесь на проверку подстроки в URL.",
+        "check": "py_ssrf_scheme"
+      },
+      {
+        "id": "rule_py_ssrf_host",
+        "severity": "major",
+        "message": "Hostname должен проверяться по allowlist и/или блокироваться приватные/loopback",
+        "hint1": "Проверяйте u.hostname по списку разрешённых хостов (ALLOWED_HOSTS).",
+        "hint2": "Либо блокируйте приватные/loopback через ipaddress или явный список.",
+        "hint3": "При неразрешённом хосте — abort(403).",
+        "check": "py_ssrf_host"
+      },
+      {
+        "id": "rule_py_ssrf_timeout",
+        "severity": "major",
+        "message": "requests.get должен вызываться с timeout",
+        "hint1": "Добавьте timeout= в вызов requests.get (например timeout=3).",
+        "hint2": "Без timeout запрос может висеть долго.",
+        "hint3": "requests.get(url, timeout=3) или requests.get(u.geturl(), timeout=3).",
+        "check": "py_ssrf_timeout"
+      }
+    ]
+  },
+  "fix_explanation": {
+    "why_fix": "Валидация URL и hostname до исходящего запроса не даёт использовать сервис как прокси к внутренним ресурсам.",
+    "anti_patterns": [
+      "Прямой requests.get(user_url) без проверок",
+      "Проверка только на вхождение подстроки \"http\"",
+      "Отсутствие таймаута и ограничений клиента"
+    ],
+    "checklist": [
+      "Парсить URL через urlparse",
+      "Явно ограничивать схему и hostname",
+      "Использовать timeout в requests",
+      "Логировать только безопасный контекст (без секретов)"
+    ]
+  },
+  "final_quiz": {
+    "id": "python-ssrf-final",
+    "questions": [
+      {
+        "id": "f1",
+        "text": "Какой базовый набор контролей лучше всего защищает Python‑сервис от SSRF?",
+        "options": [
+          "Логирование всех URL",
+          "Парсинг URL + allowlist хостов + блокировка внутренних адресов + timeout",
+          "Только проверка длины строки"
+        ],
+        "correct": 1,
+        "explanation": "Требуется и валидация, и ограничения клиента."
+      },
+      {
+        "id": "f2",
+        "text": "Зачем использовать urllib.parse.urlparse перед requests.get?",
+        "options": [
+          "Чтобы ускорить запрос",
+          "Чтобы извлечь scheme, hostname и проверять их до запроса",
+          "Чтобы закодировать URL"
+        ],
+        "correct": 1,
+        "explanation": "Парсинг даёт контроль над схемой и хостом до исходящего запроса."
+      },
+      {
+        "id": "f3",
+        "text": "Почему разрешают только http и https?",
+        "options": [
+          "Остальные схемы не поддерживает requests",
+          "file:, gopher: и др. позволяют читать локальные файлы или слать произвольные запросы",
+          "Так быстрее"
+        ],
+        "correct": 1,
+        "explanation": "file:// и gopher:// часто используются в SSRF для доступа к внутренним ресурсам."
+      },
+      {
+        "id": "f4",
+        "text": "Зачем блокировать loopback и приватные IP при проверке hostname?",
+        "options": [
+          "Они не поддерживаются Python",
+          "За ними часто стоят внутренние сервисы (metadata, админки), доступ к которым не должен идти через приложение",
+          "Чтобы уменьшить трафик"
+        ],
+        "correct": 1,
+        "explanation": "SSRF часто направлен на 127.0.0.1, 169.254.169.254 и внутренние сети."
+      },
+      {
+        "id": "f5",
+        "text": "Зачем указывать timeout в requests.get?",
+        "options": [
+          "Чтобы быстрее получить ответ",
+          "Чтобы ограничить время ожидания и не исчерпывать ресурсы сервера",
+          "Только для отладки"
+        ],
+        "correct": 1,
+        "explanation": "Без таймаута запрос может висеть бесконечно и исчерпать пул соединений."
+      }
+    ]
+  }
+}
+

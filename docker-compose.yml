@@ -1,0 +1,62 @@
+# Hackpet: 3 сервиса — PostgreSQL + backend + frontend (React/Vite).
+# Запуск: docker compose up -d
+# Открыть фронт: http://localhost:5173
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: hackpet-db
+    environment:
+      POSTGRES_USER: hackpet
+      POSTGRES_PASSWORD: hackpet
+      POSTGRES_DB: hackpet
+    ports:
+      - "5432:5432"
+    volumes:
+      - hackpet_pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hackpet -d hackpet"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: hackpet-backend
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      DATA_PATH: /app/data/modules
+      UPLOADS_PATH: /app/uploads
+      DB_DSN: postgres://hackpet:hackpet@postgres:5432/hackpet?sslmode=disable
+      # JWT_SECRET задать в .env или здесь для работы авторизации
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
+    volumes:
+      - ./data:/app/data:ro
+      - ./uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hackpet-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_PROXY_TARGET: http://backend:8080
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      backend:
+        condition: service_started
+
+volumes:
+  hackpet_pgdata:

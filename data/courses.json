@@ -1,0 +1,68 @@
+{
+  "courses": [
+    {
+      "id": "devsecops-go",
+      "title": "DevSecOps: Go",
+      "description": "Безопасность веб-приложений на Go: уязвимости и безопасный код.",
+      "status": "available",
+      "difficulty": "medium",
+      "total_minutes": 45,
+      "module_ids": ["path-traversal", "go-ssrf", "go-logging-errors"]
+    },
+    {
+      "id": "devsecops-java",
+      "title": "DevSecOps: Java",
+      "description": "Безопасность веб-приложений на Java: уязвимости и безопасный код.",
+      "status": "coming_soon",
+      "difficulty": "medium"
+    },
+    {
+      "id": "devsecops-python",
+      "title": "DevSecOps: Python",
+      "description": "Безопасность веб-приложений на Python: уязвимости и безопасный код.",
+      "status": "available",
+      "difficulty": "medium",
+      "total_minutes": 75,
+      "module_ids": ["python-path-traversal", "python-ssrf", "python-logging-errors", "python-sql-injection", "python-xss"],
+      "ctf": {
+        "id": "devsecops-python-ctf",
+        "title": "CTF-челлендж",
+        "description": "В рамках финального челленджа вам предоставлен доступ к учебному веб-сервису. Цель задания — получить секретный флаг формата HACKPET{...}. Флаг хранится в защищённой области приложения и не показывается обычному пользователю. Проанализируйте сервис, найдите способ извлечь флаг и введите его в поле ниже. Задание засчитывается после успешной проверки флага.",
+        "stand_url": "/ctf-stand",
+        "expected_flag": "HACKPET{python_xss_dom_flag}"
+      }
+    },
+    {
+      "id": "devsecops-javascript",
+      "title": "DevSecOps: JavaScript",
+      "description": "Безопасность веб-приложений на JavaScript: уязвимости и безопасный код.",
+      "status": "coming_soon",
+      "difficulty": "medium"
+    },
+    {
+      "id": "devsecops-cpp",
+      "title": "DevSecOps: C++",
+      "description": "Безопасность веб-приложений на C++: уязвимости и безопасный код.",
+      "status": "coming_soon",
+      "difficulty": "medium"
+    },
+    {
+      "id": "secure-api",
+      "title": "Безопасные API",
+      "description": "OAuth, JWT, rate limiting и защита эндпоинтов.",
+      "status": "coming_soon"
+    },
+    {
+      "id": "cloud-security",
+      "title": "Безопасность в облаке",
+      "description": "IAM, секреты, сетевые политики и безопасная конфигурация.",
+      "status": "coming_soon"
+    },
+    {
+      "id": "secure-sdlc",
+      "title": "Secure SDLC",
+      "description": "Встраивание безопасности в процесс разработки: SAST, DAST, ревью.",
+      "status": "coming_soon"
+    }
+  ]
+}

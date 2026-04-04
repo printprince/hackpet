@@ -1,0 +1,50 @@
+{
+  "id": "mock-sql-injection",
+  "title": "SQL Injection (модуль в разработке)",
+  "summary": "Защита от внедрения SQL: параметризованные запросы и подготовленные выражения.",
+  "difficulty": "medium",
+  "minutes": 15,
+  "topic": "Безопасность БД",
+  "steps": ["theory", "checkpoint_quiz", "lab", "fix_explanation", "final_quiz", "summary"],
+  "theory": {
+    "intro": "Подстановка пользовательского ввода в SQL-запрос без экранирования позволяет выполнить произвольный запрос к БД.",
+    "bullets": [
+      "SQL Injection: в параметр подставляют фрагмент SQL (например, ' OR 1=1 --), что меняет логику запроса.",
+      "Защита: параметризованные запросы (prepared statements), никогда не склеивать строки в SQL.",
+      "В Go: использовать db.Query(\"SELECT ... WHERE id = ?\", userID), а не fmt.Sprintf с userID."
+    ],
+    "bad_example": "query := \"SELECT * FROM users WHERE id = \" + id",
+    "good_example": "row := db.QueryRow(\"SELECT * FROM users WHERE id = ?\", id)"
+  },
+  "checkpoint_quiz": {
+    "id": "mock-sql-checkpoint",
+    "questions": [
+      {"id": "q1", "text": "Чем опасна подстановка строки в SQL?", "options": ["Замедляет запрос", "Позволяет выполнить произвольный SQL", "Ломает кодировку"], "correct": 1, "explanation": "Атакующий может изменить запрос и прочитать/изменить данные."},
+      {"id": "q2", "text": "Как защититься?", "options": ["Валидация regex", "Параметризованные запросы", "Хранение в cookie"], "correct": 1, "explanation": "Prepared statements передают данные отдельно от текста запроса."},
+      {"id": "q3", "text": "Достаточно ли экранировать кавычки?", "options": ["Да", "Нет, лучше параметризовать запросы"], "correct": 1, "explanation": "Экранирование легко обойти; параметризация надёжна."},
+      {"id": "q4", "text": "Что такое prepared statement?", "options": ["Кэш запроса", "Шаблон запроса с плейсхолдерами для параметров"], "correct": 1, "explanation": "Сервер БД различает структуру запроса и данные."},
+      {"id": "q5", "text": "В Go для параметров используют?", "options": ["fmt.Sprintf", "Плейсхолдер ? в Query и аргументы"], "correct": 1, "explanation": "db.Query(\"SELECT ... WHERE id = ?\", id) — безопасно."}
+    ]
+  },
+  "lab": {
+    "id": "mock-sql-lab",
+    "language": "go",
+    "task": "Модуль в разработке. Скоро здесь будет лаба по SQL Injection.",
+    "acceptance_criteria": [],
+    "files": [{"path": "main.go", "content": "package main\n\nfunc main() {\n\t// SQL injection lab — в разработке\n}\n"}],
+    "rules": [
+      {"id": "mock_rule", "severity": "major", "message": "Модуль в разработке", "hint1": "", "hint2": "", "hint3": "", "check": "has_filepath_clean"}
+    ]
+  },
+  "fix_explanation": {"why_fix": "Параметризованные запросы исключают внедрение SQL.", "anti_patterns": ["Конкатенация строк в SQL"], "checklist": ["Использовать ? или именованные параметры", "Никогда не подставлять ввод в текст запроса"]},
+  "final_quiz": {
+    "id": "mock-sql-final",
+    "questions": [
+      {"id": "f1", "text": "Лучшая защита от SQL Injection?", "options": ["Экранирование", "Параметризованные запросы"], "correct": 1, "explanation": ""},
+      {"id": "f2", "text": "Можно ли доверять валидации на клиенте?", "options": ["Да", "Нет"], "correct": 1, "explanation": ""},
+      {"id": "f3", "text": "Что такое ORM в контексте безопасности?", "options": ["Ускоритель", "Обычно использует параметризацию"], "correct": 1, "explanation": ""},
+      {"id": "f4", "text": "Где обрабатывать ввод?", "options": ["Только на клиенте", "На сервере, перед использованием в запросе"], "correct": 1, "explanation": ""},
+      {"id": "f5", "text": "Один запрос с параметрами безопасен от injection?", "options": ["Нет", "Да, если параметры передаются отдельно"], "correct": 1, "explanation": ""}
+    ]
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "id": "path-traversal",
+  "title": "Path Traversal в Go net/http",
+  "summary": "Научитесь защищать эндпоинт от чтения произвольных файлов: нормализация пути, привязка к базовой директории и корректные HTTP-коды.",
+  "difficulty": "medium",
+  "minutes": 15,
+  "topic": "Безопасность веб-эндпоинтов",
+  "steps": ["theory", "checkpoint_quiz", "lab", "fix_explanation", "final_quiz", "summary"],
+  "theory": {
+    "intro": "Эндпоинт, который отдаёт файл по имени из запроса, может позволить прочитать любой файл на диске, если путь не ограничен.",
+    "paragraphs": [
+      "Уязвимость Path Traversal (обход пути, или Directory Traversal) возникает, когда приложение принимает от пользователя имя или путь к файлу и использует его для чтения с диска без проверки. Атакующий подставляет в параметр запроса последовательность вида ../../../etc/passwd или ..\\..\\..\\windows\\system32\\config\\sam и получает доступ к файлам вне той директории, из которой приложение имело право отдавать контент.",
+      "В веб-сервисах на Go типичный сценарий — эндпоинт скачивания файла: например, GET /download?file=report.pdf. Если значение file передаётся напрямую в os.Open(), сервер откроет ровно ту строку, которую прислал клиент. На Unix-системах последовательность «..» поднимается на уровень вверх по дереву каталогов, поэтому запрос file=../../../etc/passwd приведёт к чтению системного файла паролей. На Windows аналогично работают обратные слэши и символы «..». В результате злоумышленник может прочитать конфигурации, ключи, токены, базы данных или любой другой файл, к которому имеет доступ процесс приложения.",
+      "Одна только нормализация пути через filepath.Clean() недостаточна для защиты. Clean() приводит путь к каноническому виду: убирает лишние слэши, раскрывает «.» и «..» относительно текущей строки. Но она не привязывает путь к какой-либо базовой директории. Например, если baseDir = \"/var/app/files\", а пользователь передал file=../../etc/passwd, то filepath.Clean(\"/var/app/files/../../etc/passwd\") даст \"/var/etc/passwd\" — путь вне разрешённой папки. Поэтому после Clean необходимо явно проверить, что итоговый путь остаётся внутри baseDir.",
+      "Правильный порядок действий такой. Сначала строим полный путь: filepath.Join(baseDir, userInput) — так мы привязываем ввод к базовой директории. Затем нормализуем: clean := filepath.Clean(...). Дальше проверяем, что clean действительно лежит внутри baseDir: вызываем rel, err := filepath.Rel(baseDir, clean). Функция Rel возвращает относительный путь от baseDir до clean. Если в результате есть подстрока «..» или err != nil, значит clean выходит за пределы baseDir — в таком случае доступ нужно запретить и вернуть клиенту 403 Forbidden. Открывать файл следует только по уже проверенной переменной clean, никогда не передавать в os.Open() сырой пользовательский ввод.",
+      "Коды ответа HTTP должны отражать суть ошибки. При отказе в доступе (путь вне разрешённой зоны) — 403 Forbidden. Если файл не найден, но путь был разрешён — 404 Not Found. Код 500 Internal Server Error допустим только для непредвиденных внутренних сбоев сервера, а не для некорректного запроса или отказа в доступе."
+    ],
+    "consequences": "На практике Path Traversal используют для кражи конфигов (в т.ч. с паролями и ключами API), дампов баз данных, ключей SSH и TLS, исходного кода приложения или логов с чувствительными данными. Известны случаи, когда через один уязвимый эндпоинт скачивания получали доступ к секретам в Kubernetes, переменным окружения в Docker и файлам других пользователей на shared-хостах. Достаточно одного успешного запроса с подобранным путём — и инфраструктура может быть скомпрометирована.",
+    "bad_example": "filename := r.URL.Query().Get(\"file\")\nf, err := os.Open(filename)\nif err != nil {\n    http.Error(w, err.Error(), 500)\n    return\n}",
+    "good_example": "filename := r.URL.Query().Get(\"file\")\nclean := filepath.Clean(filepath.Join(baseDir, filename))\nrel, err := filepath.Rel(baseDir, clean)\nif err != nil || strings.Contains(rel, \"..\") {\n    http.Error(w, \"forbidden\", http.StatusForbidden)\n    return\n}\nf, err := os.Open(clean)"
+  },
+  "checkpoint_quiz": {
+    "id": "path-traversal-checkpoint",
+    "questions": [
+      {
+        "id": "q1",
+        "text": "Почему нельзя передавать пользовательский путь напрямую в os.Open?",
+        "options": ["Медленно", "Позволяет читать файлы вне разрешённой директории (Path Traversal)", "Go этого не поддерживает"],
+        "correct": 1,
+        "explanation": "Без нормализации и проверки злоумышленник может подставить путь вроде ../../../etc/passwd и прочитать произвольный файл."
+      },
+      {
+        "id": "q2",
+        "text": "Что делает filepath.Clean в контексте безопасности?",
+        "options": ["Шифрует путь", "Нормализует путь (убирает .. и лишние слэши)", "Проверяет права доступа"],
+        "correct": 1,
+        "explanation": "Clean нормализует путь, но не ограничивает его базовой директорией — проверку «внутри baseDir» нужно делать отдельно."
+      },
+      {
+        "id": "q3",
+        "text": "Как корректно проверить, что путь остаётся внутри baseDir?",
+        "options": ["Достаточно filepath.Clean", "Использовать filepath.Rel(baseDir, clean) и убедиться, что результат не содержит «..»", "Проверить только префикс строки"],
+        "correct": 1,
+        "explanation": "filepath.Rel даёт относительный путь; если в нём есть «..», значит clean выходит за пределы baseDir."
+      },
+      {
+        "id": "q4",
+        "text": "Какой HTTP-код уместен при отказе в доступе к файлу (путь вне baseDir)?",
+        "options": ["200 OK", "500 Internal Server Error", "403 Forbidden"],
+        "correct": 2,
+        "explanation": "403 Forbidden семантически означает «доступ запрещён». 500 — для ошибок сервера, не для отказа в доступе."
+      },
+      {
+        "id": "q5",
+        "text": "Почему проверки «строка начинается с baseDir» недостаточно?",
+        "options": ["Слишком медленно", "Обход через ../../../baseDir/../etc/passwd или символьные ссылки", "Не поддерживается в Go"],
+        "correct": 1,
+        "explanation": "После нормализации путь может выйти за baseDir; нужна именно проверка через filepath.Rel и отсутствие «..» в результате."
+      }
+    ]
+  },
+  "lab": {
+    "id": "path-traversal-lab",
+    "language": "go",
+    "task": "Исправьте эндпоинт скачивания файла: устраните Path Traversal. Файлы разрешены только из директории baseDir.",
+    "acceptance_criteria": [
+      "Путь нормализуется через filepath.Clean",
+      "Проверка, что итоговый путь внутри baseDir (например, filepath.Rel и проверка на «..»)",
+      "Нет прямого os.Open(userInput)",
+      "При ошибке доступа — http.Error с подходящим статусом (403/404)"
+    ],
+    "files": [
+      {
+        "path": "main.go",
+        "content": "package main\n\nimport (\n\t\"net/http\"\n\t\"os\"\n)\n\nconst baseDir = \"./files\"\n\nfunc downloadHandler(w http.ResponseWriter, r *http.Request) {\n\tfilename := r.URL.Query().Get(\"file\")\n\tif filename == \"\" {\n\t\thttp.Error(w, \"missing file\", 500)\n\t\treturn\n\t}\n\tf, err := os.Open(filename)\n\tif err != nil {\n\t\thttp.Error(w, err.Error(), 500)\n\t\treturn\n\t}\n\tdefer f.Close()\n\t// serve file\n}\n"
+      }
+    ],
+    "rules": [
+      {
+        "id": "rule_1",
+        "severity": "blocker",
+        "message": "Не должно остаться os.Open(userInput) без нормализации/валидации",
+        "hint1": "Сейчас в os.Open передаётся значение из запроса. Нужно сначала нормализовать путь и убедиться, что он внутри baseDir.",
+        "hint2": "Уберите прямой вызов os.Open(filename). Введите переменную для «безопасного» пути (например, после filepath.Clean и проверки на baseDir) и открывайте файл только по ней.",
+        "hint3": "Используйте filepath.Join(baseDir, filename), затем filepath.Clean. Проверьте, что результат лежит внутри baseDir (через filepath.Rel(baseDir, clean) и отсутствие «..»). Только после этого os.Open(clean).",
+        "check": "no_raw_os_open"
+      },
+      {
+        "id": "rule_2",
+        "severity": "major",
+        "message": "Должен использоваться filepath.Clean для нормализации пути",
+        "hint1": "Добавьте импорт path/filepath и примените filepath.Clean к пути перед открытием файла.",
+        "hint2": "После получения filename постройте полный путь: filepath.Join(baseDir, filename), затем clean := filepath.Clean(...).",
+        "hint3": "Итог: clean := filepath.Clean(filepath.Join(baseDir, filename)). Дальше проверяйте clean относительно baseDir и только потом открывайте файл.",
+        "check": "has_filepath_clean"
+      },
+      {
+        "id": "rule_3",
+        "severity": "major",
+        "message": "Проверка, что итоговый путь внутри baseDir (prefix/rel)",
+        "hint1": "Нужно убедиться, что нормализованный путь не выходит за пределы baseDir. Подсказка: filepath.Rel.",
+        "hint2": "rel, err := filepath.Rel(baseDir, clean). Если err != nil или строка rel содержит «..», путь вне baseDir — верните 403.",
+        "hint3": "После clean проверьте: rel, err := filepath.Rel(baseDir, clean); if err != nil || strings.Contains(rel, \"..\") { http.Error(w, \"forbidden\", 403); return }.",
+        "check": "path_inside_basedir"
+      },
+      {
+        "id": "rule_4",
+        "severity": "minor",
+        "message": "Использовать http.Error с корректным статусом (403/404)",
+        "hint1": "Для «файл не найден» или «доступ запрещён» используйте коды 404 или 403, не 500.",
+        "hint2": "Импортируйте net/http и вызывайте http.Error(w, \"forbidden\", http.StatusForbidden) или http.Error(w, \"not found\", http.StatusNotFound).",
+        "hint3": "При отказе в доступе: http.Error(w, \"forbidden\", 403) или http.StatusForbidden; при отсутствии файла — 404.",
+        "check": "http_error_status"
+      }
+    ]
+  },
+  "fix_explanation": {
+    "why_fix": "Нормализация через filepath.Clean и проверка через filepath.Rel гарантируют, что открывается только файл внутри baseDir. Прямой пользовательский ввод в os.Open даёт Path Traversal.",
+    "anti_patterns": [
+      "os.Open(r.URL.Query().Get(\"file\")) без нормализации",
+      "Проверка только префикса строки без filepath.Clean (обход через символы и «..»)",
+      "Возврат 500 на ошибку доступа вместо 403/404"
+    ],
+    "checklist": [
+      "filepath.Join(baseDir, userInput) и filepath.Clean",
+      "filepath.Rel(baseDir, clean) и проверка на «..» в результате",
+      "os.Open только по проверенному пути",
+      "http.Error с 403/404 при отказе"
+    ]
+  },
+  "final_quiz": {
+    "id": "path-traversal-final",
+    "questions": [
+      {
+        "id": "f1",
+        "text": "Какой фикс лучше при приёме имени файла от пользователя?",
+        "options": ["os.Open(filepath.Clean(input))", "clean := filepath.Clean(filepath.Join(baseDir, input)); проверить rel внутри baseDir; os.Open(clean)", "Проверить, что input не содержит «..»"],
+        "correct": 1,
+        "explanation": "Нужны и Join с baseDir, и Clean, и явная проверка через Rel, что путь не выходит из baseDir."
+      },
+      {
+        "id": "f2",
+        "text": "Что вернуть при попытке доступа вне baseDir?",
+        "options": ["200 OK", "500 Internal Server Error", "403 Forbidden"],
+        "correct": 2,
+        "explanation": "403 Forbidden — семантически верный ответ при отказе в доступе."
+      },
+      {
+        "id": "f3",
+        "text": "Что возвращает filepath.Rel(baseDir, clean), если clean внутри baseDir?",
+        "options": ["Ошибку", "Путь с «..»", "Относительный путь без «..» (например, file.txt)"],
+        "correct": 2,
+        "explanation": "Rel возвращает относительный путь от baseDir до clean; если clean внутри baseDir, «..» в результате не будет."
+      },
+      {
+        "id": "f4",
+        "text": "Зачем нужен filepath.Join(baseDir, filename) перед Clean?",
+        "options": ["Для красоты", "Чтобы привязать путь к baseDir и потом проверить его через Rel", "Go не умеет иначе"],
+        "correct": 1,
+        "explanation": "Join строит полный путь от baseDir; после Clean мы проверяем через Rel, что не вышли за его пределы."
+      },
+      {
+        "id": "f5",
+        "text": "При ошибке os.Open(clean) (файл не найден) какой код вернуть?",
+        "options": ["500", "403 Forbidden", "404 Not Found"],
+        "correct": 2,
+        "explanation": "404 Not Found — клиент запросил несуществующий ресурс в разрешённой зоне."
+      }
+    ]
+  }
+}

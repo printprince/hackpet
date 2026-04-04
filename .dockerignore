@@ -1,0 +1,27 @@
+# Git и IDE
+.git
+.gitignore
+.cursor
+.idea
+*.md
+!README.md
+
+# Локальные env (секреты не в образ)
+.env
+.env.*
+!.env.example
+
+# Фронт: не копировать node_modules и кэш
+frontend/node_modules
+frontend/dist
+frontend/.vite
+frontend/npm-debug.log*
+
+# Бэкенд: бинарники и тесты при необходимости
+backend/*.test
+*.exe
+
+# Прочее
+static
+*.log
+.DS_Store

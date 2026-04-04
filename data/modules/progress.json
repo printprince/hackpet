@@ -1,0 +1,17 @@
+{
+  "go-logging-errors": {
+    "last_step": "lab",
+    "completed": false,
+    "attempt_count": 0
+  },
+  "mock-sql-injection": {
+    "last_step": "final-quiz",
+    "completed": false,
+    "attempt_count": 1
+  },
+  "path-traversal": {
+    "last_step": "summary",
+    "completed": false,
+    "attempt_count": 1
+  }
+}

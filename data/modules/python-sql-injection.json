@@ -1,0 +1,188 @@
+{
+  "id": "python-sql-injection",
+  "title": "SQL Injection в Python и параметризованные запросы",
+  "summary": "Как не склеивать SQL-строки в Python: используем параметризованные запросы и placeholders.",
+  "difficulty": "medium",
+  "minutes": 15,
+  "topic": "Безопасность базы данных",
+  "steps": ["theory", "checkpoint_quiz", "lab", "fix_explanation", "final_quiz", "summary"],
+  "theory": {
+    "intro": "SQL Injection в Python появляется всякий раз, когда пользовательский ввод склеивается в строку SQL-запроса.",
+    "paragraphs": [
+      "Типичный анти‑паттерн в Python — формировать запрос через конкатенацию строк или f-строки: f\"SELECT * FROM users WHERE name = '{name}'\". Если name содержит ' OR 1=1 --, база выполнит совсем другой запрос, чем ожидалось, и вернёт все строки или выполнит произвольный SQL.",
+      "Современные драйверы (sqlite3, psycopg2, MySQLdb и т.п.) поддерживают параметризованные запросы: текст SQL с плейсхолдерами и отдельный список значений. Для sqlite3 это обычно SELECT * FROM users WHERE name = ? и cursor.execute(query, (name,)), для psycopg2 — %s и cursor.execute(query, (name,)). Важное правило: текст запроса и данные не должны склеиваться вручную.",
+      "Параметризация полезна не только против SQLi, но и для корректной обработки типов (числа, даты, бинарные данные). С точки зрения безопасности это единственный надёжный способ передать пользовательский ввод в запрос. Экранирование кавычек или regexp-валидация не дают такой же гарантии и легко обходятся при сложной схеме БД.",
+      "Ещё один нюанс — динамическая подстановка имён таблиц и колонок. Их параметризовать нельзя, поэтому лучше иметь фиксированные whitelists для таких значений и выбирать из них, а не из произвольного ввода."
+    ],
+    "consequences": "Через SQL Injection можно читать и менять любые данные в БД, удалять записи, обходить авторизацию и даже выполнять административные команды (в зависимости от прав подключения). Один неосторожный форматированием запрос в Python-коде часто открывает доступ ко всей базе.",
+    "bad_example": "import sqlite3\nfrom flask import request\n\n@app.route(\"/user\")\ndef get_user():\n    name = request.args.get(\"name\")\n    query = f\"SELECT * FROM users WHERE name = '{name}'\"\n    conn = sqlite3.connect(\"app.db\")\n    cur = conn.cursor()\n    cur.execute(query)  # уязвимо\n    return str(cur.fetchall())",
+    "good_example": "import sqlite3\nfrom flask import request, abort\n\n@app.route(\"/user\")\ndef get_user():\n    name = request.args.get(\"name\")\n    if not name:\n        abort(400)\n    query = \"SELECT * FROM users WHERE name = ?\"\n    conn = sqlite3.connect(\"app.db\")\n    cur = conn.cursor()\n    cur.execute(query, (name,))  # безопасно: данные отдельно от текста запроса\n    rows = cur.fetchall()\n    return str(rows)"
+  },
+  "checkpoint_quiz": {
+    "id": "python-sql-checkpoint",
+    "questions": [
+      {
+        "id": "q1",
+        "text": "Чем опасна конкатенация строки SQL с пользовательским вводом?",
+        "options": [
+          "Замедляет запрос",
+          "Позволяет атакующему изменить структуру запроса и выполнить произвольный SQL",
+          "Ничем не отличается от параметризации"
+        ],
+        "correct": 1,
+        "explanation": "Ввод попадает в текст запроса и может закрыть кавычки, добавить OR 1=1 и т.п."
+      },
+      {
+        "id": "q2",
+        "text": "Как выглядит параметризованный запрос в sqlite3?",
+        "options": [
+          "f\"SELECT * FROM users WHERE id = {user_id}\"",
+          "\"SELECT * FROM users WHERE id = ?\" и execute(query, (user_id,))",
+          "\"SELECT ...\" + user_id"
+        ],
+        "correct": 1,
+        "explanation": "Плейсхолдер ? и отдельный кортеж с параметрами."
+      },
+      {
+        "id": "q3",
+        "text": "Почему проверки и экранирование кавычек недостаточны против SQLi?",
+        "options": [
+          "Они слишком медленные",
+          "Сложная схема БД и кодировки позволяют обойти; параметризация надёжнее",
+          "Python не умеет экранировать"
+        ],
+        "correct": 1,
+        "explanation": "Параметризация отделяет данные от структуры запроса на уровне драйвера."
+      },
+      {
+        "id": "q4",
+        "text": "Можно ли параметризовать имя таблицы или колонки из ввода пользователя?",
+        "options": [
+          "Да, через тот же ?",
+          "Нет; для динамических имён — только whitelist допустимых значений",
+          "Только в PostgreSQL"
+        ],
+        "correct": 1,
+        "explanation": "Плейсхолдеры для значений, не для идентификаторов; идентификаторы — из whitelist."
+      },
+      {
+        "id": "q5",
+        "text": "В psycopg2 плейсхолдер для параметра — это?",
+        "options": [
+          "%s",
+          "? как в sqlite3",
+          "Имя переменной в f-строке"
+        ],
+        "correct": 0,
+        "explanation": "В psycopg2 используют %s; данные передают вторым аргументом execute."
+      }
+    ]
+  },
+  "lab": {
+    "id": "python-sql-lab",
+    "language": "python",
+    "task": "Исправьте обработчик, чтобы убрать SQL Injection и использовать параметризованный запрос.",
+    "acceptance_criteria": [
+      "Запрос к БД формируется с плейсхолдерами, а не через f-строки/конкатенацию",
+      "Параметры передаются отдельным кортежем/списком вторым аргументом execute"
+    ],
+    "files": [
+      {
+        "path": "app.py",
+        "content": "import sqlite3\nfrom flask import Flask, request\n\napp = Flask(__name__)\n\n@app.route(\"/user\")\ndef user():\n    name = request.args.get(\"name\")\n    conn = sqlite3.connect(\"app.db\")\n    cur = conn.cursor()\n    # TODO: исправить SQL Injection\n    query = f\"SELECT * FROM users WHERE name = '{name}'\"\n    cur.execute(query)\n    return str(cur.fetchall())\n"
+      }
+    ],
+    "rules": [
+      {
+        "id": "rule_py_sql_param",
+        "severity": "major",
+        "message": "SQL-запрос должен быть параметризован: плейсхолдер ? и параметры во втором аргументе execute",
+        "hint1": "Используйте query = \"SELECT * FROM users WHERE name = ?\" и cur.execute(query, (name,)).",
+        "hint2": "Параметры передавайте кортежем вторым аргументом execute.",
+        "hint3": "Никогда не подставляйте name в строку запроса.",
+        "check": "py_sql_param"
+      },
+      {
+        "id": "rule_py_sql_no_fstring",
+        "severity": "major",
+        "message": "SQL не должен собираться через f-строку с пользовательским вводом",
+        "hint1": "Уберите f\"SELECT ... {name}...\" и конкатенацию с name.",
+        "hint2": "Запрос должен быть константной строкой с плейсхолдерами.",
+        "hint3": "Динамическими должны быть только параметры в execute(..., (name,)).",
+        "check": "py_sql_no_fstring"
+      }
+    ]
+  },
+  "fix_explanation": {
+    "why_fix": "Параметризованные запросы надёжно разделяют структуру SQL и данные и закрывают типовые SQL Injection-векторы.",
+    "anti_patterns": [
+      "Конкатенация строк в SQL с пользовательскими значениями",
+      "Использование f-строк для построения WHERE/ORDER BY на основании ввода"
+    ],
+    "checklist": [
+      "Всегда использовать плейсхолдеры и параметры, а не склейку строк",
+      "Динамические имена таблиц/полей брать только из whitelist"
+    ]
+  },
+  "final_quiz": {
+    "id": "python-sql-final",
+    "questions": [
+      {
+        "id": "f1",
+        "text": "Какой способ передачи параметров в SQL-запрос наиболее безопасен в Python?",
+        "options": [
+          "Через f-строки",
+          "Через плейсхолдеры и execute(query, params)",
+          "Через конкатенацию через +"
+        ],
+        "correct": 1,
+        "explanation": "Параметризация позволяет драйверу экранировать и типизировать данные."
+      },
+      {
+        "id": "f2",
+        "text": "Что неверно в запросе: query = f\"SELECT * FROM users WHERE name = '{name}'\"?",
+        "options": [
+          "Нужно использовать двойные кавычки",
+          "name из ввода попадает в текст запроса и позволяет изменить логику (SQLi)",
+          "Не хватает ORDER BY"
+        ],
+        "correct": 1,
+        "explanation": "Любая подстановка пользовательского ввода в строку SQL опасна."
+      },
+      {
+        "id": "f3",
+        "text": "Зачем передавать параметры кортежем: execute(query, (name,))?",
+        "options": [
+          "Чтобы быстрее выполнялся запрос",
+          "Драйвер подставляет значения безопасно, не смешивая с текстом SQL",
+          "Только для совместимости с MySQL"
+        ],
+        "correct": 1,
+        "explanation": "Данные и структура запроса обрабатываются раздельно."
+      },
+      {
+        "id": "f4",
+        "text": "Экранирование кавычек вручную вместо параметризации — почему не рекомендуется?",
+        "options": [
+          "Работает только в sqlite3",
+          "Легко ошибиться, возможны обходы; параметризация — стандартный и надёжный способ",
+          "Замедляет приложение"
+        ],
+        "correct": 1,
+        "explanation": "Параметризация — единственный надёжный способ в современных драйверах."
+      },
+      {
+        "id": "f5",
+        "text": "ORM (Django ORM, SQLAlchemy) в контексте SQLi — что верно?",
+        "options": [
+          "ORM не защищает от SQLi",
+          "При использовании параметров запросов ORM обычно строит параметризованный SQL",
+          "ORM всегда небезопасен"
+        ],
+        "correct": 1,
+        "explanation": "ORM при правильном использовании передаёт значения через параметры."
+      }
+    ]
+  }
+}
+

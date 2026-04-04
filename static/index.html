@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Remediation Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0c0c0f;
+      --bg-card: #16161a;
+      --bg-elevated: #1c1c22;
+      --border: #2a2a32;
+      --text: #e8e8ed;
+      --text-muted: #8888a0;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #22c55e;
+      --blocker: #ef4444;
+      --major: #eab308;
+      --minor: #71717a;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.25);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    .step { display: none; }
+    .step.active { display: block; }
+
+    /* Header */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 0;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .app-header h1 { font-size: 1.25rem; font-weight: 600; margin: 0; color: var(--text); }
+    .back-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    /* Stepper */
+    .stepper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .stepper-item {
+      padding: 0.4rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: transparent;
+    }
+    .stepper-item.done { color: var(--success); }
+    .stepper-item.current { background: var(--accent); color: #fff; }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .card h2, .card h3 { margin-top: 0; font-weight: 600; font-size: 1.1rem; }
+    .card h4 { font-size: 0.95rem; color: var(--text-muted); margin: 1rem 0 0.5rem; }
+
+    /* Catalog */
+    .catalog-grid {
+      display: grid;
+      gap: 1rem;
+    }
+    .module-card {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.25rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .module-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+    .module-card .meta { font-size: 0.85rem; color: var(--text-muted); margin: 0.35rem 0 0; }
+    .module-card .progress-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      background: var(--bg-elevated);
+      color: var(--text-muted);
+    }
+    .module-card .progress-badge.completed { background: rgba(34,197,94,0.2); color: var(--success); }
+    .module-card .progress-badge.in_progress { background: rgba(59,130,246,0.2); color: var(--accent); }
+    .module-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; border-radius: var(--radius-sm); font: inherit; font-weight: 500; cursor: pointer; border: none; text-decoration: none; transition: background 0.15s; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--bg-elevated); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-ghost { background: transparent; color: var(--text-muted); }
+    .btn-ghost:hover { color: var(--text); }
+
+    /* Theory */
+    .bullets { padding-left: 1.25rem; margin: 0.75rem 0; }
+    .bullets li { margin: 0.4rem 0; }
+    pre, .code-block {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      background: var(--bg);
+      padding: 1rem;
+      border-radius: var(--radius-sm);
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      margin: 0.5rem 0;
+    }
+    .bad { color: var(--blocker); }
+    .good { color: var(--success); }
+    .card-actions { margin-top: 1.25rem; }
+
+    /* Quiz */
+    .radio-group { margin: 0.5rem 0; }
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      margin: 0.35rem 0;
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .radio-group label:hover { border-color: var(--accent); }
+    .radio-group input { margin: 0; }
+    .explanation { margin-top: 0.75rem; padding: 0.75rem; background: var(--bg); border-radius: var(--radius-sm); color: var(--text-muted); font-size: 0.9rem; display: none; }
+
+    /* Lab */
+    .lab-layout { display: grid; grid-template-columns: 200px 1fr 340px; gap: 1.25rem; }
+    @media (max-width: 960px) { .lab-layout { grid-template-columns: 1fr; } }
+    .file-list { list-style: none; padding: 0; margin: 0 0 1rem 0; }
+    .file-list li {
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .file-list li:hover { background: var(--bg-elevated); color: var(--text); }
+    .file-list li.active { background: var(--accent); color: #fff; }
+    textarea.code {
+      width: 100%;
+      min-height: 360px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      resize: vertical;
+    }
+    textarea.code:focus { outline: none; border-color: var(--accent); }
+    .rules-panel { max-height: 70vh; overflow-y: auto; }
+    .rules-panel h4 { margin-top: 0; }
+    .rule {
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      border-radius: var(--radius-sm);
+      border-left: 4px solid;
+    }
+    .rule.passed { border-color: var(--success); background: rgba(34,197,94,0.08); }
+    .rule.blocker { border-color: var(--blocker); background: rgba(239,68,68,0.1); }
+    .rule.major { border-color: var(--major); background: rgba(234,179,8,0.1); }
+    .rule.minor { border-color: var(--minor); background: rgba(113,113,122,0.15); }
+    .rule .msg { font-weight: 500; font-size: 0.9rem; }
+    .rule .hint { margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted); }
+    .hint-toggle { margin-top: 0.35rem; font-size: 0.8rem; color: var(--accent); cursor: pointer; }
+    .hint-toggle:hover { text-decoration: underline; }
+    .hint-body { display: none; margin-top: 0.25rem; }
+    .hint-body.open { display: block; }
+    .status { font-size: 1.15rem; font-weight: 600; margin-bottom: 1rem; }
+    .status.passed { color: var(--success); }
+    .status.failed { color: var(--blocker); }
+
+    /* Summary */
+    .summary-stats { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .summary-stats .stat { background: var(--bg-elevated); padding: 0.75rem 1rem; border-radius: var(--radius-sm); min-width: 140px; }
+    .summary-stats .stat .label { font-size: 0.8rem; color: var(--text-muted); }
+    .summary-stats .stat .value { font-weight: 600; font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="app-header">
+      <h1>Remediation Guide</h1>
+      <a href="#" id="back-to-catalog" class="back-link" style="display:none">← К модулям</a>
+    </header>
+
+    <div id="screen-catalog" class="step active">
+      <h2 style="margin-bottom:1rem">Модули</h2>
+      <div id="module-list" class="catalog-grid"></div>
+    </div>
+
+    <div id="screen-module" class="step">
+      <nav id="stepper" class="stepper" aria-label="Шаги модуля"></nav>
+      <div class="card" style="margin-bottom:1rem">
+        <h2 id="module-title"></h2>
+        <p id="module-meta" class="meta"></p>
+      </div>
+
+      <div id="panel-theory" class="step card">
+        <h3>Теория</h3>
+        <ul id="theory-bullets" class="bullets"></ul>
+        <p><span class="bad">Плохо:</span></p>
+        <pre id="theory-bad"></pre>
+        <p><span class="good">Хорошо:</span></p>
+        <pre id="theory-good"></pre>
+        <div class="card-actions"><button type="button" id="btn-next-theory" class="btn btn-primary">Дальше →</button></div>
+      </div>
+
+      <div id="panel-quiz" class="step card">
+        <h3>Чекпоинт-квиз</h3>
+        <div id="quiz-questions"></div>
+        <div class="card-actions"><button type="button" id="btn-next-quiz" class="btn btn-primary" style="display:none">Дальше →</button></div>
+      </div>
+
+      <div id="panel-lab" class="step card">
+        <h3>Практика</h3>
+        <p id="lab-task"></p>
+        <ul id="lab-criteria"></ul>
+        <div class="lab-layout">
+          <div>
+            <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.5rem">Файлы</div>
+            <ul id="file-list" class="file-list"></ul>
+            <button type="button" id="btn-reset-file" class="btn btn-ghost">Сбросить файл</button>
+          </div>
+          <div>
+            <textarea id="code-editor" class="code" placeholder="Выберите файл"></textarea>
+            <div style="margin-top:0.75rem"><button type="button" id="btn-submit" class="btn btn-primary">Submit</button></div>
+          </div>
+          <div class="rules-panel">
+            <h4>Критерии приёмки</h4>
+            <div id="rule-results"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-results" class="step card">
+        <h3>Результат проверки</h3>
+        <div id="result-status" class="status"></div>
+        <div id="result-rules"></div>
+        <div class="card-actions"><button type="button" id="btn-next-results" class="btn btn-primary">Дальше →</button></div>
+      </div>
+
+      <div id="panel-fix" class="step card">
+        <h3>Разбор фикса</h3>
+        <p id="fix-why"></p>
+        <h4>Анти-паттерны</h4>
+        <ul id="fix-antipatterns"></ul>
+        <h4>Чек-лист для PR</h4>
+        <ul id="fix-checklist"></ul>
+        <div class="card-actions"><button type="button" id="btn-next-fix" class="btn btn-primary">Дальше →</button></div>
+      </div>
+
+      <div id="panel-final-quiz" class="step card">
+        <h3>Финальный тест</h3>
+        <div id="final-questions"></div>
+        <div class="card-actions"><button type="button" id="btn-next-final" class="btn btn-primary" style="display:none">Итог</button></div>
+      </div>
+
+      <div id="panel-summary" class="step card">
+        <h3>Итог</h3>
+        <div class="summary-stats" id="summary-stats"></div>
+        <div class="card-actions"><button type="button" id="btn-next-module" class="btn btn-primary">К модулям</button></div>
+      </div>
+    </div>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>

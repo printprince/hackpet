@@ -1,0 +1,22 @@
+FROM golang:1.22-alpine AS build
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY backend/ ./backend/
+RUN CGO_ENABLED=0 go build -o /backend ./backend
+
+FROM alpine:3.19
+RUN apk add --no-cache ca-certificates tzdata fontconfig font-dejavu
+WORKDIR /app
+
+COPY --from=build /backend ./backend
+
+# Шрифт для PDF-сертификатов (кириллица) — из пакета font-dejavu
+RUN mkdir -p /app/fonts && cp /usr/share/fonts/dejavu/DejaVuSans.ttf /app/fonts/
+
+EXPOSE 8080
+ENV PORT=8080
+ENTRYPOINT ["./backend"]
+

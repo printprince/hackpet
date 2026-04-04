@@ -1,0 +1,199 @@
+{
+  "id": "python-path-traversal",
+  "title": "Path Traversal в Python и os.path",
+  "summary": "Как безопасно отдавать файлы в Python-сервисе: нормализация пути, привязка к каталогу и корректные HTTP-коды.",
+  "difficulty": "medium",
+  "minutes": 15,
+  "topic": "Безопасность файловых эндпоинтов",
+  "steps": ["theory", "checkpoint_quiz", "lab", "fix_explanation", "final_quiz", "summary"],
+  "theory": {
+    "intro": "Эндпоинт, который отдаёт файл по имени из запроса, в Python так же уязвим к Path Traversal, как и в Go: если путь не ограничен, можно читать произвольные файлы.",
+    "paragraphs": [
+      "Path Traversal (обход пути, Directory Traversal) возникает, когда приложение принимает имя или путь к файлу от пользователя и без жёстких ограничений подставляет его в open(). В Python это часто выглядит как open(filename) или open(request.args[\"file\"]). Злоумышленник подставляет ../../../etc/passwd или ..\\\\..\\\\windows\\\\system32\\\\config\\\\sam и читает файлы вне разрешённой директории.",
+      "Типичный пример — Flask‑ или Django‑обработчик для скачивания файлов из каталога uploads. Пока вы просто делаете open(filename), приложение будет открывать любую строку пути, которую пришлёт клиент. Даже если вы добавили базовую директорию, например base_dir + \"/\" + filename, без нормализации и проверки обход через .. всё равно возможен.",
+      "В Python, как и в Go, одной нормализации недостаточно. os.path.normpath приводит путь к каноническому виду, но не фиксирует его внутри base_dir. Правильный подход: собрать путь через os.path.join(base_dir, filename), нормализовать через os.path.normpath, затем сравнить, что получившийся путь всё ещё лежит внутри base_dir — например, через os.path.commonpath([base_dir, safe_path]) == base_dir. Если это не так, запрос нужно отклонить с кодом 403 Forbidden.",
+      "Важна и корректная работа с кодами ответа. Если безопасный путь выходит за пределы каталога — это отказ в доступе (403). Если файл в допустимой директории отсутствует — 404 Not Found. 500 Internal Server Error стоит оставлять только для неожиданных внутренних сбоев, а не для предсказуемых ошибок запроса или проверки доступа."
+    ],
+    "consequences": "Path Traversal в Python‑сервисах так же часто приводит к утечке конфигов, .env‑файлов, ключей, дампов баз и логов. Во многих кейсах через один неверно защищённый endpoint скачивания получали доступ к секретам облака, токенам доступа и конфигурации других сервисов. Поэтому любые файловые операции по вводу пользователя должны проходить нормализацию и проверку привязки к каталогу.",
+    "bad_example": "from flask import request, abort\n\nBASE_DIR = \"/app/files\"\n\n@app.route(\"/download\")\ndef download():\n    filename = request.args.get(\"file\")\n    if not filename:\n        abort(400)\n    path = filename  # уязвимо: прямой путь из запроса\n    with open(path, \"rb\") as f:\n        return f.read()",
+    "good_example": "from flask import request, abort, send_file\nimport os\n\nBASE_DIR = \"/app/files\"\n\n@app.route(\"/download\")\ndef download():\n    filename = request.args.get(\"file\")\n    if not filename:\n        abort(400)\n\n    joined = os.path.join(BASE_DIR, filename)\n    safe_path = os.path.normpath(joined)\n    # Проверяем, что путь остался внутри BASE_DIR\n    if os.path.commonpath([BASE_DIR, safe_path]) != BASE_DIR:\n        abort(403)\n    if not os.path.exists(safe_path):\n        abort(404)\n    return send_file(safe_path)"
+  },
+  "checkpoint_quiz": {
+    "id": "python-path-traversal-checkpoint",
+    "questions": [
+      {
+        "id": "q1",
+        "text": "Почему опасно передавать значение из request.args[\"file\"] напрямую в open()?",
+        "options": [
+          "Так код работает медленнее",
+          "Можно прочитать файлы вне разрешённой директории через .. (Path Traversal)",
+          "Python этого не позволяет"
+        ],
+        "correct": 1,
+        "explanation": "Без нормализации и проверки пользователь может передать путь с .. и добраться до системных файлов."
+      },
+      {
+        "id": "q2",
+        "text": "Что делает os.path.normpath в контексте защиты?",
+        "options": [
+          "Шифрует путь",
+          "Нормализует путь (убирает лишние слэши и ..), но не привязывает к каталогу",
+          "Проверяет права доступа"
+        ],
+        "correct": 1,
+        "explanation": "normpath приводит строку пути к каноническому виду, но сам по себе не гарантирует, что путь остаётся внутри BASE_DIR."
+      },
+      {
+        "id": "q3",
+        "text": "Как убедиться, что итоговый путь остаётся внутри BASE_DIR?",
+        "options": [
+          "Проверить только префикс строки на начало с BASE_DIR",
+          "Использовать os.path.commonpath([BASE_DIR, safe_path]) == BASE_DIR",
+          "Положиться только на try/except вокруг open()"
+        ],
+        "correct": 1,
+        "explanation": "commonpath учитывает нормализованный путь и корректно работает с .. и разными разделителями."
+      },
+      {
+        "id": "q4",
+        "text": "Какой HTTP‑код уместен, если пользователь пытается выйти за пределы каталога BASE_DIR?",
+        "options": ["200 OK", "403 Forbidden", "500 Internal Server Error"],
+        "correct": 1,
+        "explanation": "403 Forbidden лучше всего отражает отказ в доступе."
+      },
+      {
+        "id": "q5",
+        "text": "Что делать, если файл в допустимой директории не существует?",
+        "options": ["Вернуть 500", "Вернуть 404 Not Found", "Молчаливо игнорировать"],
+        "correct": 1,
+        "explanation": "Если путь безопасен, но файла нет — это 404 Not Found, а не внутренняя ошибка."
+      }
+    ]
+  },
+  "lab": {
+    "id": "python-path-traversal-lab",
+    "language": "python",
+    "task": "Исправьте обработчик скачивания файла на Python так, чтобы устранить Path Traversal и разрешить доступ только к файлам внутри BASE_DIR.",
+    "acceptance_criteria": [
+      "Путь собирается через os.path.join(BASE_DIR, filename) и нормализуется через os.path.normpath",
+      "Используется проверка через os.path.commonpath, что итоговый путь остаётся внутри BASE_DIR",
+      "Нет прямого open() по сырым данным из запроса",
+      "При отказе в доступе возвращается 403, при отсутствии файла — 404"
+    ],
+    "files": [
+      {
+        "path": "app.py",
+        "content": "from flask import Flask, request, abort, send_file\nimport os\n\napp = Flask(__name__)\nBASE_DIR = \"/app/files\"\n\n@app.route(\"/download\")\ndef download():\n    filename = request.args.get(\"file\")\n    if not filename:\n        abort(400)\n    # TODO: исправить Path Traversal\n    path = filename\n    if not os.path.exists(path):\n        abort(404)\n    return send_file(path)\n"
+      }
+    ],
+    "rules": [
+      {
+        "id": "rule_py_path_join_norm",
+        "severity": "major",
+        "message": "Путь должен собираться через os.path.join(BASE_DIR, filename) и os.path.normpath",
+        "hint1": "Не передавайте filename напрямую в open/send_file.",
+        "hint2": "Соберите путь: joined = os.path.join(BASE_DIR, filename); затем safe_path = os.path.normpath(joined).",
+        "hint3": "Используйте os.path.join и os.path.normpath перед проверкой.",
+        "check": "py_path_join_norm"
+      },
+      {
+        "id": "rule_py_path_commonpath",
+        "severity": "major",
+        "message": "Итоговый путь должен проверяться через os.path.commonpath внутри BASE_DIR",
+        "hint1": "После нормализации проверьте: os.path.commonpath([BASE_DIR, safe_path]) == BASE_DIR.",
+        "hint2": "Только после этой проверки используйте safe_path в файловых операциях.",
+        "hint3": "commonpath гарантирует, что путь не выходит за пределы BASE_DIR.",
+        "check": "py_path_commonpath"
+      },
+      {
+        "id": "rule_py_path_no_direct",
+        "severity": "major",
+        "message": "Не передавайте filename из запроса напрямую в open/send_file",
+        "hint1": "Используйте только безопасный путь после join, normpath и проверки commonpath.",
+        "hint2": "Уберите присваивание path = filename и send_file(filename).",
+        "hint3": "Все файловые операции — только с safe_path.",
+        "check": "py_path_no_direct"
+      },
+      {
+        "id": "rule_py_path_http",
+        "severity": "minor",
+        "message": "При отказе в доступе — 403, при отсутствии файла — 404",
+        "hint1": "Если commonpath не совпадает с BASE_DIR — abort(403).",
+        "hint2": "Если файл не существует — abort(404).",
+        "hint3": "Не возвращайте 500 для предсказуемых ошибок доступа.",
+        "check": "py_path_http"
+      }
+    ]
+  },
+  "fix_explanation": {
+    "why_fix": "Комбинация join + normpath + проверка через commonpath гарантирует, что приложение открывает только файлы из BASE_DIR и не даёт обойти каталог через ..",
+    "anti_patterns": [
+      "open(request.args[\"file\"]) без нормализации",
+      "Проверка только строкового префикса пути",
+      "Возврат 500 вместо 403/404 для предсказуемых ошибок доступа"
+    ],
+    "checklist": [
+      "Нормализовать путь через os.path.normpath(os.path.join(BASE_DIR, filename))",
+      "Проверить, что os.path.commonpath([BASE_DIR, safe_path]) == BASE_DIR",
+      "Использовать safe_path во всех файловых операциях",
+      "Отдавать 403/404 вместо 500 для ошибок доступа и отсутствия файла"
+    ]
+  },
+  "final_quiz": {
+    "id": "python-path-traversal-final",
+    "questions": [
+      {
+        "id": "f1",
+        "text": "Какая комбинация действий лучше всего защищает Python‑эндпоинт от Path Traversal?",
+        "options": [
+          "Просто вызвать open(filename)",
+          "os.path.join + os.path.normpath + проверка через commonpath",
+          "Только try/except вокруг open()"
+        ],
+        "correct": 1,
+        "explanation": "Нужна и нормализация, и явная проверка принадлежности пути каталогу."
+      },
+      {
+        "id": "f2",
+        "text": "Почему проверка prefix (startswith(BASE_DIR)) ненадёжна?",
+        "options": [
+          "Работает только на Windows",
+          "Уязвима к манипуляциям со слэшами и .., особенно без normpath",
+          "Слишком медленная"
+        ],
+        "correct": 1,
+        "explanation": "Без нормализации и commonpath можно подобрать строку, которая начинается с BASE_DIR, но указывает наружу."
+      },
+      {
+        "id": "f3",
+        "text": "Что лучше вернуть при попытке прочитать файл вне BASE_DIR?",
+        "options": ["404", "403 Forbidden", "200 OK с пустым телом"],
+        "correct": 1,
+        "explanation": "403 явно говорит клиенту, что доступ к ресурсу запрещён."
+      },
+      {
+        "id": "f4",
+        "text": "Зачем использовать os.path.join(BASE_DIR, filename), а не BASE_DIR + '/' + filename?",
+        "options": [
+          "join быстрее",
+          "join учитывает ОС и не даёт двойных слэшей; путь остаётся предсказуемым",
+          "Только для красоты кода"
+        ],
+        "correct": 1,
+        "explanation": "join корректно формирует путь под текущую ОС и избегает лишних разделителей."
+      },
+      {
+        "id": "f5",
+        "text": "Когда возвращать 404 в файловом эндпоинте?",
+        "options": [
+          "При любой ошибке",
+          "Когда путь безопасен (внутри BASE_DIR), но файл не найден",
+          "Только при неверном имени файла в запросе"
+        ],
+        "correct": 1,
+        "explanation": "404 — «ресурс не найден»; 403 — «доступ запрещён» (путь вне BASE_DIR)."
+      }
+    ]
+  }
+}
+

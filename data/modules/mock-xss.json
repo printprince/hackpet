@@ -1,0 +1,50 @@
+{
+  "id": "mock-xss",
+  "title": "XSS (модуль в разработке)",
+  "summary": "Экранирование вывода и CSP: как не допустить выполнение чужого скрипта в браузере пользователя.",
+  "difficulty": "medium",
+  "minutes": 15,
+  "topic": "Безопасность фронтенда",
+  "steps": ["theory", "checkpoint_quiz", "lab", "fix_explanation", "final_quiz", "summary"],
+  "theory": {
+    "intro": "Cross-Site Scripting: внедрение скрипта в страницу, которую видят другие пользователи; выполняется в их браузере.",
+    "bullets": [
+      "XSS: атакующий подставляет в контент теги <script> или атрибуты с javascript:.",
+      "Reflected XSS: скрипт в параметре URL отображается на странице без экранирования.",
+      "Защита: экранировать вывод (HTML-сущности для <, >, \", '), Content-Security-Policy, httpOnly для cookie."
+    ],
+    "bad_example": "<div>Hello, " + userInput + "</div>",
+    "good_example": "<div>Hello, " + escapeHtml(userInput) + "</div>"
+  },
+  "checkpoint_quiz": {
+    "id": "mock-xss-checkpoint",
+    "questions": [
+      {"id": "q1", "text": "Что такое XSS?", "options": ["Вид SQL-атаки", "Выполнение скрипта в браузере жертвы"], "correct": 1, "explanation": "Скрипт внедряется в страницу и выполняется у пользователя."},
+      {"id": "q2", "text": "Чем опасен XSS?", "options": ["Ломает сервер", "Кража сессий, cookie, подмена контента"], "correct": 1, "explanation": "Скрипт работает в контексте жертвы."},
+      {"id": "q3", "text": "Как защититься при выводе пользовательских данных?", "options": ["Ничего не делать", "Экранировать HTML-сущности"], "correct": 1, "explanation": "< и > превращать в &lt; и &gt;."},
+      {"id": "q4", "text": "Что такое CSP?", "options": ["Протокол БД", "Content-Security-Policy: ограничение источников скриптов"], "correct": 1, "explanation": "Браузер выполняет скрипты только с разрешённых источников."},
+      {"id": "q5", "text": "Cookie с флагом httpOnly?", "options": ["Доступна из JavaScript", "Недоступна из JS, только по HTTP"], "correct": 1, "explanation": "Снижает риск кражи сессии через XSS."}
+    ]
+  },
+  "lab": {
+    "id": "mock-xss-lab",
+    "language": "javascript",
+    "task": "Модуль в разработке. Скоро здесь будет лаба по XSS.",
+    "acceptance_criteria": [],
+    "files": [{"path": "main.go", "content": "package main\n\nfunc main() {\n\t// XSS lab — в разработке\n}\n"}],
+    "rules": [
+      {"id": "mock_rule", "severity": "major", "message": "Модуль в разработке", "hint1": "", "hint2": "", "hint3": "", "check": "has_filepath_clean"}
+    ]
+  },
+  "fix_explanation": {"why_fix": "Экранирование вывода предотвращает внедрение скрипта.", "anti_patterns": ["Вставка userInput в innerHTML без экранирования"], "checklist": ["Экранировать при выводе в HTML", "Использовать textContent там, где не нужен HTML"]},
+  "final_quiz": {
+    "id": "mock-xss-final",
+    "questions": [
+      {"id": "f1", "text": "Где выполняется XSS-скрипт?", "options": ["На сервере", "В браузере жертвы"], "correct": 1, "explanation": ""},
+      {"id": "f2", "text": "Экранирование < в &lt; защищает?", "options": ["Нет", "Да, теги не интерпретируются"], "correct": 1, "explanation": ""},
+      {"id": "f3", "text": "innerHTML с пользовательскими данными?", "options": ["Безопасно", "Опасно без экранирования"], "correct": 1, "explanation": ""},
+      {"id": "f4", "text": "Reflected XSS — это когда?", "options": ["Скрипт в URL/параметре отображается на странице"], "correct": 0, "explanation": ""},
+      {"id": "f5", "text": "httpOnly cookie видна в document.cookie?", "options": ["Да", "Нет"], "correct": 1, "explanation": ""}
+    ]
+  }
+}

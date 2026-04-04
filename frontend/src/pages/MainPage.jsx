@@ -1,0 +1,66 @@
+import { useUser } from '../context/UserContext'
+import { useCourseDetails } from '../hooks/useCourseDetails'
+import {
+  useDashboardData,
+  DashboardPracticesCard,
+  DashboardPetCard,
+  DashboardProgressCard,
+  DashboardFocusCard,
+  DashboardActivityCard,
+} from '../features/dashboard'
+
+export default function MainPage() {
+  const user = useUser()
+  const firstName = user.firstName || user.nickname?.split(/\s+/)[0] || 'друг'
+  const { courseDetails } = useCourseDetails()
+  const dashboard = useDashboardData(courseDetails)
+
+  return (
+    <div className="main-page dashboard-page">
+      <section className="section dashboard-header">
+        <div className="container">
+          <h1>Привет, {firstName}! Продолжаем прокачку безопасности</h1>
+          <p className="page-desc">
+            Здесь твой текущий прогресс, состояние Hackpet и бест практис по secure coding.
+          </p>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <div className="dashboard-content-grid">
+            <aside className="dashboard-tips-sticky">
+              <DashboardPracticesCard practices={dashboard.bestPractices} />
+            </aside>
+
+            <div className="dashboard-main-column">
+              <div className="dashboard-grid">
+                <DashboardPetCard
+                  pet={dashboard.pet}
+                  petLevel={dashboard.petLevel}
+                  petProgress={dashboard.petProgress}
+                  completedModulesCount={dashboard.stats.completed}
+                />
+
+                <DashboardProgressCard
+                  stats={dashboard.stats}
+                  hasStartedLearning={dashboard.hasStartedLearning}
+                />
+              </div>
+
+              <div className="dashboard-layout-grid">
+                <DashboardFocusCard checklist={dashboard.focusChecklist} />
+
+                <DashboardActivityCard
+                  hasStartedLearning={dashboard.hasStartedLearning}
+                  completedModules={dashboard.completedModules}
+                  nextModules={dashboard.nextModules}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}

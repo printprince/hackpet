@@ -1,0 +1,31 @@
+# Секреты и локальная среда
+.env
+.env.local
+.env.*.local
+
+# Зависимости и сборка
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Go
+*.exe
+*.test
+*.out
+/vendor/
+
+# Локальные бинарники / артефакты
+mvp-diploma
+hackpet
+main
+
+# Загрузки пользователей (не в репозиторий)
+uploads/*
+!uploads/.gitkeep
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
