@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="t">
+  <title id="t">Hackpet platform hero</title>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="50%" style="stop-color:#1e1b4b"/>
+      <stop offset="100%" style="stop-color:#312e81"/>
+    </linearGradient>
+    <linearGradient id="a" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22d3ee"/>
+      <stop offset="100%" style="stop-color:#818cf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <g opacity="0.18" fill="#fff">
+    <circle cx="120" cy="90" r="70"/><circle cx="700" cy="360" r="120"/>
+  </g>
+  <rect x="90" y="130" width="300" height="190" rx="14" fill="#111827" stroke="#334155"/>
+  <rect x="116" y="160" width="248" height="16" rx="8" fill="#1f2937"/>
+  <rect x="116" y="192" width="170" height="12" rx="6" fill="url(#a)"/>
+  <rect x="116" y="218" width="220" height="12" rx="6" fill="#374151"/>
+  <rect x="116" y="244" width="150" height="12" rx="6" fill="#374151"/>
+  <circle cx="510" cy="195" r="66" fill="#111827" stroke="#6366f1"/>
+  <circle cx="510" cy="195" r="38" fill="#0ea5e9" opacity="0.85"/>
+  <path d="M510 147 L523 176 L555 179 L530 199 L537 230 L510 214 L483 230 L490 199 L465 179 L497 176 Z" fill="#e2e8f0" opacity="0.95"/>
+  <rect x="430" y="300" width="250" height="10" rx="5" fill="#334155"/>
+  <rect x="430" y="300" width="170" height="10" rx="5" fill="url(#a)"/>
+  <text x="400" y="392" text-anchor="middle" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="22" font-weight="600">Learn · Practice · Grow</text>
+</svg>

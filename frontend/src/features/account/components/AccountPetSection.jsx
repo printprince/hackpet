@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
 import { ROUTES, PET } from '../../../constants'
+import { getPetDisplayName } from '../../../utils/pet'
+import PetAvatar from '../../../components/PetAvatar'
+import PetAppearancePicker from './PetAppearancePicker'
 
 export default function AccountPetSection({
   pet,
   petLevel,
-  petMood,
-  progressToNext,
+  petStatus,
   petAura,
   unlockedAuras,
   onAuraPreview,
@@ -16,32 +18,25 @@ export default function AccountPetSection({
   petNameError,
   petNameMessage,
   petStats,
+  onPetVariantChange,
 }) {
-  const avatarClassNames = ['pet-avatar', 'pet-avatar-hackpet']
-  if (petAura?.id && petAura.id !== 'none') {
-    avatarClassNames.push(`pet-avatar-aura-${petAura.id}`)
-  }
-
   return (
     <section className="account-section account-pet-section">
       <h2 className="account-section-title">Мой Hackpet</h2>
       <div className="pet-card card">
         <div className="pet-avatar-wrap">
-          <div className={avatarClassNames.join(' ')} aria-hidden="true">🐶</div>
+          <PetAvatar
+            level={petLevel}
+            variant={pet?.equipped_variant || 'classic'}
+            auraClassNames={petAura?.id && petAura.id !== 'none' ? [`pet-avatar-aura-${petAura.id}`] : []}
+          />
           <span className="pet-level">Ур. {petLevel}</span>
         </div>
         <div className="pet-info">
           <div className="pet-head">
-            <h3 className="pet-name">{pet?.name || 'Hackpet'}</h3>
+            <h3 className="pet-name">{getPetDisplayName(pet)}</h3>
           </div>
-          <p className="pet-mood">{petMood}</p>
-          {petLevel < PET.LEVEL_MAX && (
-            <div className="pet-progress-wrap">
-              <div className="account-progress-bar">
-                <div className="account-progress-bar-fill" style={{ width: `${progressToNext}%` }} />
-              </div>
-            </div>
-          )}
+          <p className={`pet-mood ${petStatus?.className || ''}`}>{petStatus?.label || 'Спит'}</p>
           <form className="pet-rename-form" onSubmit={onPetNameSubmit}>
             <input
               type="text"
@@ -99,18 +94,29 @@ export default function AccountPetSection({
               Тренировать питомца
             </Link>
           </div>
-          <div className="pet-stats">
-            {petStats.map((s) => (
-              <div key={s.id} className="pet-stat-row">
-                <span className="pet-stat-label">{s.label}</span>
-                <div className="pet-stat-track">
-                  <div className="pet-stat-fill" style={{ width: `${s.value}%` }} />
+          <div className="pet-stats-dev-block">
+            <div className="pet-stats">
+              {petStats.map((s) => (
+                <div key={s.id} className="pet-stat-row">
+                  <span className="pet-stat-label">{s.label}</span>
+                  <div className="pet-stat-track">
+                    <div className="pet-stat-fill" style={{ width: `${s.value}%` }} />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="pet-dev-overlay" aria-hidden="true">
+              <span className="pet-dev-overlay-badge">В разработке</span>
+            </div>
           </div>
         </div>
       </div>
+      <PetAppearancePicker
+        petLevel={petLevel}
+        equippedVariant={pet?.equipped_variant}
+        petAura={petAura}
+        onVariantChange={onPetVariantChange}
+      />
     </section>
   )
 }

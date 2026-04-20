@@ -18,3 +18,10 @@ func (s *PlayService) GetRandomSnippet(userID, language string) (*store.PlaySnip
 	return s.Pg.GetRandomPlaySnippet(language)
 }
 
+// AwardWinXP начисляет XP питомцу за победу в мини-игре.
+func (s *PlayService) AwardWinXP(userID string, amount int) (*store.Pet, error) {
+	if s.Pg == nil || userID == "" {
+		return nil, store.ErrUserNotFound
+	}
+	return s.Pg.AddPetXP(userID, amount)
+}

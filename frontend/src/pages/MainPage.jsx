@@ -2,7 +2,6 @@ import { useUser } from '../context/UserContext'
 import { useCourseDetails } from '../hooks/useCourseDetails'
 import {
   useDashboardData,
-  DashboardPracticesCard,
   DashboardPetCard,
   DashboardProgressCard,
   DashboardFocusCard,
@@ -28,35 +27,29 @@ export default function MainPage() {
 
       <section className="section">
         <div className="container">
-          <div className="dashboard-content-grid">
-            <aside className="dashboard-tips-sticky">
-              <DashboardPracticesCard practices={dashboard.bestPractices} />
-            </aside>
+          <div className="dashboard-main-column">
+            <div className="dashboard-grid">
+              <DashboardPetCard
+                pet={dashboard.pet}
+                petLevel={dashboard.petLevel}
+                petStats={dashboard.petStats}
+                hasActiveCourse={dashboard.hasActiveCourse}
+              />
 
-            <div className="dashboard-main-column">
-              <div className="dashboard-grid">
-                <DashboardPetCard
-                  pet={dashboard.pet}
-                  petLevel={dashboard.petLevel}
-                  petProgress={dashboard.petProgress}
-                  completedModulesCount={dashboard.stats.completed}
-                />
+              <DashboardProgressCard
+                stats={dashboard.stats}
+                hasStartedLearning={dashboard.hasStartedLearning}
+              />
+            </div>
 
-                <DashboardProgressCard
-                  stats={dashboard.stats}
-                  hasStartedLearning={dashboard.hasStartedLearning}
-                />
-              </div>
+            <div className="dashboard-layout-grid">
+              <DashboardFocusCard practices={dashboard.bestPractices} />
 
-              <div className="dashboard-layout-grid">
-                <DashboardFocusCard checklist={dashboard.focusChecklist} />
-
-                <DashboardActivityCard
-                  hasStartedLearning={dashboard.hasStartedLearning}
-                  completedModules={dashboard.completedModules}
-                  nextModules={dashboard.nextModules}
-                />
-              </div>
+              <DashboardActivityCard
+                hasStartedLearning={dashboard.hasStartedLearning}
+                completedModules={dashboard.completedModules}
+                nextModules={dashboard.nextModules}
+              />
             </div>
           </div>
         </div>

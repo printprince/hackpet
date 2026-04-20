@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS pets (
     level       INT NOT NULL DEFAULT 1 CHECK (level >= 1 AND level <= 100),
     xp          INT NOT NULL DEFAULT 0 CHECK (xp >= 0),
     mood_type   TEXT NOT NULL DEFAULT 'new',
+    pet_variants JSONB NOT NULL DEFAULT '{}'::jsonb,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );

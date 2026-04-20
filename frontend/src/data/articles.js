@@ -1,6 +1,7 @@
 export const REAL_ARTICLES = [
   {
     id: 'shift-left-devsecops',
+    coverImage: '/articles/shift-left-devsecops.svg',
     topic: 'DevSecOps',
     level: 'База',
     minutes: 20,
@@ -33,6 +34,7 @@ export const REAL_ARTICLES = [
   },
   {
     id: 'secrets-management-practice',
+    coverImage: '/articles/secrets-management-practice.svg',
     topic: 'Секреты',
     level: 'База',
     minutes: 19,
@@ -66,6 +68,7 @@ export const REAL_ARTICLES = [
   },
   {
     id: 'api-security-top-priorities',
+    coverImage: '/articles/api-security-top-priorities.svg',
     topic: 'API Security',
     level: 'Средне',
     minutes: 22,
@@ -99,6 +102,7 @@ export const REAL_ARTICLES = [
   },
   {
     id: 'supply-chain-security',
+    coverImage: '/articles/supply-chain-security.svg',
     topic: 'Зависимости',
     level: 'Средне',
     minutes: 21,

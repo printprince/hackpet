@@ -8,6 +8,7 @@ import {
   getTopicExtension,
   ArticleToc,
   RelatedArticlesSection,
+  ArticleMediaImage,
 } from '../features/articles'
 
 export default function ArticleDetailPage() {
@@ -51,9 +52,7 @@ export default function ArticleDetailPage() {
           </div>
           <h1>{article.title}</h1>
           <p className="article-summary">{article.summary}</p>
-          <div className="mock-image mock-image-article-banner" aria-label="Заглушка баннера статьи">
-            Баннер статьи
-          </div>
+          <ArticleMediaImage article={article} variant="banner" />
 
           <section className="article-content">
             <h3 id="article-context">Контекст</h3>

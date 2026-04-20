@@ -2,11 +2,13 @@ import { useMemo } from 'react'
 import Editor from '@monaco-editor/react'
 import { normalizePlaySnippetCode, playSnippetMonacoLanguage } from '../utils/playSnippet'
 
-export default function PlaySnippetViewer({ code, language }) {
+export default function PlaySnippetViewer({ code, language, maxVisibleLines = null }) {
   const normalized = useMemo(() => normalizePlaySnippetCode(code), [code])
   const monacoLang = playSnippetMonacoLanguage(language)
   const lineCount = useMemo(() => Math.max(1, normalized.split('\n').length), [normalized])
-  const height = Math.min(400, Math.max(120, lineCount * 20 + 44))
+  const effectiveLines =
+    typeof maxVisibleLines === 'number' && maxVisibleLines > 0 ? Math.min(lineCount, maxVisibleLines) : lineCount
+  const height = Math.min(400, Math.max(120, effectiveLines * 20 + 44))
 
   return (
     <div className="play-snippet-monaco-wrap">

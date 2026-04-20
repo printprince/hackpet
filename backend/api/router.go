@@ -90,6 +90,7 @@ type RouterConfig struct {
 	Lab        *handler.LabHandler
 	Pet        *handler.PetHandler
 	Focus      *handler.FocusHandler
+	Todo       *handler.TodoHandler
 	Best       *handler.BestPracticeHandler
 	Play       *handler.PlayHandler
 	UploadsDir string
@@ -119,6 +120,8 @@ func NewRouter(cfg RouterConfig) http.Handler {
 			r.With(RequireAuth).Get("/api/pet", cfg.Pet.Get)
 			r.With(RequireAuth).Post("/api/pet/name", cfg.Pet.UpdateName)
 			r.With(RequireAuth).Post("/api/pet/aura", cfg.Pet.UpdateAura)
+			r.With(RequireAuth).Post("/api/pet/variant", cfg.Pet.UpdateVariant)
+			r.With(RequireAuth).Post("/api/pet/frame", cfg.Pet.UpdateFrame)
 		})
 	}
 
@@ -126,11 +129,18 @@ func NewRouter(cfg RouterConfig) http.Handler {
 	if cfg.Focus != nil {
 		r.With(RequireAuth).Get("/api/focus", cfg.Focus.List)
 	}
+	if cfg.Todo != nil {
+		r.With(RequireAuth).Get("/api/todos", cfg.Todo.List)
+		r.With(RequireAuth).Post("/api/todos", cfg.Todo.Create)
+		r.With(RequireAuth).Post("/api/todos/{todoId}", cfg.Todo.Update)
+		r.With(RequireAuth).Post("/api/todos/{todoId}/delete", cfg.Todo.Delete)
+	}
 	if cfg.Best != nil {
 		r.With(RequireAuth).Get("/api/best-practices", cfg.Best.List)
 	}
 	if cfg.Play != nil {
 		r.With(RequireAuth).Get("/api/play/v1/round", cfg.Play.Round)
+		r.With(RequireAuth).Post("/api/play/v1/win", cfg.Play.Win)
 	}
 
 	// API: курсы
@@ -184,10 +194,16 @@ h1{font-size:1.35rem;color:#4a3728;} .author{color:#6b5b4f;margin-top:0.25rem;}
 
 		q := strings.TrimSpace(r.URL.Query().Get("q"))
 		qLower := strings.ToLower(q)
-		var matches []struct{ Idx int; Title, Author string }
+		var matches []struct {
+			Idx           int
+			Title, Author string
+		}
 		for i, b := range ctfStandBooks {
 			if q == "" || strings.Contains(strings.ToLower(b.Title), qLower) || strings.Contains(strings.ToLower(b.Author), qLower) {
-				matches = append(matches, struct{ Idx int; Title, Author string }{Idx: i, Title: b.Title, Author: b.Author})
+				matches = append(matches, struct {
+					Idx           int
+					Title, Author string
+				}{Idx: i, Title: b.Title, Author: b.Author})
 			}
 		}
 		w.Write([]byte(ctfStandHTMLTop))

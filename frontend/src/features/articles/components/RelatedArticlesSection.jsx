@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ROUTES } from '../../../constants'
+import ArticleMediaImage from './ArticleMediaImage'
 
 export default function RelatedArticlesSection({ related }) {
   if (related.length === 0) return null
@@ -10,9 +11,7 @@ export default function RelatedArticlesSection({ related }) {
       <div className="articles-grid">
         {related.map((item) => (
           <article key={item.id} className="article-card card">
-            <div className="mock-image mock-image-article" aria-label="Заглушка обложки статьи">
-              Обложка статьи
-            </div>
+            <ArticleMediaImage article={item} variant="card" />
             <div className="article-card-top">
               <span className="article-topic">{item.topic}</span>
               <span className="article-meta">{item.level}</span>

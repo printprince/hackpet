@@ -50,9 +50,16 @@ export const API = {
     GET: '/pet',
     UPDATE_NAME: '/pet/name',
     UPDATE_AURA: '/pet/aura',
+    UPDATE_VARIANT: '/pet/variant',
+    UPDATE_FRAME: '/pet/frame',
   },
   FOCUS: '/focus',
+  TODOS: '/todos',
   BEST_PRACTICES: '/best-practices',
+  PLAY: {
+    ROUND: '/play/v1/round',
+    WIN: '/play/v1/win',
+  },
 }
 
 export const COURSE_STATUS = {
@@ -115,6 +122,20 @@ export const PET = {
     // Ауры за достижения.
     { id: 'course1', label: 'Первый пройденный курс', minLevel: 1, unlockBy: 'course_first' },
     { id: 'course3', label: 'Три пройденных курса', minLevel: 1, unlockBy: 'courses_3' },
+  ],
+  /** Сколько стадий эволюции внутри одного вида (1–5, 6–10, 11–15, 16–20, 21–30). */
+  EVOLUTION_STAGE_MAX: 5,
+  /** Визуальные виды: у каждого свои `/pet/variants/{id}/evolve-1…5.svg`, стиль единый внутри вида. */
+  VARIANTS: [
+    { id: 'classic', label: 'Баратник', hint: 'Живой код-талисман: мягкий, но с характером.' },
+    { id: 'neon', label: 'Киберлинк', hint: 'Техно-оболочка, неон и системные огни.' },
+    { id: 'ember', label: 'Пиробайт', hint: 'Термоядро и искры: горячий боевой режим.' },
+  ],
+  /** Рамка вокруг круга аватара (CSS). */
+  FRAMES: [
+    { id: 'ring', label: 'Кольцо' },
+    { id: 'chrome', label: 'Хром' },
+    { id: 'soft', label: 'Мягкая' },
   ],
 }
 

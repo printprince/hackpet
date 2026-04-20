@@ -48,8 +48,17 @@ func (c *CompositeStore) GetCourse(id, userID string) (*Course, error) {
 		completedModules := allModulesCompleted(course.Modules)
 		course.CTF.Locked = !completedModules
 		ctfProg, _ := c.Pg.GetProgress(userID, course.CTF.ID)
-		if ctfProg != nil {
-			course.CTF.Completed = ctfProg.Completed
+		if ctfProg != nil && ctfProg.Completed {
+			course.CTF.Completed = true
+		} else {
+			// Backward-compat: раньше CTF прогресс мог храниться под ключом "<courseId>-ctf".
+			legacyCTFID := course.ID + "-ctf"
+			if legacyCTFID != course.CTF.ID {
+				legacyProg, _ := c.Pg.GetProgress(userID, legacyCTFID)
+				if legacyProg != nil && legacyProg.Completed {
+					course.CTF.Completed = true
+				}
+			}
 		}
 	}
 	course.Completed = (course.CTF == nil || course.CTF.Completed) && allModulesCompleted(course.Modules)

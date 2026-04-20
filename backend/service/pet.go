@@ -32,3 +32,17 @@ func (s *PetService) UpdateAura(userID, aura string) (*store.Pet, error) {
 	}
 	return s.Pets.UpdatePetAura(userID, aura)
 }
+
+func (s *PetService) UpdateVariant(userID, variant string) (*store.Pet, error) {
+	if s.Pets == nil || userID == "" {
+		return nil, store.ErrUserNotFound
+	}
+	return s.Pets.UpdatePetVariant(userID, variant)
+}
+
+func (s *PetService) UpdateFrame(userID, frame string) (*store.Pet, error) {
+	if s.Pets == nil || userID == "" {
+		return nil, store.ErrUserNotFound
+	}
+	return s.Pets.UpdatePetFrame(userID, frame)
+}

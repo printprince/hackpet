@@ -27,8 +27,15 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="hero-visual">
-              <div className="mock-image mock-image-hero" aria-label="Заглушка изображения">
-                Здесь будет главная иллюстрация
+              <div className="hero-illustration">
+                <img
+                  src="/landing/hero-security-platform.svg"
+                  alt="Иллюстрация платформы Hackpet: обучение, лаборатории и прогресс"
+                  loading="eager"
+                  decoding="async"
+                  width="800"
+                  height="450"
+                />
               </div>
               <div className="hero-metrics">
                 <div className="hero-metric">
@@ -54,19 +61,46 @@ export default function LandingPage() {
           <h2 className="section-title">Как это работает</h2>
           <div className="features-grid">
             <article className="feature-card">
-              <div className="mock-image mock-image-card" aria-hidden="true">Изображение</div>
+              <div className="feature-media">
+                <img
+                  src="/landing/feature-course-path.svg"
+                  alt="Путь обучения: курс и модули"
+                  loading="lazy"
+                  decoding="async"
+                  width="800"
+                  height="450"
+                />
+              </div>
               <div className="feature-icon">1</div>
               <h3>Выбираешь курс</h3>
               <p>Структурированные модули с теорией и практикой по безопасной разработке.</p>
             </article>
             <article className="feature-card">
-              <div className="mock-image mock-image-card" aria-hidden="true">Изображение</div>
+              <div className="feature-media">
+                <img
+                  src="/landing/feature-lab-validation.svg"
+                  alt="Лаборатория с автоматической проверкой безопасности"
+                  loading="lazy"
+                  decoding="async"
+                  width="800"
+                  height="450"
+                />
+              </div>
               <div className="feature-icon">2</div>
               <h3>Проходишь лабы</h3>
               <p>Пишешь код и получаешь автоматическую проверку по правилам безопасности.</p>
             </article>
             <article className="feature-card">
-              <div className="mock-image mock-image-card" aria-hidden="true">Изображение</div>
+              <div className="feature-media">
+                <img
+                  src="/landing/feature-growth-pet.svg"
+                  alt="Рост прогресса, достижения и прокачка Hackpet"
+                  loading="lazy"
+                  decoding="async"
+                  width="800"
+                  height="450"
+                />
+              </div>
               <div className="feature-icon">3</div>
               <h3>Видишь рост</h3>
               <p>Прогресс, достижения, сертификаты и прокачка персонального Hackpet.</p>

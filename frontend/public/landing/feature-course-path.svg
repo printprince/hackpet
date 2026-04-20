@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="t">
+  <title id="t">Feature course path</title>
+  <defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#0f172a"/><stop offset="100%" style="stop-color:#1d4ed8"/></linearGradient></defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <rect x="80" y="110" width="180" height="220" rx="14" fill="#111827" stroke="#60a5fa"/>
+  <rect x="310" y="150" width="180" height="180" rx="14" fill="#111827" stroke="#60a5fa"/>
+  <rect x="540" y="190" width="180" height="140" rx="14" fill="#111827" stroke="#60a5fa"/>
+  <path d="M260 220 L310 220 M490 240 L540 240" stroke="#93c5fd" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="260" cy="220" r="10" fill="#22d3ee"/><circle cx="310" cy="220" r="10" fill="#22d3ee"/><circle cx="490" cy="240" r="10" fill="#22d3ee"/><circle cx="540" cy="240" r="10" fill="#22d3ee"/>
+</svg>

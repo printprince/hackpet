@@ -4,6 +4,7 @@ import { get, post } from '../api'
 import { ROUTES, API, COURSE_STATUS, PROGRESS_STATUS } from '../constants'
 import { useAuth } from '../context/UserContext'
 import { isCourseManuallyStarted, markCourseStarted } from '../utils/courseStart'
+import { markPetActivity } from '../utils/pet'
 import PageState from '../components/PageState'
 import { CourseSidebarNav, CourseOverviewPanel, CourseModulePanel } from '../features/courses'
 
@@ -49,11 +50,13 @@ export default function CourseDetailPage() {
   }, [course, location.state?.openCTF, location.pathname, navigate])
 
   const startModule = (moduleId, continueFromProgress) => {
+    markPetActivity('study')
     navigate(ROUTES.COURSE_MODULE(courseId, moduleId), { state: { continueFromProgress } })
   }
 
   const handleStartCourse = () => {
     if (!courseId) return
+    markPetActivity('study')
     markCourseStarted(user?.id, courseId)
     setManualCourseStarted(true)
   }
@@ -76,6 +79,7 @@ export default function CourseDetailPage() {
       if (updated) {
         setCourse(updated)
       }
+      markPetActivity('study')
       setCTFSuccess('Флаг принят, CTF-челлендж пройден!')
       setCTFFlag('')
     } catch (e) {
@@ -200,86 +204,85 @@ export default function CourseDetailPage() {
                   <p className="course-module-summary">{ctf.description}</p>
                 </div>
               )}
-              {ctf.stand_url && (
+              {!ctf.completed && ctf.stand_url && (
                 <p className="course-module-summary muted">
                   Стенд откроется в новой вкладке по кнопке ниже.
                 </p>
               )}
-              <div className="card-actions course-ctf-actions">
-                {(() => {
-                  const url = (ctf.stand_url || '').trim()
-                  const isOpenable =
-                    url.startsWith('http://') ||
-                    url.startsWith('https://') ||
-                    (url.startsWith('/') && url.length > 1)
-                  if (isOpenable) {
-                    return (
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="btn btn-secondary"
-                      >
-                        Открыть стенд
-                      </a>
-                    )
-                  }
-                  if (url) {
+              {!ctf.completed && (
+                <div className="card-actions course-ctf-actions">
+                  {(() => {
+                    const url = (ctf.stand_url || '').trim()
+                    const isOpenable =
+                      url.startsWith('http://') ||
+                      url.startsWith('https://') ||
+                      (url.startsWith('/') && url.length > 1)
+                    if (isOpenable) {
+                      return (
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="btn btn-secondary"
+                        >
+                          Открыть стенд
+                        </a>
+                      )
+                    }
+                    if (url) {
+                      return (
+                        <p className="course-ctf-status muted">
+                          Ссылка на стенд недействительна. Укажите в конфигурации курса URL с http:// или https://.
+                        </p>
+                      )
+                    }
                     return (
                       <p className="course-ctf-status muted">
-                        Ссылка на стенд недействительна. Укажите в конфигурации курса URL с http:// или https://.
+                        Стенд не настроен. Добавьте в конфигурацию курса поле stand_url с действительным URL (https://…), чтобы открывать стенд из интерфейса.
                       </p>
                     )
-                  }
-                  return (
-                    <p className="course-ctf-status muted">
-                      Стенд не настроен. Добавьте в конфигурацию курса поле stand_url с действительным URL (https://…), чтобы открывать стенд из интерфейса.
-                    </p>
-                  )
-                })()}
-              </div>
-              <form className="course-ctf-form" onSubmit={handleCTFSubmit}>
-                <label className="course-ctf-label">
-                  Введите найденный флаг:
-                  <input
-                    type="text"
-                    className="course-ctf-input"
-                    value={ctfFlag}
-                    onChange={(e) => setCTFFlag(e.target.value)}
-                    placeholder="HACKPET{...}"
-                    disabled={ctfSubmitting || ctf.completed}
-                  />
-                </label>
-                <div className="course-ctf-submit-row">
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    disabled={ctfSubmitting || ctf.completed}
-                  >
-                    {ctf.completed ? 'CTF уже пройден' : (ctfSubmitting ? 'Проверяем...' : 'Отправить флаг')}
-                  </button>
+                  })()}
                 </div>
-                {ctfError && <p className="course-ctf-status error">{ctfError}</p>}
-                {ctfSuccess && (
-                  <div className="course-ctf-status success">
-                    <p>{ctfSuccess}</p>
-                    {courseCompleted && (
-                      <>
-                        <p className="muted">
-                          Курс пройден. Вы можете скачать сертификат на странице курса или в профиле.
-                        </p>
-                        <button
-                          type="button"
-                          className="btn btn-secondary"
-                          onClick={() => navigate(ROUTES.COURSE(courseId))}
-                        >
-                          К странице курса
-                        </button>
-                      </>
-                    )}
+              )}
+              {!ctf.completed ? (
+                <form className="course-ctf-form" onSubmit={handleCTFSubmit}>
+                  <label className="course-ctf-label">
+                    Введите найденный флаг:
+                    <input
+                      type="text"
+                      className="course-ctf-input"
+                      value={ctfFlag}
+                      onChange={(e) => setCTFFlag(e.target.value)}
+                      placeholder="HACKPET{...}"
+                      disabled={ctfSubmitting}
+                    />
+                  </label>
+                  <div className="course-ctf-submit-row">
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={ctfSubmitting}
+                    >
+                      {ctfSubmitting ? 'Проверяем...' : 'Отправить флаг'}
+                    </button>
                   </div>
-                )}
-              </form>
+                  {ctfError && <p className="course-ctf-status error">{ctfError}</p>}
+                  {ctfSuccess && (
+                    <div className="course-ctf-status success">
+                      <p>{ctfSuccess}</p>
+                    </div>
+                  )}
+                </form>
+              ) : (
+                <div className="course-ctf-status success">
+                  <p>CTF-челлендж уже пройден.</p>
+                  {courseCompleted && (
+                    <p className="muted">
+                      Курс полностью завершён. Сертификат доступен на странице курса и в профиле.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <CourseModulePanel

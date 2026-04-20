@@ -1,33 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { get } from '../../../api'
-import { API, PET, PROGRESS_STATUS } from '../../../constants'
+import { API, PROGRESS_STATUS } from '../../../constants'
 import { WEEKLY_PRACTICES } from '../constants'
 import { getProgressStats } from '../../../utils/progress'
-import { getPetLevel, getPetProgressToNext } from '../../../utils/pet'
+import { getPetProgressFromXP } from '../../../utils/pet'
 
 export function useDashboardData(courseDetails) {
   const [pet, setPet] = useState(null)
-  const [focusChecklist, setFocusChecklist] = useState([])
   const [bestPractices, setBestPractices] = useState([])
 
   useEffect(() => {
     get('/pet')
       .then((p) => setPet(p))
       .catch(() => setPet(null))
-  }, [])
-
-  useEffect(() => {
-    get(`${API.FOCUS}?limit=7`)
-      .then((list) => {
-        const normalized = Array.isArray(list) ? list : []
-        setFocusChecklist(normalized.map((item, idx) => ({
-          id: item.id || `focus-${idx + 1}`,
-          text: item.title || 'Фокус',
-          description: item.description || '',
-          done: Boolean(item.done),
-        })))
-      })
-      .catch(() => setFocusChecklist([]))
   }, [])
 
   useEffect(() => {
@@ -54,10 +39,14 @@ export function useDashboardData(courseDetails) {
     () => modules.some((m) => m.progress && m.progress !== PROGRESS_STATUS.NOT_STARTED),
     [modules]
   )
+  const hasActiveCourse = useMemo(
+    () => modules.some((m) => m.progress === PROGRESS_STATUS.IN_PROGRESS),
+    [modules]
+  )
 
   const stats = getProgressStats(modules)
-  const petLevel = getPetLevel(stats.completed)
-  const petProgress = getPetProgressToNext(stats.completed, petLevel)
+  const petLevel = Math.max(1, Number(pet?.level) || 1)
+  const petProgress = getPetProgressFromXP(pet?.xp, petLevel)
 
   const nextModules = useMemo(
     () =>
@@ -71,26 +60,14 @@ export function useDashboardData(courseDetails) {
     () => modules.filter((m) => m.progress === PROGRESS_STATUS.COMPLETED).slice(-3).reverse(),
     [modules]
   )
-
-  const fallbackChecklist = useMemo(
+  const petStats = useMemo(
     () => [
-      {
-        id: 'finish-active',
-        text: 'Закрой хотя бы один модуль, который уже в процессе',
-        done: stats.inProgress === 0 && stats.completed > 0,
-      },
-      {
-        id: 'raise-pet',
-        text: 'Подними Hackpet на следующий уровень',
-        done: petLevel >= PET.LEVEL_MAX,
-      },
-      {
-        id: 'practice',
-        text: 'Примени бест практис в текущем PR',
-        done: false,
-      },
+      { id: 'intelligence', label: 'Интеллект', value: Math.min(100, stats.completed * 12) },
+      { id: 'creativity', label: 'Креативность', value: Math.min(100, stats.inProgress * 18 + stats.completed * 6) },
+      { id: 'efficiency', label: 'Эффективность', value: Math.min(100, Math.round(stats.progressPct * 0.7)) },
+      { id: 'debugging', label: 'Отладка', value: Math.min(100, stats.totalAttempts * 6) },
     ],
-    [stats.inProgress, stats.completed, petLevel]
+    [stats.completed, stats.inProgress, stats.progressPct, stats.totalAttempts]
   )
 
   return {
@@ -98,10 +75,11 @@ export function useDashboardData(courseDetails) {
     stats,
     petLevel,
     petProgress,
+    petStats,
     hasStartedLearning,
+    hasActiveCourse,
     nextModules,
     completedModules,
     bestPractices: bestPractices.length > 0 ? bestPractices : WEEKLY_PRACTICES,
-    focusChecklist: focusChecklist.length > 0 ? focusChecklist : fallbackChecklist,
   }
 }

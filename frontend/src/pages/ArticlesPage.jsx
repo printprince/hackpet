@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '../constants'
 import { REAL_ARTICLES } from '../data/articles'
+import { ArticleMediaImage } from '../features/articles'
 
 export default function ArticlesPage() {
   const [topic, setTopic] = useState('')
@@ -84,9 +85,7 @@ export default function ArticlesPage() {
       <div className="articles-grid">
         {filtered.map((a) => (
           <article key={a.id} className="article-card card">
-            <div className="mock-image mock-image-article" aria-label="Заглушка обложки статьи">
-              Обложка статьи
-            </div>
+            <ArticleMediaImage article={a} variant="card" />
             <div className="article-card-top">
               <span className="article-topic">{a.topic}</span>
               <span className="article-meta">{a.level}</span>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="t">
+  <title id="t">Supply chain security</title>
+  <defs>
+    <linearGradient id="scb" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b0764"/>
+      <stop offset="100%" style="stop-color:#1e1b4b"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#scb)"/>
+  <g stroke="#a78bfa" stroke-width="3" fill="none">
+    <line x1="140" y1="225" x2="260" y2="225"/>
+    <line x1="320" y1="225" x2="440" y2="225"/>
+    <line x1="500" y1="225" x2="620" y2="225"/>
+  </g>
+  <circle cx="110" cy="225" r="36" fill="#4c1d95" stroke="#c4b5fd" stroke-width="3"/>
+  <circle cx="290" cy="225" r="36" fill="#5b21b6" stroke="#c4b5fd" stroke-width="3"/>
+  <circle cx="470" cy="225" r="36" fill="#6d28d9" stroke="#c4b5fd" stroke-width="3"/>
+  <circle cx="650" cy="225" r="36" fill="#7c3aed" stroke="#c4b5fd" stroke-width="3"/>
+  <text x="110" y="232" text-anchor="middle" fill="#e9d5ff" font-family="system-ui,sans-serif" font-size="14" font-weight="700">SRC</text>
+  <text x="290" y="232" text-anchor="middle" fill="#e9d5ff" font-family="system-ui,sans-serif" font-size="14" font-weight="700">CI</text>
+  <text x="470" y="232" text-anchor="middle" fill="#e9d5ff" font-family="system-ui,sans-serif" font-size="14" font-weight="700">REG</text>
+  <text x="650" y="232" text-anchor="middle" fill="#e9d5ff" font-family="system-ui,sans-serif" font-size="14" font-weight="700">RUN</text>
+  <text x="400" y="340" text-anchor="middle" fill="#a78bfa" font-family="system-ui,sans-serif" font-size="20" font-weight="600">Provenance - SBOM - policy</text>
+</svg>

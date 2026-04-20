@@ -1,7 +1,43 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ROUTES, API } from '../../../constants'
+import { ROUTES, API, AUTH_TOKEN_KEY } from '../../../constants'
 
 export default function AccountCertificatesSection({ certificates }) {
+  const [downloadingId, setDownloadingId] = useState(null)
+
+  const handleDownloadCertificate = async (courseId) => {
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem(AUTH_TOKEN_KEY) : null
+    if (!token) {
+      alert('Чтобы скачать сертификат, войдите в аккаунт.')
+      return
+    }
+
+    setDownloadingId(courseId)
+    try {
+      const res = await fetch(`${API.BASE}${API.COURSE_CERTIFICATE(courseId)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(text || res.statusText || 'Не удалось скачать сертификат')
+      }
+
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `Hackpet-${courseId}-certificate.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (e) {
+      alert(e?.message || 'Не удалось скачать сертификат')
+    } finally {
+      setDownloadingId(null)
+    }
+  }
+
   return (
     <section className="account-section account-certificates-section">
       <h2 className="account-section-title">Сертификаты</h2>
@@ -19,15 +55,14 @@ export default function AccountCertificatesSection({ certificates }) {
               <span className="cert-item-icon">📜</span>
               <h3>{c.title}</h3>
               <p className="muted">Курс пройден полностью</p>
-              <a
-                href={`${API.BASE}${API.COURSE_CERTIFICATE(c.id)}`}
+              <button
+                type="button"
                 className="btn btn-primary btn-sm"
-                download
-                target="_blank"
-                rel="noreferrer"
+                onClick={() => handleDownloadCertificate(c.id)}
+                disabled={downloadingId === c.id}
               >
-                Скачать сертификат
-              </a>
+                {downloadingId === c.id ? 'Скачивание…' : 'Скачать сертификат'}
+              </button>
             </div>
           ))}
         </div>

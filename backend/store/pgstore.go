@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -52,6 +53,18 @@ func NewPgStore(ctx context.Context, dsn string) (*PgStore, error) {
 		pool.Close()
 		return nil, err
 	}
+	if _, err := pool.Exec(ctx, `ALTER TABLE pets ADD COLUMN IF NOT EXISTS equipped_variant TEXT NOT NULL DEFAULT 'classic'`); err != nil {
+		pool.Close()
+		return nil, err
+	}
+	if _, err := pool.Exec(ctx, `ALTER TABLE pets ADD COLUMN IF NOT EXISTS equipped_frame TEXT NOT NULL DEFAULT 'ring'`); err != nil {
+		pool.Close()
+		return nil, err
+	}
+	if _, err := pool.Exec(ctx, `ALTER TABLE pets ADD COLUMN IF NOT EXISTS pet_variants JSONB NOT NULL DEFAULT '{}'::jsonb`); err != nil {
+		pool.Close()
+		return nil, err
+	}
 	if _, err := pool.Exec(ctx, `
 		DO $$
 		BEGIN
@@ -96,6 +109,25 @@ func NewPgStore(ctx context.Context, dsn string) (*PgStore, error) {
 			is_active         BOOLEAN NOT NULL DEFAULT TRUE,
 			created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 		)`); err != nil {
+		pool.Close()
+		return nil, err
+	}
+	if _, err := pool.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS user_todos (
+			id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+			user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			title       TEXT NOT NULL,
+			description TEXT NOT NULL DEFAULT '',
+			priority    SMALLINT NOT NULL DEFAULT 2 CHECK (priority IN (1,2,3)),
+			done        BOOLEAN NOT NULL DEFAULT FALSE,
+			position    INT NOT NULL DEFAULT 0,
+			created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+			updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+		)`); err != nil {
+		pool.Close()
+		return nil, err
+	}
+	if _, err := pool.Exec(ctx, `CREATE INDEX IF NOT EXISTS idx_user_todos_user_position ON user_todos(user_id, position, created_at)`); err != nil {
 		pool.Close()
 		return nil, err
 	}
@@ -194,31 +226,54 @@ func NewPgStore(ctx context.Context, dsn string) (*PgStore, error) {
 	if _, err := pool.Exec(ctx, `
 		INSERT INTO play_snippets (id, language, topic, code, is_vulnerable, vulnerability_type, explanation_vulnerable, explanation_safe, is_active) VALUES
 			('11111111-1111-1111-1111-111111111111', 'python', 'sql_injection',
-			 E'query = f"SELECT * FROM users WHERE email = ''{email}''"
-cur.execute(query)',
+			 E'def find_user(conn, email):
+    cur = conn.cursor()
+    query = f"SELECT id, email, role FROM users WHERE email = ''{email}''"
+    cur.execute(query)
+    row = cur.fetchone()
+    if row:
+        return {"id": row[0], "email": row[1], "role": row[2]}
+    return None',
 			 TRUE,
 			 'sql_injection',
 			 E'Строка запроса собирается через f-string с подстановкой email без параметров — классическая SQL-инъекция. Нужно использовать параметризованный запрос.',
 			 E'Безопасный вариант использует плейсхолдеры и передачу параметров отдельно от текста SQL.',
 			 TRUE),
 			('22222222-2222-2222-2222-222222222222', 'python', 'logging',
-			 E'logger.error(\"Ошибка аутентификации: %s\", password)',
+			 E'def login_user(logger, request_id, email, password):
+    try:
+        # ... auth flow ...
+        raise ValueError("invalid credentials")
+    except Exception as err:
+        logger.error("auth failed for %s password=%s req=%s err=%s", email, password, request_id, err)
+        return {"ok": False}',
 			 TRUE,
 			 'sensitive_logging',
 			 E'В лог пишется пароль пользователя. Так делать нельзя — секреты не должны попадать в логи.',
 			 E'Безопасный вариант логирует только техническую информацию (request_id, путь, код ошибки), но не секреты.',
 			 TRUE),
 			('33333333-3333-3333-3333-333333333333', 'python', 'path_traversal',
-			 E'filename = request.args.get("name")
-with open("/var/app/uploads/" + filename, "rb") as f:
-    data = f.read()',
+			 E'def download_file(request):
+    filename = request.args.get("name", "")
+    base_dir = "/var/app/uploads/"
+    target_path = base_dir + filename
+
+    with open(target_path, "rb") as f:
+        data = f.read()
+
+    return data',
 			 TRUE,
 			 'path_traversal',
 			 E'Путь к файлу собирается конкатенацией с пользовательским вводом без нормализации и проверки — возможен path traversal.',
 			 E'Безопасный вариант нормализует путь и проверяет, что он остаётся внутри разрешённой директории.',
 			 TRUE),
 			('44444444-4444-4444-4444-444444444444', 'python', 'xss',
-			 E'return f\"<h1>{title}</h1>\"',
+			 E'def render_post(title, author):
+    html = "<section class=''post''>"
+    html += f"<h1>{title}</h1>"
+    html += f"<p>Автор: {author}</p>"
+    html += "</section>"
+    return html',
 			 TRUE,
 			 'xss',
 			 E'Заголовок выводится в HTML без экранирования — если title содержит HTML/JS, получится XSS.',
@@ -378,27 +433,124 @@ func (s *PgStore) UpdateProfile(userID, email, nickname, lastName, firstName, pa
 // GetPet возвращает питомца пользователя.
 func (s *PgStore) GetPet(userID string) (*Pet, error) {
 	var p Pet
+	var rawVariants []byte
 	err := s.pool.QueryRow(context.Background(),
-		`SELECT user_id, name, level, xp, mood_type, equipped_aura
+		`SELECT user_id, name, level, xp, mood_type, equipped_aura, equipped_variant, equipped_frame, COALESCE(pet_variants, '{}'::jsonb)
 		 FROM pets WHERE user_id = $1`,
 		userID,
-	).Scan(&p.UserID, &p.Name, &p.Level, &p.XP, &p.MoodType, &p.EquippedAura)
+	).Scan(&p.UserID, &p.Name, &p.Level, &p.XP, &p.MoodType, &p.EquippedAura, &p.EquippedVariant, &p.EquippedFrame, &rawVariants)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, errors.New("pet not found")
 		}
 		return nil, err
 	}
+
+	var variants map[string]PetVariantState
+	if len(rawVariants) > 0 {
+		if err := json.Unmarshal(rawVariants, &variants); err != nil {
+			variants = map[string]PetVariantState{}
+		}
+	}
+	legacyLevel := p.Level
+	legacyXP := p.XP
+	if len(variants) == 0 {
+		progressLevel := fetchLegacyProgressLevel(context.Background(), s.pool, userID)
+		if progressLevel > legacyLevel {
+			legacyLevel = progressLevel
+		}
+		if legacyXP == 0 && legacyLevel > 1 {
+			legacyXP = petXPFromLevel(legacyLevel)
+		}
+	}
+	normalizedVariant := strings.TrimSpace(p.EquippedVariant)
+	if normalizedVariant == "" {
+		normalizedVariant = "classic"
+	}
+	variants, variantsChanged := ensurePetVariantStates(variants, p.Name, normalizedVariant, legacyLevel, legacyXP)
+	current := variants[normalizedVariant]
+	persistNeeded := variantsChanged || p.EquippedVariant != normalizedVariant || p.Name != current.Name || p.Level != current.Level || p.XP != current.XP
+	if persistNeeded {
+		payload, err := json.Marshal(variants)
+		if err != nil {
+			return nil, err
+		}
+		if _, err := s.pool.Exec(context.Background(),
+			`UPDATE pets
+			 SET equipped_variant = $2, name = $3, level = $4, xp = $5, pet_variants = $6
+			 WHERE user_id = $1`,
+			userID, normalizedVariant, current.Name, current.Level, current.XP, payload,
+		); err != nil {
+			return nil, err
+		}
+	}
+	p.EquippedVariant = normalizedVariant
+	p.Name = current.Name
+	p.Level = current.Level
+	p.XP = current.XP
+	p.Variants = variants
 	return &p, nil
 }
 
 // UpdatePetName обновляет имя питомца пользователя.
 func (s *PgStore) UpdatePetName(userID, name string) (*Pet, error) {
-	_, err := s.pool.Exec(context.Background(),
-		`UPDATE pets SET name = $2 WHERE user_id = $1`,
-		userID, name,
+	ctx := context.Background()
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	var p Pet
+	var rawVariants []byte
+	err = tx.QueryRow(ctx,
+		`SELECT user_id, name, level, xp, mood_type, equipped_aura, equipped_variant, equipped_frame, COALESCE(pet_variants, '{}'::jsonb)
+		 FROM pets WHERE user_id = $1 FOR UPDATE`,
+		userID,
+	).Scan(&p.UserID, &p.Name, &p.Level, &p.XP, &p.MoodType, &p.EquippedAura, &p.EquippedVariant, &p.EquippedFrame, &rawVariants)
+	if err != nil {
+		return nil, err
+	}
+	var variants map[string]PetVariantState
+	if len(rawVariants) > 0 {
+		_ = json.Unmarshal(rawVariants, &variants)
+	}
+	legacyLevel := p.Level
+	legacyXP := p.XP
+	if len(variants) == 0 {
+		progressLevel := fetchLegacyProgressLevel(ctx, tx, userID)
+		if progressLevel > legacyLevel {
+			legacyLevel = progressLevel
+		}
+		if legacyXP == 0 && legacyLevel > 1 {
+			legacyXP = petXPFromLevel(legacyLevel)
+		}
+	}
+	equippedVariant := strings.TrimSpace(p.EquippedVariant)
+	if equippedVariant == "" {
+		equippedVariant = "classic"
+	}
+	variants, _ = ensurePetVariantStates(variants, p.Name, equippedVariant, legacyLevel, legacyXP)
+	current := variants[equippedVariant]
+	current.Name = strings.TrimSpace(name)
+	if current.Name == "" {
+		current.Name = "Хакпет"
+	}
+	variants[equippedVariant] = current
+	payload, err := json.Marshal(variants)
+	if err != nil {
+		return nil, err
+	}
+	_, err = tx.Exec(ctx,
+		`UPDATE pets
+		 SET name = $2, level = $3, xp = $4, equipped_variant = $5, pet_variants = $6
+		 WHERE user_id = $1`,
+		userID, current.Name, current.Level, current.XP, equippedVariant, payload,
 	)
 	if err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 	return s.GetPet(userID)
@@ -414,6 +566,283 @@ func (s *PgStore) UpdatePetAura(userID, aura string) (*Pet, error) {
 		return nil, err
 	}
 	return s.GetPet(userID)
+}
+
+// UpdatePetVariant сохраняет выбранный визуальный вид питомца.
+func (s *PgStore) UpdatePetVariant(userID, variant string) (*Pet, error) {
+	ctx := context.Background()
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	var p Pet
+	var rawVariants []byte
+	err = tx.QueryRow(ctx,
+		`SELECT user_id, name, level, xp, mood_type, equipped_aura, equipped_variant, equipped_frame, COALESCE(pet_variants, '{}'::jsonb)
+		 FROM pets WHERE user_id = $1 FOR UPDATE`,
+		userID,
+	).Scan(&p.UserID, &p.Name, &p.Level, &p.XP, &p.MoodType, &p.EquippedAura, &p.EquippedVariant, &p.EquippedFrame, &rawVariants)
+	if err != nil {
+		return nil, err
+	}
+	var variants map[string]PetVariantState
+	if len(rawVariants) > 0 {
+		_ = json.Unmarshal(rawVariants, &variants)
+	}
+	legacyLevel := p.Level
+	legacyXP := p.XP
+	if len(variants) == 0 {
+		progressLevel := fetchLegacyProgressLevel(ctx, tx, userID)
+		if progressLevel > legacyLevel {
+			legacyLevel = progressLevel
+		}
+		if legacyXP == 0 && legacyLevel > 1 {
+			legacyXP = petXPFromLevel(legacyLevel)
+		}
+	}
+	currentVariant := strings.TrimSpace(p.EquippedVariant)
+	if currentVariant == "" {
+		currentVariant = "classic"
+	}
+	variants, _ = ensurePetVariantStates(variants, p.Name, currentVariant, legacyLevel, legacyXP)
+	nextVariant := strings.TrimSpace(variant)
+	if nextVariant == "" {
+		nextVariant = "classic"
+	}
+	state, ok := variants[nextVariant]
+	if !ok {
+		state = defaultPetVariantState("Хакпет")
+		variants[nextVariant] = state
+	}
+	payload, err := json.Marshal(variants)
+	if err != nil {
+		return nil, err
+	}
+	_, err = tx.Exec(ctx,
+		`UPDATE pets
+		 SET equipped_variant = $2, name = $3, level = $4, xp = $5, pet_variants = $6
+		 WHERE user_id = $1`,
+		userID, nextVariant, state.Name, state.Level, state.XP, payload,
+	)
+	if err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return s.GetPet(userID)
+}
+
+// UpdatePetFrame сохраняет выбранную рамку аватара.
+func (s *PgStore) UpdatePetFrame(userID, frame string) (*Pet, error) {
+	_, err := s.pool.Exec(context.Background(),
+		`UPDATE pets SET equipped_frame = $2 WHERE user_id = $1`,
+		userID, frame,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return s.GetPet(userID)
+}
+
+// AddPetXP увеличивает опыт питомца и возвращает обновлённую запись.
+func (s *PgStore) AddPetXP(userID string, amount int) (*Pet, error) {
+	if amount <= 0 {
+		return s.GetPet(userID)
+	}
+	ctx := context.Background()
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	var p Pet
+	var rawVariants []byte
+	err = tx.QueryRow(ctx,
+		`SELECT user_id, name, level, xp, mood_type, equipped_aura, equipped_variant, equipped_frame, COALESCE(pet_variants, '{}'::jsonb)
+		 FROM pets WHERE user_id = $1 FOR UPDATE`,
+		userID,
+	).Scan(&p.UserID, &p.Name, &p.Level, &p.XP, &p.MoodType, &p.EquippedAura, &p.EquippedVariant, &p.EquippedFrame, &rawVariants)
+	if err != nil {
+		return nil, err
+	}
+	var variants map[string]PetVariantState
+	if len(rawVariants) > 0 {
+		_ = json.Unmarshal(rawVariants, &variants)
+	}
+	legacyLevel := p.Level
+	legacyXP := p.XP
+	if len(variants) == 0 {
+		progressLevel := fetchLegacyProgressLevel(ctx, tx, userID)
+		if progressLevel > legacyLevel {
+			legacyLevel = progressLevel
+		}
+		if legacyXP == 0 && legacyLevel > 1 {
+			legacyXP = petXPFromLevel(legacyLevel)
+		}
+	}
+	equippedVariant := strings.TrimSpace(p.EquippedVariant)
+	if equippedVariant == "" {
+		equippedVariant = "classic"
+	}
+	variants, _ = ensurePetVariantStates(variants, p.Name, equippedVariant, legacyLevel, legacyXP)
+	current := variants[equippedVariant]
+	current.XP += amount
+	if current.XP < 0 {
+		current.XP = 0
+	}
+	current.Level = petLevelFromXP(current.XP)
+	variants[equippedVariant] = current
+	payload, err := json.Marshal(variants)
+	if err != nil {
+		return nil, err
+	}
+	_, err = tx.Exec(ctx,
+		`UPDATE pets
+		 SET name = $2, level = $3, xp = $4, equipped_variant = $5, pet_variants = $6
+		 WHERE user_id = $1`,
+		userID, current.Name, current.Level, current.XP, equippedVariant, payload,
+	)
+	if err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return s.GetPet(userID)
+}
+
+const petMaxLevel = 50
+const petXPPerLevel = 100
+
+var knownPetVariants = []string{"classic", "neon", "ember"}
+
+type petLevelQuerySource interface {
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+}
+
+func normalizePetLevel(level int) int {
+	if level < 1 {
+		return 1
+	}
+	if level > petMaxLevel {
+		return petMaxLevel
+	}
+	return level
+}
+
+func petLevelFromXP(xp int) int {
+	if xp < 0 {
+		xp = 0
+	}
+	level := 1 + (xp / petXPPerLevel)
+	return normalizePetLevel(level)
+}
+
+func petXPFromLevel(level int) int {
+	return (normalizePetLevel(level) - 1) * petXPPerLevel
+}
+
+func defaultPetVariantState(name string) PetVariantState {
+	title := strings.TrimSpace(name)
+	if title == "" {
+		title = "Хакпет"
+	}
+	return PetVariantState{
+		Name:  title,
+		Level: 1,
+		XP:    0,
+	}
+}
+
+func ensurePetVariantStates(
+	raw map[string]PetVariantState,
+	legacyName string,
+	equippedVariant string,
+	legacyLevel int,
+	legacyXP int,
+) (map[string]PetVariantState, bool) {
+	changed := false
+	variants := raw
+	if variants == nil {
+		variants = map[string]PetVariantState{}
+		changed = true
+	}
+	activeVariant := strings.TrimSpace(equippedVariant)
+	if activeVariant == "" {
+		activeVariant = "classic"
+		changed = true
+	}
+	if legacyXP < 0 {
+		legacyXP = 0
+		changed = true
+	}
+	legacyLevel = normalizePetLevel(legacyLevel)
+	if legacyXP == 0 && legacyLevel > 1 {
+		legacyXP = petXPFromLevel(legacyLevel)
+		changed = true
+	}
+
+	if len(variants) == 0 {
+		for _, variantID := range knownPetVariants {
+			variants[variantID] = defaultPetVariantState("Хакпет")
+		}
+		active := variants[activeVariant]
+		activeName := strings.TrimSpace(legacyName)
+		if activeName != "" {
+			active.Name = activeName
+		}
+		active.XP = legacyXP
+		active.Level = petLevelFromXP(active.XP)
+		variants[activeVariant] = active
+		changed = true
+	}
+
+	for _, variantID := range knownPetVariants {
+		if _, ok := variants[variantID]; !ok {
+			variants[variantID] = defaultPetVariantState("Хакпет")
+			changed = true
+		}
+	}
+
+	for variantID, state := range variants {
+		next := state
+		if strings.TrimSpace(next.Name) == "" {
+			next.Name = "Хакпет"
+			changed = true
+		}
+		if next.XP < 0 {
+			next.XP = 0
+			changed = true
+		}
+		if next.XP == 0 && next.Level > 1 {
+			next.XP = petXPFromLevel(next.Level)
+			changed = true
+		}
+		derivedLevel := petLevelFromXP(next.XP)
+		if next.Level != derivedLevel {
+			next.Level = derivedLevel
+			changed = true
+		}
+		variants[variantID] = next
+	}
+
+	return variants, changed
+}
+
+func fetchLegacyProgressLevel(ctx context.Context, src petLevelQuerySource, userID string) int {
+	var completed int
+	if err := src.QueryRow(ctx,
+		`SELECT COUNT(*)::int FROM user_module_progress WHERE user_id = $1 AND status = 'completed'`,
+		userID,
+	).Scan(&completed); err != nil {
+		return 1
+	}
+	level := 1 + completed
+	return normalizePetLevel(level)
 }
 
 // ListFocusSuggestions возвращает персональные рекомендации для дашборда.
@@ -493,6 +922,96 @@ func (s *PgStore) ListFocusSuggestions(userID string, limit int) ([]FocusSuggest
 		list = append(list, item)
 	}
 	return list, rows.Err()
+}
+
+func (s *PgStore) ListUserTodos(userID string, limit int) ([]UserTodo, error) {
+	if limit <= 0 {
+		limit = 30
+	}
+	if limit > 100 {
+		limit = 100
+	}
+	rows, err := s.pool.Query(context.Background(), `
+		SELECT id::text, title, description, priority, done, position
+		FROM user_todos
+		WHERE user_id = $1
+		ORDER BY position ASC, created_at ASC
+		LIMIT $2`, userID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	list := make([]UserTodo, 0, limit)
+	for rows.Next() {
+		var item UserTodo
+		if err := rows.Scan(&item.ID, &item.Title, &item.Description, &item.Priority, &item.Done, &item.Position); err != nil {
+			return nil, err
+		}
+		list = append(list, item)
+	}
+	return list, rows.Err()
+}
+
+func (s *PgStore) CreateUserTodo(userID, title, description string, priority int) (*UserTodo, error) {
+	title = strings.TrimSpace(title)
+	description = strings.TrimSpace(description)
+	if priority < 1 || priority > 3 {
+		priority = 2
+	}
+	var item UserTodo
+	err := s.pool.QueryRow(context.Background(), `
+		WITH next_pos AS (
+			SELECT COALESCE(MAX(position), 0) + 1 AS p
+			FROM user_todos
+			WHERE user_id = $1
+		)
+		INSERT INTO user_todos (user_id, title, description, priority, done, position)
+		SELECT $1, $2, $3, $4, FALSE, p
+		FROM next_pos
+		RETURNING id::text, title, description, priority, done, position`,
+		userID, title, description, priority,
+	).Scan(&item.ID, &item.Title, &item.Description, &item.Priority, &item.Done, &item.Position)
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
+}
+
+func (s *PgStore) UpdateUserTodo(userID, todoID, title, description string, priority int, done bool, position int) (*UserTodo, error) {
+	title = strings.TrimSpace(title)
+	description = strings.TrimSpace(description)
+	if priority < 1 || priority > 3 {
+		priority = 2
+	}
+	if position < 0 {
+		position = 0
+	}
+	var item UserTodo
+	err := s.pool.QueryRow(context.Background(), `
+		UPDATE user_todos
+		SET title = $3,
+			description = $4,
+			priority = $5,
+			done = $6,
+			position = $7,
+			updated_at = now()
+		WHERE user_id = $1 AND id = $2::uuid
+		RETURNING id::text, title, description, priority, done, position`,
+		userID, todoID, title, description, priority, done, position,
+	).Scan(&item.ID, &item.Title, &item.Description, &item.Priority, &item.Done, &item.Position)
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
+}
+
+func (s *PgStore) DeleteUserTodo(userID, todoID string) error {
+	_, err := s.pool.Exec(context.Background(),
+		`DELETE FROM user_todos WHERE user_id = $1 AND id = $2::uuid`,
+		userID, todoID,
+	)
+	return err
 }
 
 // ListBestPractices возвращает daily-random best practices.

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { get, post } from '../api'
 import { PANEL_ORDER } from '../features/moduleFlow'
+import { markPetActivity } from '../utils/pet'
 
 export function useModuleFlowState({ moduleId, continueFromProgress, initialPanel, onNavigateToCourse }) {
   const initialPanelSafe = PANEL_ORDER.includes(initialPanel) ? initialPanel : 'theory'
@@ -68,7 +69,10 @@ export function useModuleFlowState({ moduleId, continueFromProgress, initialPane
 
   const saveProgress = useCallback(
     (step) => {
-      if (currentModule?.id) post(`/modules/${currentModule.id}/progress`, { last_step: step }).catch(() => {})
+      if (currentModule?.id) {
+        markPetActivity('study')
+        post(`/modules/${currentModule.id}/progress`, { last_step: step }).catch(() => {})
+      }
     },
     [currentModule?.id]
   )
@@ -125,6 +129,7 @@ export function useModuleFlowState({ moduleId, continueFromProgress, initialPane
     const q = currentModule?.checkpoint_quiz
     const quest = (q?.questions || [])[questionIndex]
     if (q?.id && quest?.id) {
+      markPetActivity('study')
       post(`/quizzes/${q.id}/answer`, { question_id: quest.id, answer: value, correct: value === quest.correct }).catch(() => {})
     }
   }, [currentModule?.checkpoint_quiz])
@@ -134,6 +139,7 @@ export function useModuleFlowState({ moduleId, continueFromProgress, initialPane
     const q = currentModule?.final_quiz
     const quest = (q?.questions || [])[questionIndex]
     if (q?.id && quest?.id) {
+      markPetActivity('study')
       post(`/quizzes/${q.id}/answer`, {
         question_id: quest.id,
         answer: value,
@@ -148,6 +154,7 @@ export function useModuleFlowState({ moduleId, continueFromProgress, initialPane
     // Не даём пересдавать лабу в рамках одной попытки (пока есть результат в этой сессии).
     if (lastSubmitResult) return
     const files = Object.entries(fileContents).map(([path, content]) => ({ path, content }))
+    markPetActivity('study')
     post(`/labs/${lab.id}/submit`, { submission_id: `draft-${Date.now()}`, files })
       .then((res) => { setLastSubmitResult(res); showPanel('results') })
       .catch((e) => alert('Ошибка: ' + e.message))
@@ -167,6 +174,7 @@ export function useModuleFlowState({ moduleId, continueFromProgress, initialPane
 
   const applyModuleResult = useCallback((passed) => {
     if (!currentModule?.id) return
+    markPetActivity('study')
     post(`/modules/${currentModule.id}/progress`, { last_step: 'summary', completed: Boolean(passed) }).catch(() => {})
   }, [currentModule?.id])
 

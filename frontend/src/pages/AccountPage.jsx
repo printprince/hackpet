@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useAuth, useUser } from '../context/UserContext'
 import { useCourseDetails } from '../hooks/useCourseDetails'
 import { groupModulesByCourse, getProgressStats } from '../utils/progress'
-import { getPetLevel, getPetMood, getPetProgressToNext, getPetAura, getUnlockedPetAuras } from '../utils/pet'
+import { getPetAura, getUnlockedPetAuras, getPetActivityStatus } from '../utils/pet'
 import { API, PET, PROGRESS_STATUS } from '../constants'
 import { get, post } from '../api'
 import {
@@ -15,6 +15,7 @@ import {
   AccountAnalyticsSection,
   AccountPasswordDevModal,
 } from '../features/account'
+import PetAvatar from '../components/PetAvatar'
 
 function getCompletedCourses(courseDetails) {
   return (courseDetails || []).filter((c) => {
@@ -109,9 +110,8 @@ export default function AccountPage() {
   )
   const learningHours = (learningMinutes / 60).toFixed(1)
   const certificates = useMemo(() => getCompletedCourses(courseDetails), [courseDetails])
-  const petLevel = getPetLevel(completed)
-  const petMood = getPetMood(completed)
-  const progressToNext = getPetProgressToNext(completed, petLevel)
+  const petLevel = Math.max(1, Number(pet?.level) || 1)
+  const petStatus = getPetActivityStatus({ hasActiveCourse: inProgress > 0 })
   const autoAura = getPetAura(petLevel)
   const unlockedAuras = getUnlockedPetAuras(petLevel, {
     completedCourses: certificates.length,
@@ -207,6 +207,19 @@ export default function AccountPage() {
     }
   }
 
+  async function handlePetVariantChange(variantId) {
+    if (!variantId) return
+    try {
+      const updatedPet = await post(API.PET.UPDATE_VARIANT, { variant: variantId })
+      setPet(updatedPet)
+      setPetName(updatedPet?.name || '')
+      setPetNameError('')
+      setPetNameMessage('')
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   async function handlePetAuraChange(auraId) {
     if (!auraId) return
     // Не даём выбрать ауру, которая ещё не разблокирована по уровню.
@@ -275,8 +288,7 @@ export default function AccountPage() {
               <AccountPetSection
                 pet={pet}
                 petLevel={petLevel}
-                petMood={petMood}
-                progressToNext={progressToNext}
+                petStatus={petStatus}
                 petAura={petAura}
                 unlockedAuras={unlockedAuras}
                 onAuraPreview={handleOpenAuraPreview}
@@ -287,6 +299,7 @@ export default function AccountPage() {
                 petNameError={petNameError}
                 petNameMessage={petNameMessage}
                 petStats={petStats}
+                onPetVariantChange={handlePetVariantChange}
               />
             )}
 
@@ -320,6 +333,8 @@ export default function AccountPage() {
       <PetAuraModal
         isOpen={isAuraModalOpen}
         petName={pet?.name || 'Hackpet'}
+        petLevel={petLevel}
+        equippedVariant={pet?.equipped_variant || 'classic'}
         petAura={petAura}
         preview={auraPreview}
         onClose={handleCloseAuraPreview}
@@ -332,7 +347,16 @@ export default function AccountPage() {
   )
 }
 
-function PetAuraModal({ isOpen, petName, petAura, preview, onClose, onApply }) {
+function PetAuraModal({
+  isOpen,
+  petName,
+  petLevel,
+  equippedVariant,
+  petAura,
+  preview,
+  onClose,
+  onApply,
+}) {
   if (!isOpen || !preview) return null
 
   const { aura, isUnlocked } = preview
@@ -361,16 +385,11 @@ function PetAuraModal({ isOpen, petName, petAura, preview, onClose, onApply }) {
         </p>
         <div className="pet-aura-modal-preview">
           <div className="pet-avatar-wrap">
-            <div
-              className={[
-                'pet-avatar',
-                'pet-avatar-hackpet',
-                aura.id ? `pet-avatar-aura-${aura.id}` : '',
-              ].join(' ')}
-              aria-hidden="true"
-            >
-              🐶
-            </div>
+            <PetAvatar
+              level={petLevel}
+              variant={equippedVariant}
+              auraClassNames={aura?.id && aura.id !== 'none' ? [`pet-avatar-aura-${aura.id}`] : []}
+            />
             <span className="pet-level">Аура</span>
           </div>
         </div>

@@ -99,3 +99,71 @@ func (h *PetHandler) UpdateAura(w http.ResponseWriter, r *http.Request) {
 	}
 	response.JSON(w, http.StatusOK, p)
 }
+
+var allowedPetVariants = map[string]bool{
+	"classic": true,
+	"neon":    true,
+	"ember":   true,
+}
+
+var allowedPetFrames = map[string]bool{
+	"ring":   true,
+	"chrome": true,
+	"soft":   true,
+}
+
+// UpdateVariant сохраняет визуальный вид питомца (набор эволюции).
+func (h *PetHandler) UpdateVariant(w http.ResponseWriter, r *http.Request) {
+	u := request.UserFromContext(r.Context())
+	if u == nil {
+		response.Error(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	var req struct {
+		Variant string `json:"variant"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+	req.Variant = strings.TrimSpace(req.Variant)
+	if req.Variant == "" || !allowedPetVariants[req.Variant] {
+		response.Error(w, http.StatusBadRequest, "invalid variant")
+		return
+	}
+	p, err := h.Pet.UpdateVariant(u.ID, req.Variant)
+	if err != nil {
+		h.Log.Error("update pet variant", "error", err)
+		response.Error(w, http.StatusInternalServerError, "failed to update pet variant")
+		return
+	}
+	response.JSON(w, http.StatusOK, p)
+}
+
+// UpdateFrame сохраняет стиль рамки аватара.
+func (h *PetHandler) UpdateFrame(w http.ResponseWriter, r *http.Request) {
+	u := request.UserFromContext(r.Context())
+	if u == nil {
+		response.Error(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	var req struct {
+		Frame string `json:"frame"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+	req.Frame = strings.TrimSpace(req.Frame)
+	if req.Frame == "" || !allowedPetFrames[req.Frame] {
+		response.Error(w, http.StatusBadRequest, "invalid frame")
+		return
+	}
+	p, err := h.Pet.UpdateFrame(u.ID, req.Frame)
+	if err != nil {
+		h.Log.Error("update pet frame", "error", err)
+		response.Error(w, http.StatusInternalServerError, "failed to update pet frame")
+		return
+	}
+	response.JSON(w, http.StatusOK, p)
+}

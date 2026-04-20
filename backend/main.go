@@ -68,11 +68,13 @@ func main() {
 	labSvc := service.NewLabService(adapter, adapter)
 	var petSvc *service.PetService
 	var focusSvc *service.FocusService
+	var todoSvc *service.TodoService
 	var bestSvc *service.BestPracticeService
 	var playSvc *service.PlayService
 	if pgStore != nil {
 		petSvc = service.NewPetService(pgStore)
 		focusSvc = service.NewFocusService(pgStore)
+		todoSvc = service.NewTodoService(pgStore)
 		bestSvc = service.NewBestPracticeService(pgStore)
 		playSvc = service.NewPlayService(pgStore)
 	}
@@ -88,6 +90,7 @@ func main() {
 	labH := &handler.LabHandler{Log: log, Lab: labSvc}
 	var petH *handler.PetHandler
 	var focusH *handler.FocusHandler
+	var todoH *handler.TodoHandler
 	var bestH *handler.BestPracticeHandler
 	var playH *handler.PlayHandler
 	if petSvc != nil {
@@ -95,6 +98,9 @@ func main() {
 	}
 	if focusSvc != nil {
 		focusH = &handler.FocusHandler{Log: log, Focus: focusSvc}
+	}
+	if todoSvc != nil {
+		todoH = &handler.TodoHandler{Log: log, Todo: todoSvc}
 	}
 	if bestSvc != nil {
 		bestH = &handler.BestPracticeHandler{Log: log, Best: bestSvc}
@@ -112,6 +118,7 @@ func main() {
 		Lab:        labH,
 		Pet:        petH,
 		Focus:      focusH,
+		Todo:       todoH,
 		Best:       bestH,
 		Play:       playH,
 		UploadsDir: uploadsPath,
