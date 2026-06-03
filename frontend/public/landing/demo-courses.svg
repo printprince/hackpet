@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="t">
+  <title id="t">Каталог курсов Hackpet</title>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="50%" style="stop-color:#1e1b4b"/>
+      <stop offset="100%" style="stop-color:#312e81"/>
+    </linearGradient>
+    <linearGradient id="a" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22d3ee"/>
+      <stop offset="100%" style="stop-color:#818cf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <g opacity="0.13" fill="#fff"><circle cx='110' cy='80' r='64'/><circle cx='710' cy='372' r='110'/></g>
+<rect x="70" y="104" width="200" height="244" rx="16" fill="#111827" stroke="#334155"/><rect x="70" y="104" width="200" height="62" rx="16" fill="#0b1220"/><rect x="90" y="126" width="120" height="14" rx="7" fill="url(#a)"/><rect x="90" y="148" width="78" height="10" rx="5" fill="#374151"/><rect x="90" y="190" width="78" height="22" rx="11" fill="#1f2937" stroke="#475569"/><text x="129" y="205" text-anchor="middle" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="12" font-weight="600">Средне</text><rect x="178" y="194" width="54" height="14" rx="7" fill="#334155"/><circle cx="100" cy="244" r="7" fill="#6366f1"/><circle cx="124" cy="244" r="7" fill="#6366f1"/><circle cx="148" cy="244" r="7" fill="#334155"/><rect x="90" y="282" width="160" height="34" rx="10" fill="url(#a)"/><text x="170" y="304" text-anchor="middle" fill="#0f172a" font-family="system-ui,sans-serif" font-size="14" font-weight="700">Продолжить</text>
+<rect x="300" y="104" width="200" height="244" rx="16" fill="#111827" stroke="#334155"/><rect x="300" y="104" width="200" height="62" rx="16" fill="#0b1220"/><rect x="320" y="126" width="120" height="14" rx="7" fill="url(#a)"/><rect x="320" y="148" width="78" height="10" rx="5" fill="#374151"/><rect x="320" y="190" width="78" height="22" rx="11" fill="#1f2937" stroke="#475569"/><text x="359" y="205" text-anchor="middle" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="12" font-weight="600">Средне</text><rect x="408" y="194" width="54" height="14" rx="7" fill="#334155"/><circle cx="330" cy="244" r="7" fill="#6366f1"/><circle cx="354" cy="244" r="7" fill="#334155"/><circle cx="378" cy="244" r="7" fill="#334155"/><rect x="320" y="282" width="160" height="34" rx="10" fill="url(#a)"/><text x="400" y="304" text-anchor="middle" fill="#0f172a" font-family="system-ui,sans-serif" font-size="14" font-weight="700">Открыть</text>
+<rect x="530" y="104" width="200" height="244" rx="16" fill="#111827" stroke="#334155"/><rect x="530" y="104" width="200" height="62" rx="16" fill="#0b1220"/><rect x="550" y="126" width="120" height="14" rx="7" fill="url(#a)"/><rect x="550" y="148" width="78" height="10" rx="5" fill="#374151"/><rect x="550" y="190" width="78" height="22" rx="11" fill="#1f2937" stroke="#475569"/><text x="589" y="205" text-anchor="middle" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="12" font-weight="600">Скоро</text><rect x="638" y="194" width="54" height="14" rx="7" fill="#334155"/><circle cx="560" cy="244" r="7" fill="#334155"/><circle cx="584" cy="244" r="7" fill="#334155"/><circle cx="608" cy="244" r="7" fill="#334155"/><rect x="550" y="282" width="160" height="34" rx="10" fill="#1f2937" stroke="#475569"/><rect x="619" y="296" width="22" height="17" rx="3" fill="#94a3b8"/><path d="M624 296 v-6 a6 6 0 0 1 12 0 v6" fill="none" stroke="#94a3b8" stroke-width="3"/>
+</svg>

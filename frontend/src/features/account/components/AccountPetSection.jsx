@@ -98,7 +98,10 @@ export default function AccountPetSection({
             <div className="pet-stats">
               {petStats.map((s) => (
                 <div key={s.id} className="pet-stat-row">
-                  <span className="pet-stat-label">{s.label}</span>
+                  <span className="pet-stat-label-wrap">
+                    <span className="pet-stat-label">{s.label}</span>
+                    {s.hint ? <span className="pet-stat-hint">{s.hint}</span> : null}
+                  </span>
                   <div className="pet-stat-track">
                     <div className="pet-stat-fill" style={{ width: `${s.value}%` }} />
                   </div>

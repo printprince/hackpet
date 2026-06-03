@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useAuth, useUser } from '../context/UserContext'
 import { useCourseDetails } from '../hooks/useCourseDetails'
 import { groupModulesByCourse, getProgressStats } from '../utils/progress'
-import { getPetAura, getUnlockedPetAuras, getPetActivityStatus } from '../utils/pet'
+import { getPetAura, getUnlockedPetAuras, getPetActivityStatus, getPracticalPetStats } from '../utils/pet'
 import { API, PET, PROGRESS_STATUS } from '../constants'
 import { get, post } from '../api'
 import {
@@ -119,12 +119,13 @@ export default function AccountPage() {
   const equippedAuraId = pet?.equipped_aura
   const petAura =
     (unlockedAuras && unlockedAuras.find((a) => a.id === equippedAuraId)) || autoAura
-  const petStats = [
-    { id: 'intelligence', label: 'Интеллект', value: Math.min(100, completed * 12) },
-    { id: 'creativity', label: 'Креативность', value: Math.min(100, inProgress * 18 + completed * 6) },
-    { id: 'efficiency', label: 'Эффективность', value: Math.min(100, Math.round(progressPct * 0.7)) },
-    { id: 'debugging', label: 'Отладка', value: Math.min(100, totalAttempts * 6) },
-  ]
+  const petStats = getPracticalPetStats({
+    completedModules: completed,
+    inProgressModules: inProgress,
+    totalLabAttempts: totalAttempts,
+    totalProgressPct: progressPct,
+    petXP: pet?.xp,
+  })
 
   async function handleAvatarChange(event) {
     const file = event.target.files?.[0]
@@ -395,7 +396,7 @@ function PetAuraModal({
         </div>
         {!isUnlocked && (
           <p className="muted">
-            Эта подсветка станет доступна позже. Продолжайте тренировать Хакпета, чтобы открыть её.
+            Эта подсветка станет доступна позже. Продолжайте тренировать {petName}, чтобы открыть её.
           </p>
         )}
         {isUnlocked && isActive && (

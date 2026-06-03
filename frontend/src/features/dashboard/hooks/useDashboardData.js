@@ -3,7 +3,7 @@ import { get } from '../../../api'
 import { API, PROGRESS_STATUS } from '../../../constants'
 import { WEEKLY_PRACTICES } from '../constants'
 import { getProgressStats } from '../../../utils/progress'
-import { getPetProgressFromXP } from '../../../utils/pet'
+import { getPetProgressFromXP, getPracticalPetStats } from '../../../utils/pet'
 
 export function useDashboardData(courseDetails) {
   const [pet, setPet] = useState(null)
@@ -60,14 +60,41 @@ export function useDashboardData(courseDetails) {
     () => modules.filter((m) => m.progress === PROGRESS_STATUS.COMPLETED).slice(-3).reverse(),
     [modules]
   )
+  const recommendedCourses = useMemo(() => {
+    const list = Array.isArray(courseDetails) ? courseDetails : []
+    const ranked = list
+      .map((course) => {
+        const courseModules = course.modules || []
+        const total = courseModules.length
+        const completed = courseModules.filter((m) => m.progress === PROGRESS_STATUS.COMPLETED).length
+        const inProgress = courseModules.some((m) => m.progress === PROGRESS_STATUS.IN_PROGRESS)
+        const isCompleted = Boolean(course.completed) || (total > 0 && completed === total)
+        return {
+          id: course.id,
+          title: course.title || 'Курс',
+          total,
+          completed,
+          inProgress,
+          isCompleted,
+          score: (inProgress ? 100 : 0) + (total > 0 ? Math.round((completed / total) * 100) : 0),
+        }
+      })
+      .filter((course) => !course.isCompleted)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+
+    return ranked
+  }, [courseDetails])
   const petStats = useMemo(
-    () => [
-      { id: 'intelligence', label: 'Интеллект', value: Math.min(100, stats.completed * 12) },
-      { id: 'creativity', label: 'Креативность', value: Math.min(100, stats.inProgress * 18 + stats.completed * 6) },
-      { id: 'efficiency', label: 'Эффективность', value: Math.min(100, Math.round(stats.progressPct * 0.7)) },
-      { id: 'debugging', label: 'Отладка', value: Math.min(100, stats.totalAttempts * 6) },
-    ],
-    [stats.completed, stats.inProgress, stats.progressPct, stats.totalAttempts]
+    () =>
+      getPracticalPetStats({
+        completedModules: stats.completed,
+        inProgressModules: stats.inProgress,
+        totalLabAttempts: stats.totalAttempts,
+        totalProgressPct: stats.progressPct,
+        petXP: pet?.xp,
+      }),
+    [stats.completed, stats.inProgress, stats.progressPct, stats.totalAttempts, pet?.xp]
   )
 
   return {
@@ -80,6 +107,7 @@ export function useDashboardData(courseDetails) {
     hasActiveCourse,
     nextModules,
     completedModules,
+    recommendedCourses,
     bestPractices: bestPractices.length > 0 ? bestPractices : WEEKLY_PRACTICES,
   }
 }

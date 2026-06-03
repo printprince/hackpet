@@ -21,50 +21,38 @@ export default function Summary({
   hasCTFNext = false,
   onTryAgain,
 }) {
-  const attempts = progress?.attempt_count ?? 0
   const labPassed = lastSubmitResult?.status === 'passed'
   const labRules = lab?.rules || []
   const ruleResults = lastSubmitResult?.rule_results || []
   const passedRules = ruleResults.filter((r) => r.passed)
-  const failedRules = ruleResults.filter((r) => !r.passed)
   const getRuleName = (ruleId) => labRules.find((r) => r.id === ruleId)?.message || ruleId
   const checkpointQuestions = checkpointQuiz?.questions || []
   const finalQuestions = finalQuiz?.questions || []
 
-  const checkpointCorrect = checkpointQuestions.filter(
+  const checkpointCorrectSession = checkpointQuestions.filter(
     (q, i) => checkpointQuizAnswers?.[i] === q.correct
   ).length
-  const finalCorrect = finalQuestions.filter(
+  const finalCorrectSession = finalQuestions.filter(
     (q, i) => finalQuizAnswers?.[i] === q.correct
   ).length
 
-  const completedFromBackend = progress?.completed === true
-
   const checkpointSaved = quizStats?.checkpoint
   const finalSaved = quizStats?.final
+  const hasSessionCheckpoint = Object.keys(checkpointQuizAnswers || {}).length > 0
+  const hasSessionFinal = Object.keys(finalQuizAnswers || {}).length > 0
 
   const effCheckpointTotal =
-    (checkpointQuestions.length || checkpointSaved?.total || 0)
+    checkpointQuestions.length || checkpointSaved?.total || 0
   const effFinalTotal =
-    (finalQuestions.length || finalSaved?.total || 0)
+    finalQuestions.length || finalSaved?.total || 0
 
-  let effCheckpointCorrect =
-    completedFromBackend &&
-    checkpointSaved &&
-    effCheckpointTotal > 0 &&
-    checkpointCorrect === 0
-      ? checkpointSaved.correct
-      : checkpointCorrect
+  let effCheckpointCorrect = hasSessionCheckpoint
+    ? checkpointCorrectSession
+    : (checkpointSaved?.correct ?? checkpointCorrectSession)
+  let effFinalCorrect = hasSessionFinal
+    ? finalCorrectSession
+    : (finalSaved?.correct ?? finalCorrectSession)
 
-  let effFinalCorrect =
-    completedFromBackend &&
-    finalSaved &&
-    effFinalTotal > 0 &&
-    finalCorrect === 0
-      ? finalSaved.correct
-      : finalCorrect
-
-  // Защита от неконсистентных данных: число верных не может превышать количество вопросов.
   if (effCheckpointTotal > 0) {
     effCheckpointCorrect = Math.min(effCheckpointCorrect, effCheckpointTotal)
   }
@@ -79,11 +67,10 @@ export default function Summary({
     ? (effFinalCorrect / effFinalTotal) * 100
     : 0
   const hasLabResult = ruleResults.length > 0
-  const passedChecksCount = hasLabResult
-    ? passedRules.length
-    : completedFromBackend && labRules.length > 0
-      ? labRules.length
-      : 0
+  const passedChecksCount = hasLabResult ? passedRules.length : 0
+  const attemptsFromProgress = progress?.attempt_count ?? 0
+  const attemptsFromLab = hasLabResult ? 1 : 0
+  const attempts = Math.max(attemptsFromProgress, attemptsFromLab)
 
   const labPct = labRules.length > 0
     ? (passedChecksCount / labRules.length) * 100
@@ -95,8 +82,15 @@ export default function Summary({
 
   const score = Math.round(checkpointWeighted + finalWeighted + labWeighted)
   const threshold = 80
-  const overallPassed = completedFromBackend || (score >= threshold && labPassed && labPct > 0)
+  const overallPassed = score >= threshold && labPassed && labPct > 0
   const statusText = overallPassed ? 'Пройден' : 'Не пройден'
+  const showSavedQuizNote =
+    !hasSessionCheckpoint &&
+    !hasSessionFinal &&
+    progress?.completed === true &&
+    (checkpointQuestions.length > 0 || finalQuestions.length > 0) &&
+    (checkpointSaved?.total > 0 || finalSaved?.total > 0)
+
   const pointsPerRule = useMemo(
     () => (labRules.length > 0 ? WEIGHTS.LAB / labRules.length : 0),
     [labRules.length]
@@ -126,12 +120,10 @@ export default function Summary({
         </div>
         <span className="summary-score-threshold">Порог прохождения: {threshold}%</span>
       </div>
-      {/* Блок «Почему» убран, чтобы не дублировать информацию из разбивки по баллам */}
       <div className="summary-what-correct">
         <h4>Разбивка по баллам</h4>
         <ul className="summary-breakdown">
           <li>
-            {/** Лаба: строка можно раскрыть, поэтому помечаем её визуально */}
             <div
               className={`summary-breakdown-row ${ruleResults.length ? 'is-clickable' : ''}`}
               onClick={ruleResults.length ? () => toggleSection('lab') : undefined}
@@ -196,9 +188,9 @@ export default function Summary({
             </div>
           </li>
         </ul>
-        {completedFromBackend && checkpointCorrect === 0 && finalCorrect === 0 && (checkpointQuestions.length > 0 || finalQuestions.length > 0) && (
+        {showSavedQuizNote && (
           <p className="summary-muted-note">
-            Детали по тестам отображаются только в сессии прохождения. Результат модуля сохранён.
+            Статистика тестов восстановлена из сохранённых ответов.
           </p>
         )}
       </div>

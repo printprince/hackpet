@@ -58,7 +58,7 @@ export default function Lab({ lab, fileContents, onContentChange, onReset, onSub
           onClick={locked ? undefined : onSubmit}
           disabled={locked}
         >
-          Submit
+          Отправить
         </button>
       </div>
     </div>

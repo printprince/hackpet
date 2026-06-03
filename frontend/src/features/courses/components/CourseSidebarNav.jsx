@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PROGRESS_STATUS, MODULE_STEP_LABELS, ROUTES } from '../../../constants'
-import { PANEL_ORDER } from '../../moduleFlow/constants'
+import { PANEL_ORDER, normalizeFlowPanel } from '../../moduleFlow/constants'
 
 export default function CourseSidebarNav({
   courseId,
@@ -48,7 +48,7 @@ export default function CourseSidebarNav({
           const isExpanded = expandedId === m.id
           const isCompletedModule = prog === PROGRESS_STATUS.COMPLETED
           const isActiveModule = selectedModuleId === m.id
-          const storedLastIndex = PANEL_ORDER.indexOf(m.last_step || '')
+          const storedLastIndex = PANEL_ORDER.indexOf(normalizeFlowPanel(m.last_step) || '')
           const moduleLockTitle = !courseStarted
             ? 'Сначала нажмите «Начать курс»'
             : !prevCompleted
@@ -58,6 +58,17 @@ export default function CourseSidebarNav({
           return (
             <div key={m.id} className={`course-nav-module-block ${isLocked ? 'locked' : ''}`}>
               <div className="course-nav-module-row">
+                <button
+                  type="button"
+                  className="course-nav-tree-chevron"
+                  aria-label={isExpanded ? 'Свернуть' : 'Развернуть'}
+                  disabled={isLocked}
+                  onClick={() => {
+                    if (!isLocked) setExpandedId(isExpanded ? null : m.id)
+                  }}
+                >
+                  {isExpanded ? '▾' : '▸'}
+                </button>
                 <button
                   type="button"
                   className={`course-nav-item course-nav-module-trigger ${
@@ -72,17 +83,6 @@ export default function CourseSidebarNav({
                   disabled={isLocked}
                   title={moduleLockTitle}
                 >
-                  <button
-                    type="button"
-                    className="course-nav-tree-chevron"
-                    aria-label={isExpanded ? 'Свернуть' : 'Развернуть'}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      if (!isLocked) setExpandedId(isExpanded ? null : m.id)
-                    }}
-                  >
-                    {isExpanded ? '▾' : '▸'}
-                  </button>
                   <span className="course-nav-num">{idx + 1}</span>
                   <span className="course-nav-label">{m.title}</span>
                 </button>

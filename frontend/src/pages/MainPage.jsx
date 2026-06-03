@@ -39,6 +39,7 @@ export default function MainPage() {
               <DashboardProgressCard
                 stats={dashboard.stats}
                 hasStartedLearning={dashboard.hasStartedLearning}
+                recommendedCourses={dashboard.recommendedCourses}
               />
             </div>
 

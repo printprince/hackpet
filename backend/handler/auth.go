@@ -61,7 +61,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	user, err := h.UserStore.CreateUser(req.Email, req.Nickname, hash, req.LastName, req.FirstName, req.Patronymic)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "unique") {
-			response.Error(w, http.StatusConflict, "email or nickname already taken")
+			response.Error(w, http.StatusConflict, "Email или никнейм уже заняты")
 			return
 		}
 		h.Log.Error("create user", "error", err)
@@ -97,11 +97,11 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	user, err := h.UserStore.GetByEmail(req.Email)
 	if err != nil || user == nil {
-		response.Error(w, http.StatusUnauthorized, "invalid email or password")
+		response.Error(w, http.StatusUnauthorized, "Неверный email или пароль")
 		return
 	}
 	if !auth.CheckPassword(user.PasswordHash, req.Password) {
-		response.Error(w, http.StatusUnauthorized, "invalid email or password")
+		response.Error(w, http.StatusUnauthorized, "Неверный email или пароль")
 		return
 	}
 	token, err := auth.IssueToken(h.JWTSecret, user.ID, user.Email, user.Nickname, user.Role, 0)
@@ -188,7 +188,7 @@ func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	updated, err := h.UserStore.UpdateProfile(u.ID, req.Email, req.Nickname, req.LastName, req.FirstName, req.Patronymic)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "unique") {
-			response.Error(w, http.StatusConflict, "email or nickname already taken")
+			response.Error(w, http.StatusConflict, "Email или никнейм уже заняты")
 			return
 		}
 		h.Log.Error("update profile", "error", err)

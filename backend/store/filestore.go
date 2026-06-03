@@ -321,6 +321,16 @@ func (s *fileStore) GetModuleWithProgress(id, userID string) (*Module, *ModulePr
 }
 
 func (s *fileStore) GetModuleIDByLabID(labId string) (string, error) {
+	return s.findModuleID(func(m *Module) bool { return m.Lab.ID == labId })
+}
+
+func (s *fileStore) GetModuleIDByQuizID(quizId string) (string, error) {
+	return s.findModuleID(func(m *Module) bool {
+		return m.CheckpointQuiz.ID == quizId || m.FinalQuiz.ID == quizId
+	})
+}
+
+func (s *fileStore) findModuleID(match func(*Module) bool) (string, error) {
 	entries, err := os.ReadDir(s.dir)
 	if err != nil {
 		return "", err
@@ -334,7 +344,7 @@ func (s *fileStore) GetModuleIDByLabID(labId string) (string, error) {
 		if err != nil {
 			continue
 		}
-		if m.Lab.ID == labId {
+		if match(m) {
 			return id, nil
 		}
 	}
@@ -356,19 +366,21 @@ func (s *fileStore) SetProgress(moduleId, userID string, p ModuleProgress) error
 	return nil
 }
 
-func (s *fileStore) SaveAttempt(userID, labId, submissionId, status string, results []validator.RuleResult) error {
+func (s *fileStore) SaveAttempt(userID, moduleId, labId, submissionId, status string, results []validator.RuleResult) error {
 	s.mu.Lock()
 	s.attempts = append(s.attempts, attemptRecord{LabID: labId, SubmissionID: submissionId, Status: status, RuleResults: results})
 	s.mu.Unlock()
-	moduleId, err := s.GetModuleIDByLabID(labId)
-	if err != nil {
-		return nil
+	if moduleId == "" {
+		var err error
+		moduleId, err = s.GetModuleIDByLabID(labId)
+		if err != nil {
+			return nil
+		}
 	}
 	s.mu.Lock()
 	p := s.progress[moduleId]
 	p.AttemptCount++
 	if status == "passed" {
-		p.Completed = true
 		p.LastStep = "summary"
 	} else {
 		p.LastStep = "results"

@@ -72,6 +72,6 @@ func (h *ProgressHandler) QuizAnswer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userID := UserIDFromRequest(r)
-	_ = h.Progress.RecordQuizAnswer(userID, quizId, req.QuestionID, req.Answer, req.Correct)
+	_ = h.Progress.RecordQuizAnswer(userID, quizId, req.QuestionID, req.Answer, false)
 	response.JSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }

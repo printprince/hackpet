@@ -1,10 +1,17 @@
 import { useState, useEffect, useCallback } from 'react'
 import { get, post } from '../api'
-import { PANEL_ORDER } from '../features/moduleFlow'
+import { PANEL_ORDER, normalizeFlowPanel } from '../features/moduleFlow'
 import { markPetActivity } from '../utils/pet'
 
+const POST_LAB_PANELS = new Set(['final-quiz', 'summary'])
+const RESULTS_INDEX = PANEL_ORDER.indexOf('results')
+
+function labResultPassed(result) {
+  return result?.status === 'passed'
+}
+
 export function useModuleFlowState({ moduleId, continueFromProgress, initialPanel, onNavigateToCourse }) {
-  const initialPanelSafe = PANEL_ORDER.includes(initialPanel) ? initialPanel : 'theory'
+  const initialPanelSafe = normalizeFlowPanel(initialPanel) || 'theory'
   const [currentModule, setCurrentModule] = useState(null)
   const [panel, setPanel] = useState(initialPanelSafe)
   const [fileContents, setFileContents] = useState({})
@@ -36,22 +43,30 @@ export function useModuleFlowState({ moduleId, continueFromProgress, initialPane
         setQuizRevealed(false)
         setFinalQuizAnswers({})
         const prog = m.progress || {}
+        const apiLab = m.last_lab_attempt || null
+        const labPassed = labResultPassed(apiLab)
         let startPanel = 'theory'
         // Если модуль завершён или пользователь уже дошёл до итога — всегда показываем итог.
         if (prog.completed || prog.last_step === 'summary') {
           startPanel = 'summary'
-        } else if (PANEL_ORDER.includes(initialPanel)) {
-          startPanel = initialPanel
-        } else if (continueFromProgress && prog.last_step && PANEL_ORDER.includes(prog.last_step)) {
-          startPanel = prog.last_step
+        } else if (normalizeFlowPanel(initialPanel)) {
+          startPanel = normalizeFlowPanel(initialPanel)
+        } else if (continueFromProgress && normalizeFlowPanel(prog.last_step)) {
+          startPanel = normalizeFlowPanel(prog.last_step)
+        }
+        if (POST_LAB_PANELS.has(startPanel) && !labPassed && !prog.completed) {
+          startPanel = apiLab ? 'results' : 'lab'
         }
         setPanel(startPanel)
         const startIdx = PANEL_ORDER.indexOf(startPanel)
         const progressIdx =
-          prog.last_step && PANEL_ORDER.includes(prog.last_step)
-            ? PANEL_ORDER.indexOf(prog.last_step)
+          normalizeFlowPanel(prog.last_step) != null
+            ? PANEL_ORDER.indexOf(normalizeFlowPanel(prog.last_step))
             : -1
-        const initialMax = Math.max(startIdx >= 0 ? startIdx : 0, progressIdx, 0)
+        let initialMax = Math.max(startIdx >= 0 ? startIdx : 0, progressIdx, 0)
+        if (!labPassed && !prog.completed) {
+          initialMax = Math.min(initialMax, RESULTS_INDEX)
+        }
         setMaxReachedIndex(initialMax)
         setHasSeenSummary(prog.completed || prog.last_step === 'summary')
       })
@@ -59,13 +74,25 @@ export function useModuleFlowState({ moduleId, continueFromProgress, initialPane
   }, [moduleId, continueFromProgress])
 
   useEffect(() => {
-    if (initialPanel && PANEL_ORDER.includes(initialPanel)) {
-      setPanel(initialPanel)
-      const idx = PANEL_ORDER.indexOf(initialPanel)
-      if (idx >= 0) setMaxReachedIndex((prev) => Math.max(prev, idx))
-      if (initialPanel === 'summary') setHasSeenSummary(true)
+    const normalized = normalizeFlowPanel(initialPanel)
+    if (!normalized) return
+    const apiLab = lastLabAttemptFromApi
+    const labPassed = labResultPassed(lastSubmitResult || apiLab)
+    const completed = currentModule?.progress?.completed
+    let panelName = normalized
+    if (POST_LAB_PANELS.has(panelName) && !labPassed && !completed) {
+      panelName = apiLab || lastSubmitResult ? 'results' : 'lab'
     }
-  }, [initialPanel])
+    setPanel(panelName)
+    const idx = PANEL_ORDER.indexOf(panelName)
+    if (idx >= 0) {
+      setMaxReachedIndex((prev) => {
+        const next = Math.max(prev, idx)
+        return !labPassed && !completed ? Math.min(next, RESULTS_INDEX) : next
+      })
+    }
+    if (panelName === 'summary') setHasSeenSummary(true)
+  }, [initialPanel, lastLabAttemptFromApi, lastSubmitResult, currentModule?.progress?.completed])
 
   const saveProgress = useCallback(
     (step) => {
@@ -80,15 +107,27 @@ export function useModuleFlowState({ moduleId, continueFromProgress, initialPane
   const showPanel = useCallback(
     (name) => {
       if (!PANEL_ORDER.includes(name)) return
+      const labPassed = labResultPassed(lastSubmitResult || lastLabAttemptFromApi)
+      const completed = currentModule?.progress?.completed
+      if (POST_LAB_PANELS.has(name) && !labPassed && !completed) {
+        if (lastSubmitResult || lastLabAttemptFromApi) {
+          name = 'results'
+        } else {
+          name = 'lab'
+        }
+      }
       setPanel(name)
       const idx = PANEL_ORDER.indexOf(name)
-      setMaxReachedIndex((prev) => (idx > prev ? idx : prev))
+      setMaxReachedIndex((prev) => {
+        const next = idx > prev ? idx : prev
+        return !labPassed && !completed ? Math.min(next, RESULTS_INDEX) : next
+      })
       saveProgress(name)
       if (name === 'summary') {
         setHasSeenSummary(true)
       }
     },
-    [saveProgress]
+    [saveProgress, lastSubmitResult, lastLabAttemptFromApi, currentModule?.progress?.completed]
   )
 
   const handleTryAgain = useCallback(() => {
@@ -124,29 +163,50 @@ export function useModuleFlowState({ moduleId, continueFromProgress, initialPane
     }
   }, [panel, currentModule?.id, currentModule?.progress])
 
+  const persistQuizAnswer = useCallback((quiz, questionIndex, value) => {
+    const quest = (quiz?.questions || [])[questionIndex]
+    if (!quiz?.id || !quest?.id || value == null) return Promise.resolve()
+    markPetActivity('study')
+    return post(`/quizzes/${quiz.id}/answer`, {
+      question_id: quest.id,
+      answer: value,
+      correct: value === quest.correct,
+    }).catch(() => {})
+  }, [])
+
+  const syncCheckpointQuizAnswers = useCallback(() => {
+    const q = currentModule?.checkpoint_quiz
+    const questions = q?.questions || []
+    return Promise.all(
+      questions.map((_, i) =>
+        quizAnswers[i] != null ? persistQuizAnswer(q, i, quizAnswers[i]) : Promise.resolve()
+      )
+    )
+  }, [currentModule?.checkpoint_quiz, quizAnswers, persistQuizAnswer])
+
+  const syncFinalQuizAnswers = useCallback(() => {
+    const q = currentModule?.final_quiz
+    const questions = q?.questions || []
+    return Promise.all(
+      questions.map((_, i) =>
+        finalQuizAnswers[i] != null ? persistQuizAnswer(q, i, finalQuizAnswers[i]) : Promise.resolve()
+      )
+    )
+  }, [currentModule?.final_quiz, finalQuizAnswers, persistQuizAnswer])
+
   const handleQuizAnswer = useCallback((questionIndex, value) => {
     setQuizAnswers((prev) => ({ ...prev, [questionIndex]: value }))
     const q = currentModule?.checkpoint_quiz
     const quest = (q?.questions || [])[questionIndex]
-    if (q?.id && quest?.id) {
-      markPetActivity('study')
-      post(`/quizzes/${q.id}/answer`, { question_id: quest.id, answer: value, correct: value === quest.correct }).catch(() => {})
-    }
-  }, [currentModule?.checkpoint_quiz])
+    persistQuizAnswer(q, questionIndex, value)
+  }, [currentModule?.checkpoint_quiz, persistQuizAnswer])
 
   const handleFinalQuizAnswer = useCallback((questionIndex, value) => {
     setFinalQuizAnswers((prev) => ({ ...prev, [questionIndex]: value }))
     const q = currentModule?.final_quiz
     const quest = (q?.questions || [])[questionIndex]
-    if (q?.id && quest?.id) {
-      markPetActivity('study')
-      post(`/quizzes/${q.id}/answer`, {
-        question_id: quest.id,
-        answer: value,
-        correct: value === quest.correct,
-      }).catch(() => {})
-    }
-  }, [currentModule?.final_quiz])
+    persistQuizAnswer(q, questionIndex, value)
+  }, [currentModule?.final_quiz, persistQuizAnswer])
 
   const handleLabSubmit = useCallback(() => {
     const lab = currentModule?.lab
@@ -156,9 +216,18 @@ export function useModuleFlowState({ moduleId, continueFromProgress, initialPane
     const files = Object.entries(fileContents).map(([path, content]) => ({ path, content }))
     markPetActivity('study')
     post(`/labs/${lab.id}/submit`, { submission_id: `draft-${Date.now()}`, files })
-      .then((res) => { setLastSubmitResult(res); showPanel('results') })
+      .then((res) => {
+        setLastSubmitResult(res)
+        if (labResultPassed(res)) {
+          showPanel('results')
+        } else {
+          setPanel('results')
+          setMaxReachedIndex((prev) => Math.min(Math.max(prev, RESULTS_INDEX), RESULTS_INDEX))
+          saveProgress('results')
+        }
+      })
       .catch((e) => alert('Ошибка: ' + e.message))
-  }, [currentModule?.lab, fileContents, showPanel, lastSubmitResult, lastLabAttemptFromApi])
+  }, [currentModule?.lab, fileContents, showPanel, saveProgress, lastSubmitResult])
 
   const handleLabReset = useCallback(() => {
     const lab = currentModule?.lab
@@ -172,11 +241,28 @@ export function useModuleFlowState({ moduleId, continueFromProgress, initialPane
     onNavigateToCourse()
   }, [onNavigateToCourse])
 
-  const applyModuleResult = useCallback((passed) => {
+  const applyModuleResult = useCallback(async (passed) => {
     if (!currentModule?.id) return
     markPetActivity('study')
-    post(`/modules/${currentModule.id}/progress`, { last_step: 'summary', completed: Boolean(passed) }).catch(() => {})
-  }, [currentModule?.id])
+    await Promise.all([syncCheckpointQuizAnswers(), syncFinalQuizAnswers()])
+    await post(`/modules/${currentModule.id}/progress`, {
+      last_step: 'summary',
+      completed: Boolean(passed),
+    }).catch(() => {})
+    try {
+      const m = await get(`/modules/${currentModule.id}`)
+      setSummaryProgress(m.progress)
+      setSavedQuizStats(m.quiz_stats || null)
+      setLastLabAttemptFromApi(m.last_lab_attempt || null)
+      setCurrentModule((prev) => (prev ? { ...prev, progress: m.progress } : prev))
+    } catch {
+      /* ignore */
+    }
+  }, [
+    currentModule?.id,
+    syncCheckpointQuizAnswers,
+    syncFinalQuizAnswers,
+  ])
 
   const effectiveLabResult = lastSubmitResult || lastLabAttemptFromApi
   const labLocked = Boolean(lastSubmitResult)
@@ -212,5 +298,7 @@ export function useModuleFlowState({ moduleId, continueFromProgress, initialPane
     handleTryAgain,
     goToCourse,
     applyModuleResult,
+    syncCheckpointQuizAnswers,
+    syncFinalQuizAnswers,
   }
 }

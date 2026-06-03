@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ROUTES } from '../constants'
 import { REAL_ARTICLES } from '../data/articles'
 import { ArticleMediaImage } from '../features/articles'
+import { pluralizeRu } from '../utils/format'
 
 export default function ArticlesPage() {
   const [topic, setTopic] = useState('')
@@ -92,7 +93,10 @@ export default function ArticlesPage() {
             </div>
             <h3>{a.title}</h3>
             <p className="article-summary">{a.summary}</p>
-            <p className="muted">Что внутри: {a.sections.length} практических блока + чеклист.</p>
+            <p className="muted">
+              Что внутри: {a.sections.length}{' '}
+              {pluralizeRu(a.sections.length, ['практический блок', 'практических блока', 'практических блоков'])} + чеклист.
+            </p>
             <div className="article-card-actions">
               <Link to={ROUTES.ARTICLE(a.id)} className="btn btn-primary btn-sm">
                 Читать статью

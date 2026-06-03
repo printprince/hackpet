@@ -20,6 +20,7 @@ type ModuleRepo interface {
 	GetModuleWithProgress(moduleId, userID string) (*store.Module, *store.ModuleProgress, error)
 	GetLab(labId string) (*store.LabDef, error)
 	GetModuleIDByLabID(labId string) (string, error)
+	GetModuleIDByQuizID(quizId string) (string, error)
 }
 
 // ProgressRepo — прогресс, попытки, телеметрия. userID пустой = аноним (file store).

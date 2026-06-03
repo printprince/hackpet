@@ -1,4 +1,4 @@
-export { PANEL_ORDER } from './constants'
+export { PANEL_ORDER, normalizeFlowPanel } from './constants'
 export { default as Stepper } from './components/Stepper'
 export { default as Theory } from './components/Theory'
 export { default as CheckpointQuiz } from './components/CheckpointQuiz'

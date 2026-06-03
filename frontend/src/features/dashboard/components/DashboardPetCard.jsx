@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ROUTES } from '../../../constants'
-import { getPetAura, getPetDisplayName, getPetActivityStatus } from '../../../utils/pet'
+import { PET } from '../../../constants'
+import { getEvolutionLevelBand, getPetAura, getPetDisplayName, getPetActivityStatus, getPetEvolutionStage } from '../../../utils/pet'
 import PetAvatar from '../../../components/PetAvatar'
 
 export default function DashboardPetCard({ pet, petLevel, petStats = [], hasActiveCourse = false }) {
@@ -8,6 +9,15 @@ export default function DashboardPetCard({ pet, petLevel, petStats = [], hasActi
   const equippedId = pet?.equipped_aura
   const aura = equippedId ? { ...baseAura, id: equippedId } : baseAura
   const petStatus = getPetActivityStatus({ hasActiveCourse })
+  const currentStage = getPetEvolutionStage(petLevel)
+  const nextStage = currentStage < PET.EVOLUTION_STAGE_MAX ? currentStage + 1 : null
+  const nextStageBand = nextStage ? getEvolutionLevelBand(nextStage) : null
+  const levelsToNextStage = nextStageBand ? Math.max(0, nextStageBand.lo - petLevel) : 0
+  const nextLevelAura = [...(PET.AURAS || [])]
+    .filter((auraDef) => !auraDef.unlockBy || auraDef.unlockBy === 'level')
+    .sort((a, b) => (a.minLevel || 1) - (b.minLevel || 1))
+    .find((auraDef) => (auraDef.minLevel || 1) > petLevel)
+  const levelsToNextAura = nextLevelAura ? Math.max(0, (nextLevelAura.minLevel || 1) - petLevel) : 0
 
   return (
     <article className="card dashboard-pet-card">
@@ -64,21 +74,34 @@ export default function DashboardPetCard({ pet, petLevel, petStats = [], hasActi
       <div className="pet-info">
         <h2 className="pet-name">{getPetDisplayName(pet)}</h2>
         <p className={`pet-mood ${petStatus.className}`}>{petStatus.label}</p>
+        <div className="dashboard-pet-plan">
+          <h3 className="dashboard-pet-plan-title">Следующий этап</h3>
+          <div className="dashboard-pet-plan-list">
+            <p className="dashboard-pet-plan-item">
+              <span>Форма:</span>
+              {nextStage ? (
+                <strong>
+                  {nextStage}-я через {levelsToNextStage} ур.
+                </strong>
+              ) : (
+                <strong>максимальная форма</strong>
+              )}
+            </p>
+            <p className="dashboard-pet-plan-item">
+              <span>Аура:</span>
+              {nextLevelAura ? (
+                <strong>
+                  {nextLevelAura.label} через {levelsToNextAura} ур.
+                </strong>
+              ) : (
+                <strong>все уровневые ауры открыты</strong>
+              )}
+            </p>
+          </div>
+        </div>
         {petStats.length > 0 && (
-          <div className="pet-stats-dev-block dashboard-pet-stats-dev-block">
-            <div className="dashboard-pet-stats">
-              {petStats.map((s) => (
-                <div key={s.id} className="dashboard-pet-stat-row">
-                  <span className="dashboard-pet-stat-label">{s.label}</span>
-                  <div className="dashboard-pet-stat-track">
-                    <div className="dashboard-pet-stat-fill" style={{ width: `${s.value}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="pet-dev-overlay" aria-hidden="true">
-              <span className="pet-dev-overlay-badge">В разработке</span>
-            </div>
+          <div className="dashboard-pet-meta-note">
+            Метрики курсов и лабораторных доступны в блоке «Прогресс обучения».
           </div>
         )}
       </div>

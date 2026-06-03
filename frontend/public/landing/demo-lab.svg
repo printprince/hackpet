@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="t">
+  <title id="t">Лаборатория: редактор кода и автопроверка</title>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="50%" style="stop-color:#1e1b4b"/>
+      <stop offset="100%" style="stop-color:#312e81"/>
+    </linearGradient>
+    <linearGradient id="a" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22d3ee"/>
+      <stop offset="100%" style="stop-color:#818cf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <g opacity="0.13" fill="#fff"><circle cx='110' cy='80' r='64'/><circle cx='710' cy='372' r='110'/></g>
+<rect x="64" y="96" width="430" height="268" rx="14" fill="#0b1220" stroke="#334155"/>
+<rect x="64" y="96" width="430" height="34" rx="14" fill="#111827"/>
+<circle cx="88" cy="113" r="5" fill="#f87171"/>
+<circle cx="108" cy="113" r="5" fill="#fbbf24"/>
+<circle cx="128" cy="113" r="5" fill="#34d399"/>
+<rect x="78" y="152" width="10" height="12" rx="3" fill="#334155"/>
+<rect x="100" y="152" width="120" height="12" rx="6" fill="url(#a)"/>
+<rect x="78" y="180" width="10" height="12" rx="3" fill="#334155"/>
+<rect x="128" y="180" width="150" height="12" rx="6" fill="#374151"/>
+<rect x="78" y="208" width="10" height="12" rx="3" fill="#334155"/>
+<rect x="128" y="208" width="110" height="12" rx="6" fill="url(#a)"/>
+<rect x="78" y="236" width="10" height="12" rx="3" fill="#334155"/>
+<rect x="114" y="236" width="170" height="12" rx="6" fill="#374151"/>
+<rect x="78" y="264" width="10" height="12" rx="3" fill="#334155"/>
+<rect x="114" y="264" width="90" height="12" rx="6" fill="url(#a)"/>
+<rect x="78" y="292" width="10" height="12" rx="3" fill="#334155"/>
+<rect x="100" y="292" width="130" height="12" rx="6" fill="#374151"/>
+<rect x="78" y="320" width="10" height="12" rx="3" fill="#334155"/>
+<rect x="128" y="320" width="150" height="12" rx="6" fill="url(#a)"/>
+<rect x="510" y="96" width="226" height="268" rx="14" fill="#111827" stroke="#334155"/>
+<text x="534" y="128" text-anchor="start" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="15" font-weight="700">Проверки</text>
+<circle cx="548" cy="170" r="12" fill="#34d399"/><path d="M542.6 170.0 L547.0 174.6 L554.0 165.2" fill="none" stroke="#0f172a" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="572" y="164" width="140" height="12" rx="6" fill="#334155"/>
+<circle cx="548" cy="214" r="12" fill="#34d399"/><path d="M542.6 214.0 L547.0 218.6 L554.0 209.2" fill="none" stroke="#0f172a" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="572" y="208" width="140" height="12" rx="6" fill="#334155"/>
+<circle cx="548" cy="258" r="12" fill="#ef4444"/><path d="M543.0 253.0 L553.0 263.0 M553.0 253.0 L543.0 263.0" stroke="#0f172a" stroke-width="3.4" stroke-linecap="round"/>
+<rect x="572" y="252" width="140" height="12" rx="6" fill="#334155"/>
+<rect x="534" y="300" width="178" height="40" rx="10" fill="#0b1220" stroke="#475569"/>
+<text x="623" y="325" text-anchor="middle" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="13" font-weight="600">Подсказка</text>
+</svg>

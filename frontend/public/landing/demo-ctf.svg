@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="t">
+  <title id="t">CTF-челлендж: захват флага</title>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="50%" style="stop-color:#1e1b4b"/>
+      <stop offset="100%" style="stop-color:#312e81"/>
+    </linearGradient>
+    <linearGradient id="a" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22d3ee"/>
+      <stop offset="100%" style="stop-color:#818cf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <g opacity="0.13" fill="#fff"><circle cx='110' cy='80' r='64'/><circle cx='710' cy='372' r='110'/></g>
+<rect x="120" y="96" width="560" height="258" rx="14" fill="#0b1220" stroke="#334155"/>
+<rect x="120" y="96" width="560" height="34" rx="14" fill="#111827"/>
+<circle cx="144" cy="113" r="5" fill="#f87171"/>
+<circle cx="164" cy="113" r="5" fill="#fbbf24"/>
+<circle cx="184" cy="113" r="5" fill="#34d399"/>
+<text x="150" y="170" text-anchor="start" fill="#22d3ee" font-family="ui-monospace,Menlo,monospace" font-size="16" font-weight="700">$</text>
+<rect x="168" y="160" width="220" height="11" rx="5" fill="#374151"/>
+<rect x="150" y="192" width="300" height="10" rx="5" fill="#1f2937"/>
+<rect x="150" y="214" width="240" height="10" rx="5" fill="#1f2937"/>
+<rect x="150" y="256" width="400" height="40" rx="9" fill="#06281f" stroke="#34d399"/>
+<text x="166" y="282" text-anchor="start" fill="#34d399" font-family="ui-monospace,Menlo,monospace" font-size="20" font-weight="700">HACKPET{...}</text>
+<rect x="636" y="150" width="4" height="64" rx="2" fill="#94a3b8"/>
+<path d="M640 152 L676 162 L640 176 Z" fill="url(#a)"/>
+</svg>

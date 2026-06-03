@@ -64,7 +64,7 @@ func main() {
 	adapter := repository.NewStoreAdapter(st)
 	courseSvc := service.NewCourseService(adapter)
 	moduleSvc := service.NewModuleService(adapter, adapter)
-	progressSvc := service.NewProgressService(adapter)
+	progressSvc := service.NewProgressService(adapter, adapter)
 	labSvc := service.NewLabService(adapter, adapter)
 	var petSvc *service.PetService
 	var focusSvc *service.FocusService

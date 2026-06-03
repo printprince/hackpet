@@ -1,9 +1,13 @@
+import { useState } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { ROUTES } from '../constants'
 import { useAuth } from '../context/UserContext'
+import DemoTour from '../components/DemoTour'
+import DemoCarousel from '../components/DemoCarousel'
 
 export default function LandingPage() {
   const { user, loading } = useAuth()
+  const [isDemoOpen, setIsDemoOpen] = useState(false)
   if (!loading && user) {
     return <Navigate to={ROUTES.DASHBOARD} replace />
   }
@@ -24,33 +28,17 @@ export default function LandingPage() {
                 <Link to={ROUTES.REGISTER} className="btn btn-primary btn-lg">
                   Начать бесплатно
                 </Link>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-lg"
+                  onClick={() => setIsDemoOpen(true)}
+                >
+                  Открыть демо на весь экран
+                </button>
               </div>
             </div>
-            <div className="hero-visual">
-              <div className="hero-illustration">
-                <img
-                  src="/landing/hero-security-platform.svg"
-                  alt="Иллюстрация платформы Hackpet: обучение, лаборатории и прогресс"
-                  loading="eager"
-                  decoding="async"
-                  width="800"
-                  height="450"
-                />
-              </div>
-              <div className="hero-metrics">
-                <div className="hero-metric">
-                  <strong>Практика</strong>
-                  <span>Интерактивные лаборатории и авто-проверка</span>
-                </div>
-                <div className="hero-metric">
-                  <strong>Трекинг</strong>
-                  <span>Прогресс и достижения в одном месте</span>
-                </div>
-                <div className="hero-metric">
-                  <strong>Hackpet</strong>
-                  <span>Тренировка через геймификацию</span>
-                </div>
-              </div>
+            <div className="hero-visual hero-visual--demo" aria-label="Интерактивное демо платформы">
+              <DemoCarousel lastActionLabel="В начало" />
             </div>
           </div>
         </div>
@@ -108,6 +96,8 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      <DemoTour isOpen={isDemoOpen} onClose={() => setIsDemoOpen(false)} />
     </div>
   )
 }

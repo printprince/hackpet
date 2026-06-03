@@ -75,8 +75,41 @@ func evaluateRule(check string, ctx *checkContext) (passed bool, message string)
 			return false, "Minor: для ошибок доступа используйте http.Error с корректным статусом (403/404)"
 		}
 		return true, "OK"
-	default:
+	// SSRF
+	case "ssrf_url_scheme":
+		if !ctx.hasSchemeCheck {
+			return false, "Major: после url.Parse проверяйте u.Scheme (разрешены только http/https)"
+		}
 		return true, "OK"
+	case "ssrf_host_allowlist":
+		if !(ctx.hasHostnameCheck && ctx.hasAllowlist) {
+			return false, "Major: проверяйте u.Hostname() по allowlist (например через isAllowedHost)"
+		}
+		return true, "OK"
+	case "ssrf_client_timeout":
+		if !ctx.hasClientTimeout {
+			return false, "Minor: используйте http.Client с явным Timeout вместо http.Get без таймаута"
+		}
+		return true, "OK"
+	// Logging / safe errors
+	case "log_safe_user_error":
+		if ctx.hasUnsafeUserError {
+			return false, "Major: не возвращайте err.Error()/токен наружу — отдавайте нейтральное сообщение"
+		}
+		return true, "OK"
+	case "log_no_secrets":
+		if ctx.hasSecretInLog {
+			return false, "Major: не логируйте токен/секрет в открытом виде"
+		}
+		return true, "OK"
+	case "log_with_request_id":
+		if !ctx.hasRequestIDInLog {
+			return false, "Minor: добавьте в лог request id (например X-Request-ID) для контекста"
+		}
+		return true, "OK"
+	default:
+		// Fail-safe: неизвестная проверка не должна молча проходить.
+		return false, "Проверка \"" + check + "\" не реализована для Go"
 	}
 }
 
@@ -253,7 +286,8 @@ func RunPython(rules []Rule, files []File) []RuleResult {
 				msg = "Используйте render_template или render_template_string и передавайте name в шаблон ({{ name }})."
 			}
 		default:
-			passed, msg = true, "OK"
+			// Fail-safe: неизвестная проверка не должна молча проходить.
+			passed, msg = false, "Проверка \""+rule.Check+"\" не реализована для Python"
 		}
 		rr := RuleResult{
 			RuleID:   rule.ID,

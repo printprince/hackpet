@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="t">
+  <title id="t">Play и статьи</title>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="50%" style="stop-color:#1e1b4b"/>
+      <stop offset="100%" style="stop-color:#312e81"/>
+    </linearGradient>
+    <linearGradient id="a" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22d3ee"/>
+      <stop offset="100%" style="stop-color:#818cf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <g opacity="0.13" fill="#fff"><circle cx='110' cy='80' r='64'/><circle cx='710' cy='372' r='110'/></g>
+<rect x="80" y="110" width="300" height="250" rx="16" fill="#111827" stroke="#334155"/>
+<text x="104" y="146" text-anchor="start" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="15" font-weight="700">Play</text>
+<rect x="120" y="180" width="180" height="12" rx="6" fill="#374151" opacity="1"/>
+<rect x="144" y="214" width="200" height="12" rx="6" fill="#ef4444" opacity="0.7"/>
+<rect x="144" y="248" width="120" height="12" rx="6" fill="#374151" opacity="1"/>
+<rect x="120" y="282" width="150" height="12" rx="6" fill="#374151" opacity="1"/>
+<circle cx="250" cy="220" r="26" fill="none" stroke="#22d3ee" stroke-width="5"/>
+<line x1="269" y1="239" x2="288" y2="258" stroke="#22d3ee" stroke-width="6" stroke-linecap="round"/>
+<rect x="420" y="110" width="300" height="250" rx="16" fill="#111827" stroke="#334155"/>
+<text x="444" y="146" text-anchor="start" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="15" font-weight="700">Статьи</text>
+<rect x="444" y="172" width="200" height="13" rx="6" fill="url(#a)"/>
+<rect x="444" y="206" width="20" height="20" rx="5" fill="#0b1220" stroke="#475569"/>
+<circle cx="454" cy="216" r="8" fill="#34d399"/><path d="M450.4 216.0 L453.4 219.0 L458.0 212.8" fill="none" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="476" y="210" width="200" height="12" rx="6" fill="#374151"/>
+<rect x="444" y="246" width="20" height="20" rx="5" fill="#0b1220" stroke="#475569"/>
+<circle cx="454" cy="256" r="8" fill="#34d399"/><path d="M450.4 256.0 L453.4 259.0 L458.0 252.8" fill="none" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="476" y="250" width="170" height="12" rx="6" fill="#374151"/>
+<rect x="444" y="286" width="20" height="20" rx="5" fill="#0b1220" stroke="#475569"/>
+<circle cx="454" cy="296" r="8" fill="#34d399"/><path d="M450.4 296.0 L453.4 299.0 L458.0 292.8" fill="none" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="476" y="290" width="140" height="12" rx="6" fill="#374151"/>
+</svg>

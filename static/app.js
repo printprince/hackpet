@@ -5,11 +5,10 @@
     quiz: 'Квиз',
     lab: 'Лаба',
     results: 'Результат',
-    fix: 'Разбор',
     'final-quiz': 'Финальный тест',
     summary: 'Итог'
   };
-  const PANEL_ORDER = ['theory', 'quiz', 'lab', 'results', 'fix', 'final-quiz', 'summary'];
+  const PANEL_ORDER = ['theory', 'quiz', 'lab', 'results', 'final-quiz', 'summary'];
 
   let modules = [];
   let currentModule = null;
@@ -282,8 +281,7 @@
 
   document.getElementById('btn-next-theory').addEventListener('click', () => showPanel('quiz'));
   document.getElementById('btn-next-quiz').addEventListener('click', () => showPanel('lab'));
-  document.getElementById('btn-next-results').addEventListener('click', () => showPanel('fix'));
-  document.getElementById('btn-next-fix').addEventListener('click', () => showPanel('final-quiz'));
+  document.getElementById('btn-next-results').addEventListener('click', () => showPanel('final-quiz'));
   document.getElementById('btn-next-final').addEventListener('click', () => showPanel('summary'));
   document.getElementById('btn-next-module').addEventListener('click', () => {
     showStep('screen-catalog');

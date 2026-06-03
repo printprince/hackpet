@@ -1132,14 +1132,18 @@ func (s *PgStore) SetProgress(userID, moduleId string, p ModuleProgress) error {
 }
 
 // SaveAttempt сохраняет попытку сдачи лабы и обновляет прогресс модуля.
-func (s *PgStore) SaveAttempt(userID, labId, submissionId, status string, results []validator.RuleResult) error {
+// moduleId должен передаваться из каталога (CompositeStore); пустой — только legacy-эвристика.
+func (s *PgStore) SaveAttempt(userID, moduleId, labId, submissionId, status string, results []validator.RuleResult) error {
 	ctx := context.Background()
-	moduleId, err := s.getModuleIDByLabID(ctx, labId)
-	if err != nil {
-		moduleId = ""
+	if moduleId == "" {
+		var resolveErr error
+		moduleId, resolveErr = s.getModuleIDByLabID(ctx, labId)
+		if resolveErr != nil {
+			moduleId = ""
+		}
 	}
 	resultsJSON, _ := json.Marshal(results)
-	_, err = s.pool.Exec(ctx,
+	_, err := s.pool.Exec(ctx,
 		`INSERT INTO lab_attempts (user_id, lab_id, module_id, submission_id, status, rule_results)
 		 VALUES ($1, $2, $3, $4, $5, $6)`,
 		userID, labId, moduleId, submissionId, status, resultsJSON,
@@ -1181,14 +1185,28 @@ func (s *PgStore) getModuleIDByLabID(ctx context.Context, labId string) (string,
 
 // GetLastLabAttempt возвращает последнюю попытку лабы по пользователю и модулю (для экрана Итог).
 func (s *PgStore) GetLastLabAttempt(userID, moduleId string) (status string, ruleResults []validator.RuleResult, err error) {
+	status, ruleResults, err = s.getLastLabAttemptWhere(userID, `module_id = $2`, moduleId)
+	if err != nil || status != "" || len(ruleResults) > 0 {
+		return status, ruleResults, err
+	}
+	return "", nil, nil
+}
+
+// GetLastLabAttemptByLabID — fallback для старых записей с неверным module_id.
+func (s *PgStore) GetLastLabAttemptByLabID(userID, labId string) (status string, ruleResults []validator.RuleResult, err error) {
+	if labId == "" {
+		return "", nil, nil
+	}
+	return s.getLastLabAttemptWhere(userID, `lab_id = $2`, labId)
+}
+
+func (s *PgStore) getLastLabAttemptWhere(userID, moduleClause, moduleArg string) (status string, ruleResults []validator.RuleResult, err error) {
 	var rawStatus string
 	var resultsJSON []byte
-	err = s.pool.QueryRow(context.Background(),
-		`SELECT status, rule_results FROM lab_attempts
-		 WHERE user_id = $1 AND module_id = $2
-		 ORDER BY created_at DESC LIMIT 1`,
-		userID, moduleId,
-	).Scan(&rawStatus, &resultsJSON)
+	query := `SELECT status, rule_results FROM lab_attempts
+		 WHERE user_id = $1 AND ` + moduleClause + `
+		 ORDER BY created_at DESC LIMIT 1`
+	err = s.pool.QueryRow(context.Background(), query, userID, moduleArg).Scan(&rawStatus, &resultsJSON)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return "", nil, nil

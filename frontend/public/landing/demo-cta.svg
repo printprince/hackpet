@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="t">
+  <title id="t">Начни бесплатно</title>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="50%" style="stop-color:#1e1b4b"/>
+      <stop offset="100%" style="stop-color:#312e81"/>
+    </linearGradient>
+    <linearGradient id="a" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22d3ee"/>
+      <stop offset="100%" style="stop-color:#818cf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <g opacity="0.13" fill="#fff"><circle cx='110' cy='80' r='64'/><circle cx='710' cy='372' r='110'/></g>
+<line x1="400" y1="360" x2="400" y2="270" stroke="url(#a)" stroke-width="4" stroke-dasharray="3 10" stroke-linecap="round" opacity="0.8"/>
+<path d="M400 96 Q436 150 432 214 L368 214 Q364 150 400 96 Z" fill="#e2e8f0"/>
+<circle cx="400" cy="170" r="15" fill="#0ea5e9"/>
+<circle cx="400" cy="170" r="15" fill="none" stroke="#1e3a8a" stroke-width="3"/>
+<path d="M368 196 L344 236 L368 224 Z" fill="url(#a)"/>
+<path d="M432 196 L456 236 L432 224 Z" fill="url(#a)"/>
+<path d="M384 214 L400 262 L416 214 Z" fill="#fbbf24"/>
+<path d="M390 214 L400 244 L410 214 Z" fill="#f97316"/>
+<path d="M 250.0 131.0 L 252.2 136.9 L 258.6 137.2 L 253.6 141.2 L 255.3 147.3 L 250.0 143.8 L 244.7 147.3 L 246.4 141.2 L 241.4 137.2 L 247.8 136.9 Z" fill="#cbd5e1"/>
+<path d="M 560.0 109.0 L 562.7 116.3 L 570.5 116.6 L 564.4 121.4 L 566.5 128.9 L 560.0 124.6 L 553.5 128.9 L 555.6 121.4 L 549.5 116.6 L 557.3 116.3 Z" fill="#cbd5e1"/>
+<path d="M 300.0 312.0 L 302.0 317.3 L 307.6 317.5 L 303.2 321.0 L 304.7 326.5 L 300.0 323.4 L 295.3 326.5 L 296.8 321.0 L 292.4 317.5 L 298.0 317.3 Z" fill="#cbd5e1"/>
+<path d="M 520.0 291.0 L 522.2 296.9 L 528.6 297.2 L 523.6 301.2 L 525.3 307.3 L 520.0 303.8 L 514.7 307.3 L 516.4 301.2 L 511.4 297.2 L 517.8 296.9 Z" fill="#cbd5e1"/>
+<path d="M 610.0 203.0 L 611.7 207.6 L 616.7 207.8 L 612.8 210.9 L 614.1 215.7 L 610.0 212.9 L 605.9 215.7 L 607.2 210.9 L 603.3 207.8 L 608.3 207.6 Z" fill="#cbd5e1"/>
+<text x="400" y="400" text-anchor="middle" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="22" font-weight="700">Начать бесплатно</text>
+</svg>

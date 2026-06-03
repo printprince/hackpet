@@ -39,6 +39,54 @@ export function getPetProgressFromXP(xp, level) {
 }
 
 /**
+ * Практичные характеристики питомца из реальных действий пользователя.
+ * - Курсы: прогресс по модулям (completed/in_progress)
+ * - Лабы: количество попыток
+ * - Play XP: награда за победы в Play
+ * - Прогресс: общий % прохождения модулей
+ */
+export function getPracticalPetStats({
+  completedModules = 0,
+  inProgressModules = 0,
+  totalLabAttempts = 0,
+  totalProgressPct = 0,
+  petXP = 0,
+} = {}) {
+  const completed = Math.max(0, Number(completedModules) || 0)
+  const inProgress = Math.max(0, Number(inProgressModules) || 0)
+  const labAttempts = Math.max(0, Number(totalLabAttempts) || 0)
+  const progressPct = Math.max(0, Math.min(100, Number(totalProgressPct) || 0))
+  const xp = Math.max(0, Number(petXP) || 0)
+
+  return [
+    {
+      id: 'course_track',
+      label: 'Курсы',
+      value: Math.min(100, completed * 10 + inProgress * 6),
+      hint: 'Пройденные и активные модули',
+    },
+    {
+      id: 'lab_practice',
+      label: 'Лабы',
+      value: Math.min(100, labAttempts * 8 + completed * 2),
+      hint: 'Попытки и практика в лабораторных',
+    },
+    {
+      id: 'play_xp',
+      label: 'Play XP',
+      value: Math.min(100, xp),
+      hint: 'XP за победы в режиме Play',
+    },
+    {
+      id: 'overall_progress',
+      label: 'Прогресс',
+      value: Math.min(100, Math.round(progressPct)),
+      hint: 'Общий прогресс по курсам',
+    },
+  ]
+}
+
+/**
  * Текущая активная аура по уровню питомца.
  * Берём последнюю из AURAS, чей minLevel <= level.
  */

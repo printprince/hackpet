@@ -5,7 +5,6 @@ import {
   Theory,
   CheckpointQuiz,
   Lab,
-  FixExplanation,
   FinalQuiz,
   Summary,
   ResultsPanel,
@@ -169,6 +168,7 @@ export default function ModuleFlowPage() {
               onAnswer={flow.handleQuizAnswer}
               revealed={flow.quizRevealed}
               onReveal={() => flow.setQuizRevealed(true)}
+              onSyncAnswers={flow.syncCheckpointQuizAnswers}
               onNextToLab={() => flow.showPanel('lab')}
             />
           )}
@@ -186,12 +186,10 @@ export default function ModuleFlowPage() {
             <ResultsPanel
               result={flow.effectiveLabResult}
               labRules={flow.currentModule.lab?.rules}
-            onNext={() => flow.showPanel('fix')}
-            nextLabel="Дальше →"
+              onNext={() => flow.showPanel('final-quiz')}
+              onStartOver={flow.handleTryAgain}
+              nextLabel="Дальше →"
             />
-          )}
-          {flow.panel === 'fix' && (
-            <FixExplanation fix={flow.currentModule.fix_explanation} onNext={() => flow.showPanel('final-quiz')} />
           )}
           {flow.panel === 'final-quiz' && (
             <FinalQuiz

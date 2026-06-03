@@ -139,9 +139,10 @@ type Store interface {
 	GetModuleWithProgress(id, userID string) (*Module, *ModuleProgress, error)
 	GetLab(labId string) (*LabDef, error)
 	GetModuleIDByLabID(labId string) (string, error)
+	GetModuleIDByQuizID(quizId string) (string, error)
 	GetProgress(moduleId, userID string) (*ModuleProgress, error)
 	SetProgress(moduleId, userID string, p ModuleProgress) error
-	SaveAttempt(userID, labId, submissionId, status string, results []validator.RuleResult) error
+	SaveAttempt(userID, moduleId, labId, submissionId, status string, results []validator.RuleResult) error
 	GetLastLabAttempt(userID, moduleId string) (status string, ruleResults []validator.RuleResult, err error)
 	RecordTelemetry(userID, moduleId, step string, payload map[string]interface{}) error
 	RecordQuizAnswer(userID, quizId, questionId string, answer int, correct bool) error

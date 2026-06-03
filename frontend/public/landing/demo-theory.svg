@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="t">
+  <title id="t">Теория на примерах: уязвимый и безопасный код</title>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="50%" style="stop-color:#1e1b4b"/>
+      <stop offset="100%" style="stop-color:#312e81"/>
+    </linearGradient>
+    <linearGradient id="a" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22d3ee"/>
+      <stop offset="100%" style="stop-color:#818cf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <g opacity="0.13" fill="#fff"><circle cx='110' cy='80' r='64'/><circle cx='710' cy='372' r='110'/></g>
+<line x1="120" y1="82" x2="560" y2="82" stroke="#334155" stroke-width="4"/>
+<circle cx="120" cy="82" r="11" fill="url(#a)"/>
+<circle cx="208" cy="82" r="11" fill="#475569"/>
+<circle cx="296" cy="82" r="11" fill="#334155"/>
+<circle cx="384" cy="82" r="11" fill="#334155"/>
+<circle cx="472" cy="82" r="11" fill="#334155"/>
+<circle cx="560" cy="82" r="11" fill="#334155"/>
+<rect x="80" y="120" width="300" height="250" rx="14" fill="#111827" stroke="#334155"/>
+<text x="102" y="150" text-anchor="start" fill="#fca5a5" font-family="system-ui,sans-serif" font-size="15" font-weight="700">Уязвимый код</text>
+<rect x="100" y="160" width="120" height="4" rx="2" fill="#ef4444"/>
+<rect x="116" y="192" width="150" height="12" rx="6" fill="#ef4444" opacity="0.55"/>
+<rect x="136" y="222" width="180" height="12" rx="6" fill="#ef4444" opacity="0.55"/>
+<rect x="136" y="252" width="120" height="12" rx="6" fill="#ef4444" opacity="0.55"/>
+<rect x="116" y="282" width="90" height="12" rx="6" fill="#ef4444" opacity="0.55"/>
+<circle cx="356" cy="140" r="13" fill="#ef4444"/><path d="M350.5 134.5 L361.5 145.5 M361.5 134.5 L350.5 145.5" stroke="#0f172a" stroke-width="3.6" stroke-linecap="round"/>
+<rect x="420" y="120" width="300" height="250" rx="14" fill="#111827" stroke="#334155"/>
+<text x="442" y="150" text-anchor="start" fill="#a7f3d0" font-family="system-ui,sans-serif" font-size="15" font-weight="700">Безопасный код</text>
+<rect x="440" y="160" width="140" height="4" rx="2" fill="#34d399"/>
+<rect x="456" y="192" width="150" height="12" rx="6" fill="#34d399" opacity="0.55"/>
+<rect x="476" y="222" width="180" height="12" rx="6" fill="#34d399" opacity="0.55"/>
+<rect x="476" y="252" width="140" height="12" rx="6" fill="#34d399" opacity="0.55"/>
+<rect x="456" y="282" width="100" height="12" rx="6" fill="#34d399" opacity="0.55"/>
+<circle cx="696" cy="140" r="13" fill="#34d399"/><path d="M690.1 140.0 L695.0 144.9 L702.5 134.8" fill="none" stroke="#0f172a" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

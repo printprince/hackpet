@@ -5,13 +5,13 @@
   "difficulty": "medium",
   "minutes": 15,
   "topic": "Безопасность сетевого взаимодействия",
-  "steps": ["theory", "checkpoint_quiz", "lab", "fix_explanation", "final_quiz", "summary"],
+  "steps": ["theory", "checkpoint_quiz", "lab", "final_quiz", "summary"],
   "theory": {
     "intro": "SSRF возникает, когда сервер делает исходящий HTTP-запрос по URL, который контролирует пользователь, и может обратиться к тем адресам, до которых у браузера или клиента доступа нет.",
     "paragraphs": [
       "Классический сценарий SSRF — функциональность вроде \"скачать картинку по URL\" или \"проксировать запрос\". Пользователь присылает адрес, сервер без проверок делает http.Get(userURL), и в результате злоумышленник получает доступ к внутренним сервисам: админским панелям, локальным API, метаданным облака (169.254.169.254) и другим эндпоинтам, до которых снаружи добраться нельзя.",
       "Опасность в том, что сервер ходит в сеть от своего имени и со своими правами. Если код не ограничивает схему, хост и диапазон IP-адресов, через SSRF можно: читать конфигурацию, вызывать внутренние админ‑методы, обходить сетевые ACL, а иногда и выполнять произвольные запросы к базе. Часто SSRF комбинируют с уязвимым парсером или слабой авторизацией на внутренних сервисах.",
-      "Базовая защита для исходящих запросов всегда одинакова: жёстко разрешить только необходимые схемы (обычно http/https), проверять host/hostname по allowlist (списку разрешённых доменов/сервисов) и явно блокировать localhost, приватные диапазоны и метаданные облака. Любой URL за пределами этого набора должен отклоняться ещё до того, как клиент сделает сетевой вызов.",
+      "Базовая защита: net/url.Parse (не проверка подстроки «http» в строке), только http/https, hostname через u.Hostname() и allowlist (точное сравнение, не strings.Contains по URL), блок localhost и приватных IP. Валидация — до client.Get. Проверка contains(\"example.com\") обходится доменами вида evil-example.com.",
       "Второй слой защиты — сам HTTP‑клиент. Нужны таймауты, ограничение редиректов и размер тела ответа. Без таймаутов злоумышленник может удерживать соединение и выжигать пул, а через бесконечные редиректы — пытаться обойти ограничения на хост. Чем меньше свободы у клиента, тем сложнее превратить SSRF в практическую атаку."
     ],
     "consequences": "Успешный SSRF часто приводит к компрометации внутренних секретов: токены облака и Kubernetes, параметры подключения к БД, приватные API админ-панелей, очередей и сервисов конфигурации. На некоторых платформах через SSRF получают доступ к метаданным инстанса и дальше — к управлению всей инфраструктурой. Поэтому исходящие запросы из backend‑кода нельзя рассматривать как \"безопасные по умолчанию\" — их нужно валидировать и ограничивать не меньше, чем входящие HTTP‑запросы.",
@@ -34,10 +34,15 @@
       },
       {
         "id": "q2",
-        "text": "Какой минимум валидации нужно применять к пользовательскому URL перед исходящим запросом?",
-        "options": ["Разрешать любые схемы, главное — не паниковать", "Разрешать только нужные схемы (http/https) и проверять хост по allowlist", "Проверять только длину строки и отсутствие пробелов"],
+        "text": "Минимум валидации перед client.Get(userURL) в Go:",
+        "options": [
+          "Проверить длину строки",
+          "url.Parse + http/https + allowlist hostname + таймаут клиента",
+          "Подстрока \"http\" в URL",
+          "Доверять TLS-сертификату"
+        ],
         "correct": 1,
-        "explanation": "Одна проверка длины или формата строки не помогает. Нужно явно ограничить схему и разрешённые хосты, иначе сервер может пойти на произвольный внутренний адрес."
+        "explanation": "Парсинг и allowlist до сетевого вызова — как в good_example."
       },
       {
         "id": "q3",
@@ -78,7 +83,7 @@
     "files": [
       {
         "path": "main.go",
-        "content": "package main\n\nimport (\n\t\"net/http\"\n\t\"net/url\"\n\t\"strings\"\n\t\"time\"\n)\n\nfunc isAllowedHost(host string) bool {\n\tallowed := []string{\"api.example.com\", \"status.example.com\"}\n\tfor _, h := range allowed {\n\t\tif strings.EqualFold(host, h) {\n\t\t\treturn true\n\t\t}\n\t}\n\treturn false\n}\n\nfunc proxyHandler(w http.ResponseWriter, r *http.Request) {\n\ttarget := r.URL.Query().Get(\"url\")\n\tu, err := url.Parse(target)\n\tif err != nil || (u.Scheme != \"http\" && u.Scheme != \"https\") || !isAllowedHost(u.Hostname()) {\n\t\thttp.Error(w, \"bad target\", http.StatusBadRequest)\n\t\treturn\n\t}\n\tclient := &http.Client{Timeout: 3 * time.Second}\n\t_, _ = client.Get(u.String())\n\tw.WriteHeader(http.StatusOK)\n}\n"
+        "content": "package main\n\nimport (\n\t\"net/http\"\n\t\"strings\"\n)\n\n// isAllowedHost — список разрешённых хостов для исходящих запросов.\nfunc isAllowedHost(host string) bool {\n\tallowed := []string{\"api.example.com\", \"status.example.com\"}\n\tfor _, h := range allowed {\n\t\tif strings.EqualFold(host, h) {\n\t\t\treturn true\n\t\t}\n\t}\n\treturn false\n}\n\nfunc proxyHandler(w http.ResponseWriter, r *http.Request) {\n\ttarget := r.URL.Query().Get(\"url\")\n\t// TODO(уязвимо): URL не валидируется (схема + allowlist хоста), запрос идёт без таймаута.\n\t// Распарсьте URL, проверьте u.Scheme и isAllowedHost(u.Hostname()), используйте http.Client{Timeout}.\n\tresp, err := http.Get(target)\n\tif err != nil {\n\t\thttp.Error(w, \"request failed\", http.StatusInternalServerError)\n\t\treturn\n\t}\n\tdefer resp.Body.Close()\n\tw.WriteHeader(http.StatusOK)\n}\n"
       }
     ],
     "rules": [
@@ -129,10 +134,15 @@
     "questions": [
       {
         "id": "f1",
-        "text": "Какой набор контролей даёт наибольший базовый эффект против SSRF?",
-        "options": ["Allowlist хостов + проверка схемы и блокировка внутренних адресов", "Проверка длины URL", "Только логирование всех исходящих запросов"],
+        "text": "Базовый набор защиты от SSRF в Go:",
+        "options": [
+          "url.Parse + http/https + allowlist hostname + Client с Timeout",
+          "Логировать URL после запроса",
+          "Проверка длины строки",
+          "strings.Contains(url, \"https\")"
+        ],
         "correct": 0,
-        "explanation": "Строгая валидация URL (схема + hostname) + allowlist и блокировка внутренних адресов закрывают основной вектор SSRF. Логирование само по себе не мешает атаке."
+        "explanation": "Валидация до Get и ограниченный клиент — из теории и лабы."
       },
       {
         "id": "f2",

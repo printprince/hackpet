@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useAuth } from './context/UserContext'
 import ThemeToggle from './components/ThemeToggle'
+import DemoTour from './components/DemoTour'
 import { ROUTES } from './constants'
 
 export default function Layout() {
   const loc = useLocation()
   const { user, logout } = useAuth()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [isDemoOpen, setIsDemoOpen] = useState(false)
   const userMenuRef = useRef(null)
   const isActive = (path) => loc.pathname === path || (path !== '/' && loc.pathname.startsWith(path))
 
@@ -56,6 +58,9 @@ export default function Layout() {
           </nav>
 
           <div className="app-header-right">
+            <button type="button" className="demo-launch-btn" onClick={() => setIsDemoOpen(true)}>
+              Демо
+            </button>
             <div className="app-user-menu" ref={userMenuRef}>
               <button
                 type="button"
@@ -98,6 +103,7 @@ export default function Layout() {
       <main className="app-main">
         <Outlet />
       </main>
+      <DemoTour isOpen={isDemoOpen} onClose={() => setIsDemoOpen(false)} />
     </div>
   )
 }

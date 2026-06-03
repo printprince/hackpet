@@ -164,7 +164,6 @@ export const MODULE_STEP_LABELS = {
   quiz: 'Квиз',
   lab: 'Лаба',
   results: 'Результат',
-  fix: 'Разбор',
   'final-quiz': 'Финальный тест',
   summary: 'Итог',
 }

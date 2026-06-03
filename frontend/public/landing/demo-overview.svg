@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="t">
+  <title id="t">Hackpet: разработка, питомец и безопасность</title>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="50%" style="stop-color:#1e1b4b"/>
+      <stop offset="100%" style="stop-color:#312e81"/>
+    </linearGradient>
+    <linearGradient id="a" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22d3ee"/>
+      <stop offset="100%" style="stop-color:#818cf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <g opacity="0.13" fill="#fff"><circle cx='110' cy='80' r='64'/><circle cx='710' cy='372' r='110'/></g>
+<g stroke="url(#a)" stroke-width="3" stroke-dasharray="3 9" stroke-linecap="round" opacity="0.8">
+<line x1="248" y1="215" x2="346" y2="215"/>
+<line x1="454" y1="215" x2="583" y2="215"/>
+</g>
+<rect x="70" y="150" width="178" height="130" rx="14" fill="#111827" stroke="#334155"/>
+<rect x="70" y="150" width="178" height="26" rx="14" fill="#0b1220"/>
+<circle cx="92" cy="163" r="4" fill="#f87171"/>
+<circle cx="108" cy="163" r="4" fill="#fbbf24"/>
+<circle cx="124" cy="163" r="4" fill="#34d399"/>
+<rect x="90" y="196" width="70" height="9" rx="4" fill="url(#a)"/>
+<rect x="106" y="216" width="90" height="9" rx="4" fill="#374151"/>
+<rect x="106" y="236" width="56" height="9" rx="4" fill="url(#a)"/>
+<rect x="90" y="256" width="80" height="9" rx="4" fill="#374151"/>
+<line x1="400" y1="158" x2="400" y2="138" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+<circle cx="400" cy="134" r="6" fill="#22d3ee"/>
+<rect x="354" y="158" width="92" height="104" rx="36" fill="url(#a)"/>
+<rect x="366" y="186" width="68" height="38" rx="19" fill="#0b1220"/>
+<circle cx="385" cy="205" r="7" fill="#22d3ee"/>
+<circle cx="415" cy="205" r="7" fill="#22d3ee"/>
+<rect x="372" y="256" width="20" height="13" rx="6" fill="url(#a)"/>
+<rect x="408" y="256" width="20" height="13" rx="6" fill="url(#a)"/>
+<path d="M641 148 L699 170 L699 232 Q699 282 641 302 Q583 282 583 232 L583 170 Z" fill="#111827" stroke="#6366f1" stroke-width="2"/>
+<circle cx="641" cy="222" r="46" fill="#0ea5e9" opacity="0.16"/>
+<path d="M614 222 L634 244 L672 198" fill="none" stroke="url(#a)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+<g fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="17" font-weight="600" text-anchor="middle">
+<text x="159" y="318">Разработка</text>
+<text x="400" y="300">Hackpet</text>
+<text x="641" y="334">Безопасность</text>
+</g>
+<text x="400" y="404" text-anchor="middle" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="19" font-weight="600">Разработка · Hackpet · Безопасность</text>
+</svg>

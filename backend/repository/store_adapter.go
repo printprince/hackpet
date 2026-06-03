@@ -39,6 +39,9 @@ func (a *StoreAdapter) GetLab(labId string) (*store.LabDef, error) {
 func (a *StoreAdapter) GetModuleIDByLabID(labId string) (string, error) {
 	return a.St.GetModuleIDByLabID(labId)
 }
+func (a *StoreAdapter) GetModuleIDByQuizID(quizId string) (string, error) {
+	return a.St.GetModuleIDByQuizID(quizId)
+}
 func (a *StoreAdapter) GetProgress(userID, moduleId string) (*store.ModuleProgress, error) {
 	return a.St.GetProgress(moduleId, userID)
 }
@@ -46,7 +49,8 @@ func (a *StoreAdapter) SetProgress(userID, moduleId string, p store.ModuleProgre
 	return a.St.SetProgress(moduleId, userID, p)
 }
 func (a *StoreAdapter) SaveAttempt(userID, labId, submissionId, status string, results []validator.RuleResult) error {
-	return a.St.SaveAttempt(userID, labId, submissionId, status, results)
+	moduleId, _ := a.St.GetModuleIDByLabID(labId)
+	return a.St.SaveAttempt(userID, moduleId, labId, submissionId, status, results)
 }
 func (a *StoreAdapter) GetLastLabAttempt(userID, moduleId string) (string, []validator.RuleResult, error) {
 	return a.St.GetLastLabAttempt(userID, moduleId)

@@ -106,28 +106,39 @@ export default function AccountAnalyticsSection({
                   </div>
                 </div>
                 <ul className="account-course-modules">
-                  {c.modules.map((m) => (
-                    <li key={m.id} className="account-course-module-row">
-                      <span
-                        className={`progress-badge progress-badge-sm ${
-                          m.progress === PROGRESS_STATUS.COMPLETED
-                            ? 'completed'
-                            : m.progress === PROGRESS_STATUS.IN_PROGRESS
-                              ? 'in_progress'
-                              : ''
-                        }`}
-                      >
-                        {PROGRESS_LABELS[m.progress] ?? m.progress}
-                      </span>
-                      <span className="account-course-module-title">{m.title}</span>
-                      <Link
-                        to={ROUTES.COURSE_MODULE(c.courseId, m.id)}
-                        className="btn btn-sm btn-ghost"
-                      >
-                        {m.progress === PROGRESS_STATUS.IN_PROGRESS ? 'Продолжить' : 'Открыть'}
-                      </Link>
-                    </li>
-                  ))}
+                  {c.modules.map((m, idx) => {
+                    // Модуль заблокирован, пока не пройден предыдущий (та же логика, что и в дереве курса).
+                    const isLocked =
+                      idx > 0 && c.modules[idx - 1]?.progress !== PROGRESS_STATUS.COMPLETED
+                    return (
+                      <li key={m.id} className="account-course-module-row">
+                        <span
+                          className={`progress-badge progress-badge-sm ${
+                            m.progress === PROGRESS_STATUS.COMPLETED
+                              ? 'completed'
+                              : m.progress === PROGRESS_STATUS.IN_PROGRESS
+                                ? 'in_progress'
+                                : ''
+                          }`}
+                        >
+                          {PROGRESS_LABELS[m.progress] ?? m.progress}
+                        </span>
+                        <span className="account-course-module-title">{m.title}</span>
+                        {isLocked ? (
+                          <span className="btn btn-sm btn-ghost is-disabled" aria-disabled="true" title="Сначала пройдите предыдущий модуль">
+                            Заблокировано
+                          </span>
+                        ) : (
+                          <Link
+                            to={ROUTES.COURSE_MODULE(c.courseId, m.id)}
+                            className="btn btn-sm btn-ghost"
+                          >
+                            {m.progress === PROGRESS_STATUS.IN_PROGRESS ? 'Продолжить' : 'Открыть'}
+                          </Link>
+                        )}
+                      </li>
+                    )
+                  })}
                 </ul>
                 <Link to={ROUTES.COURSE(c.courseId)} className="btn btn-primary btn-sm account-course-link">
                   К курсу

@@ -1,4 +1,4 @@
-export default function CheckpointQuiz({ quiz, answers, onAnswer, revealed, onReveal, onNextToLab }) {
+export default function CheckpointQuiz({ quiz, answers, onAnswer, revealed, onReveal, onSyncAnswers, onNextToLab }) {
   const q = quiz || {}
   const questions = q.questions || []
   const allAnswered = questions.length > 0 && questions.every((_, i) => answers[i] != null)
@@ -25,7 +25,17 @@ export default function CheckpointQuiz({ quiz, answers, onAnswer, revealed, onRe
       ))}
       <div className="card-actions">
         {!revealed ? (
-          <button type="button" className="btn btn-primary" disabled={!allAnswered} onClick={onReveal}>Дальше</button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={!allAnswered}
+            onClick={() => {
+              onSyncAnswers?.()
+              onReveal?.()
+            }}
+          >
+            Дальше
+          </button>
         ) : (
           <button type="button" className="btn btn-primary" onClick={onNextToLab}>Дальше →</button>
         )}

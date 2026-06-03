@@ -142,6 +142,10 @@ func (c *CompositeStore) GetModuleIDByLabID(labId string) (string, error) {
 	return c.File.GetModuleIDByLabID(labId)
 }
 
+func (c *CompositeStore) GetModuleIDByQuizID(quizId string) (string, error) {
+	return c.File.GetModuleIDByQuizID(quizId)
+}
+
 func (c *CompositeStore) GetProgress(moduleId, userID string) (*ModuleProgress, error) {
 	if userID != "" && c.Pg != nil {
 		return c.Pg.GetProgress(userID, moduleId)
@@ -156,18 +160,31 @@ func (c *CompositeStore) SetProgress(moduleId, userID string, p ModuleProgress) 
 	return c.File.SetProgress(moduleId, userID, p)
 }
 
-func (c *CompositeStore) SaveAttempt(userID, labId, submissionId, status string, results []validator.RuleResult) error {
-	if userID != "" && c.Pg != nil {
-		return c.Pg.SaveAttempt(userID, labId, submissionId, status, results)
+func (c *CompositeStore) SaveAttempt(userID, moduleId, labId, submissionId, status string, results []validator.RuleResult) error {
+	if moduleId == "" {
+		moduleId, _ = c.File.GetModuleIDByLabID(labId)
 	}
-	return c.File.SaveAttempt(userID, labId, submissionId, status, results)
+	if userID != "" && c.Pg != nil {
+		return c.Pg.SaveAttempt(userID, moduleId, labId, submissionId, status, results)
+	}
+	return c.File.SaveAttempt(userID, moduleId, labId, submissionId, status, results)
 }
 
 func (c *CompositeStore) GetLastLabAttempt(userID, moduleId string) (string, []validator.RuleResult, error) {
 	if userID != "" && c.Pg != nil {
-		return c.Pg.GetLastLabAttempt(userID, moduleId)
+		status, results, err := c.Pg.GetLastLabAttempt(userID, moduleId)
+		if err != nil {
+			return "", nil, err
+		}
+		if status != "" || len(results) > 0 {
+			return status, results, nil
+		}
+		if m, err := c.File.GetModule(moduleId); err == nil && m != nil && m.Lab.ID != "" {
+			return c.Pg.GetLastLabAttemptByLabID(userID, m.Lab.ID)
+		}
+		return status, results, nil
 	}
-	return "", nil, nil
+	return c.File.GetLastLabAttempt(userID, moduleId)
 }
 
 func (c *CompositeStore) RecordTelemetry(userID, moduleId, step string, payload map[string]interface{}) error {
