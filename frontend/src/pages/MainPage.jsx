@@ -18,6 +18,7 @@ export default function MainPage() {
     <div className="main-page dashboard-page">
       <section className="section dashboard-header">
         <div className="container">
+          <span className="page-eyebrow dashboard-eyebrow">dashboard · home</span>
           <h1>Привет, {firstName}! Продолжаем прокачку безопасности</h1>
           <p className="page-desc">
             Здесь твой текущий прогресс, состояние Hackpet и бест практис по secure coding.
@@ -32,6 +33,7 @@ export default function MainPage() {
               <DashboardPetCard
                 pet={dashboard.pet}
                 petLevel={dashboard.petLevel}
+                petProgress={dashboard.petProgress}
                 petStats={dashboard.petStats}
                 hasActiveCourse={dashboard.hasActiveCourse}
               />

@@ -255,6 +255,7 @@ export default function AccountPage() {
   return (
     <div className="account-page">
       <div className="container account-content">
+        <span className="page-eyebrow">account · profile</span>
         <h1 className="account-page-title">Профиль</h1>
         <p className="page-desc">Управление аккаунтом, питомцем и вашим обучением.</p>
 

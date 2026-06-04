@@ -4,7 +4,9 @@ import { PET } from '../../../constants'
 import { getEvolutionLevelBand, getPetAura, getPetDisplayName, getPetActivityStatus, getPetEvolutionStage } from '../../../utils/pet'
 import PetAvatar from '../../../components/PetAvatar'
 
-export default function DashboardPetCard({ pet, petLevel, petStats = [], hasActiveCourse = false }) {
+export default function DashboardPetCard({ pet, petLevel, petProgress = 0, petStats = [], hasActiveCourse = false }) {
+  const isMaxLevel = petLevel >= PET.LEVEL_MAX
+  const ringPct = isMaxLevel ? 100 : Math.max(0, Math.min(100, Math.round(petProgress)))
   const baseAura = getPetAura(petLevel)
   const equippedId = pet?.equipped_aura
   const aura = equippedId ? { ...baseAura, id: equippedId } : baseAura
@@ -64,12 +66,21 @@ export default function DashboardPetCard({ pet, petLevel, petStats = [], hasActi
         </div>
       </div>
       <div className="pet-avatar-wrap">
-        <PetAvatar
-          level={petLevel}
-          variant={pet?.equipped_variant || 'classic'}
-          auraClassNames={aura?.id && aura.id !== 'none' ? [`pet-avatar-aura-${aura.id}`] : []}
-        />
+        <div
+          className="pet-avatar-ring"
+          style={{ '--ring-pct': `${ringPct}%` }}
+          title={isMaxLevel ? 'Максимальный уровень' : `${ringPct}% до уровня ${petLevel + 1}`}
+        >
+          <PetAvatar
+            level={petLevel}
+            variant={pet?.equipped_variant || 'classic'}
+            auraClassNames={aura?.id && aura.id !== 'none' ? [`pet-avatar-aura-${aura.id}`] : []}
+          />
+        </div>
         <span className="pet-level">Ур. {petLevel}</span>
+        <span className="pet-xp-caption">
+          {isMaxLevel ? 'Максимальная форма' : `${ringPct}% до Ур. ${petLevel + 1}`}
+        </span>
       </div>
       <div className="pet-info">
         <h2 className="pet-name">{getPetDisplayName(pet)}</h2>

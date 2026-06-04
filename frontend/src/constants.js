@@ -5,9 +5,9 @@
 
 /** Шрифты: единый основной стиль для всего интерфейса. */
 export const FONTS = {
-  HEADING: "'Manrope', 'Plus Jakarta Sans', system-ui, sans-serif",
+  HEADING: "'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace",
   BODY: "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif",
-  MONO: "'JetBrains Mono', monospace",
+  MONO: "'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace",
 }
 
 export const ROUTES = {

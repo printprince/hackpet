@@ -22,6 +22,13 @@ export default function Lab({ lab, fileContents, onContentChange, onReset, onSub
         ))}
       </ul>
       <div className="lab-editor-wrap">
+        <div className="lab-editor-chrome">
+          <span className="lab-editor-dots" aria-hidden="true">
+            <i></i><i></i><i></i>
+          </span>
+          <span className="lab-editor-file">{firstFile?.path || 'main'}</span>
+          {l.language && <span className="lab-editor-lang">{l.language}</span>}
+        </div>
         <Editor
           height="420px"
           language={lang}

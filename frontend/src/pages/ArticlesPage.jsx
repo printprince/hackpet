@@ -44,7 +44,10 @@ export default function ArticlesPage() {
   return (
     <div className="container articles-page">
       <div className="articles-page-head">
-        <h1>Статьи по кибербезопасности</h1>
+        <div>
+          <span className="page-eyebrow">read · articles</span>
+          <h1>Статьи по кибербезопасности</h1>
+        </div>
         <button type="button" className="btn btn-primary btn-sm" onClick={() => setIsAddModalOpen(true)}>
           Добавить статью
         </button>

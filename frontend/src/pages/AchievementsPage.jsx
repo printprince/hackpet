@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useCourseDetails } from '../hooks/useCourseDetails'
-import { PROGRESS_STATUS, ACHIEVEMENT_BADGES } from '../constants'
+import { PROGRESS_STATUS, ACHIEVEMENT_BADGES, ROUTES } from '../constants'
 import PageState from '../components/PageState'
 
 function getCompletedCourses(courseDetails) {
@@ -37,6 +37,7 @@ export default function AchievementsPage() {
 
   return (
     <div className="container achievements-page">
+      <span className="page-eyebrow">progress · badges</span>
       <h1>Мои достижения</h1>
       <p className="page-desc">Бейджи за прохождение курсов и модулей.</p>
       {loading && (

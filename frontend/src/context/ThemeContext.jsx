@@ -6,8 +6,9 @@ const ThemeContext = createContext(null)
 
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(() => {
-    if (typeof window === 'undefined') return 'light'
-    return (localStorage.getItem(THEME_KEY) || 'light')
+    if (typeof window === 'undefined') return 'dark'
+    // Тёмная тема — дефолт (cyber/DevSecOps); сохранённый выбор пользователя имеет приоритет.
+    return localStorage.getItem(THEME_KEY) || 'dark'
   })
 
   const setTheme = useCallback((value) => {

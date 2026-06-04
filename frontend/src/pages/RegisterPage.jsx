@@ -52,6 +52,7 @@ export default function RegisterPage() {
           <Link to={ROUTES.HOME} className="auth-back-link">← На главную</Link>
         </div>
         <div className="auth-dark-head">
+          <span className="auth-eyebrow">auth · register</span>
           <h1>Регистрация</h1>
         </div>
         {error && <p className="form-error">{error}</p>}

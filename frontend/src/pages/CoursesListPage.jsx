@@ -19,6 +19,7 @@ export default function CoursesListPage() {
 
   return (
     <div className="container courses-page">
+      <span className="page-eyebrow">learn · courses</span>
       <h1>Курсы</h1>
       <p className="page-desc">Выберите курс, чтобы увидеть модули и начать обучение.</p>
 

@@ -40,6 +40,7 @@ export default function LoginPage() {
           <Link to={ROUTES.HOME} className="auth-back-link">← На главную</Link>
         </div>
         <div className="auth-dark-head">
+          <span className="auth-eyebrow">auth · login</span>
           <h1>Вход</h1>
         </div>
         {error && <p className="form-error">{error}</p>}

@@ -295,10 +295,11 @@ export default function PlayPage() {
       : null
 
   return (
-    <div className="container">
+    <div className="container play-page">
       {mode === 'menu' ? (
         <>
           <div className="play-hero-card card">
+            <span className="page-eyebrow">train · play</span>
             <h1 className="play-hero-title">Play</h1>
             <p className="play-hero-desc">
               Мини-игры по безопасности кода: быстрые раунды, таймер и разбор ошибок.
