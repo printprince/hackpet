@@ -65,3 +65,7 @@ func (a *StoreAdapter) RecordQuizAnswer(userID, quizId, questionId string, answe
 func (a *StoreAdapter) GetQuizStats(userID, quizId string) (correct int, total int, err error) {
 	return a.St.GetQuizStats(userID, quizId)
 }
+
+func (a *StoreAdapter) GetQuizAnswers(userID, quizId string) (map[string]int, error) {
+	return a.St.GetQuizAnswers(userID, quizId)
+}

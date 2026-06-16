@@ -1231,6 +1231,34 @@ func (s *PgStore) RecordQuizAnswer(userID, quizId, questionId string, answer int
 	return err
 }
 
+// GetQuizAnswers возвращает последний ответ на каждый вопрос квиза.
+func (s *PgStore) GetQuizAnswers(userID, quizId string) (map[string]int, error) {
+	rows, err := s.pool.Query(context.Background(),
+		`SELECT DISTINCT ON (question_id) question_id, answer
+		 FROM quiz_answers
+		 WHERE user_id = $1 AND quiz_id = $2
+		 ORDER BY question_id, created_at DESC`,
+		userID, quizId,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return map[string]int{}, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[string]int{}
+	for rows.Next() {
+		var qid string
+		var ans int
+		if err := rows.Scan(&qid, &ans); err != nil {
+			return nil, err
+		}
+		out[qid] = ans
+	}
+	return out, rows.Err()
+}
+
 // GetQuizStats возвращает количество верно решённых вопросов и общее число вопросов квиза для пользователя.
 // Несколько попыток по одному и тому же вопросу не раздувают счётчики: считаем по DISTINCT question_id.
 func (s *PgStore) GetQuizStats(userID, quizId string) (correct int, total int, err error) {

@@ -17,6 +17,7 @@ export default function CourseSidebarNav({
   activeModuleMaxStepIndex,
   lockMode,
   currentPanel,
+  canOpenStep,
 }) {
   const navigate = useNavigate()
   const [expandedId, setExpandedId] = useState(selectedModuleId || null)
@@ -91,26 +92,24 @@ export default function CourseSidebarNav({
               {isExpanded && (
                 <ul className="course-nav-steps">
                   {(function () {
-                    // Если пользователь уже дошёл до итога — показываем только Итог (активный модуль — по lockMode, остальные — по данным курса).
-                    const hasReachedSummary = isCompletedModule || m.last_step === 'summary'
-                    const isOverviewContext = !currentPanel
-                    const showOnlySummary =
-                      (isActiveModule && lockMode === 'summary-only') ||
-                      (!isActiveModule && hasReachedSummary) ||
-                      (isOverviewContext && hasReachedSummary)
-                    const stepsToShow = showOnlySummary ? ['summary'] : PANEL_ORDER
-                    return stepsToShow.map((stepId, stepIdx) => {
+                    const isReviewModule =
+                      isCompletedModule || (isActiveModule && lockMode === 'review')
+                    const stepsToShow = PANEL_ORDER
+                    return stepsToShow.map((stepId) => {
                       const label = MODULE_STEP_LABELS[stepId] || stepId
                       const fullIdx = PANEL_ORDER.indexOf(stepId)
                       let stepReachable
-                      if (showOnlySummary) {
-                        stepReachable = true // только Итог, он всегда доступен
+                      if (isReviewModule) {
+                        stepReachable = true
+                      } else if (isActiveModule && typeof canOpenStep === 'function') {
+                        stepReachable = canOpenStep(stepId)
                       } else if (isActiveModule && typeof activeModuleMaxStepIndex === 'number') {
                         stepReachable = fullIdx <= activeModuleMaxStepIndex
                       } else {
                         stepReachable = fullIdx === 0 || storedLastIndex >= fullIdx
                       }
                       const disabled = !stepReachable
+                      const reviewTitle = isReviewModule ? 'Режим просмотра' : undefined
                       return (
                         <li key={stepId}>
                           <button
@@ -119,7 +118,7 @@ export default function CourseSidebarNav({
                             onClick={disabled ? undefined : () => handleStepClick(m.id, stepId)}
                             disabled={disabled}
                             aria-current={isActiveModule && currentPanel === stepId ? 'step' : undefined}
-                            title={disabled ? 'Сначала пройдите предыдущий этап' : undefined}
+                            title={disabled ? 'Сначала пройдите предыдущий этап' : reviewTitle}
                           >
                             <span className="course-nav-step-label">{label}</span>
                           </button>

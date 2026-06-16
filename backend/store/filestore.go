@@ -407,3 +407,7 @@ func (s *fileStore) RecordQuizAnswer(userID, quizId, questionId string, answer i
 func (s *fileStore) GetQuizStats(userID, quizId string) (correct int, total int, err error) {
 	return 0, 0, nil
 }
+
+func (s *fileStore) GetQuizAnswers(userID, quizId string) (map[string]int, error) {
+	return map[string]int{}, nil
+}

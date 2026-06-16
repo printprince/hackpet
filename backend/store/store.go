@@ -149,4 +149,6 @@ type Store interface {
 	// GetQuizStats возвращает агрегированную статистику по квизу (кол-во правильных ответов и всего ответов).
 	// Используется для отображения Итога модуля, когда пользователь возвращается позже.
 	GetQuizStats(userID, quizId string) (correct int, total int, err error)
+	// GetQuizAnswers — последний ответ пользователя на каждый вопрос квиза (question_id → индекс варианта).
+	GetQuizAnswers(userID, quizId string) (map[string]int, error)
 }

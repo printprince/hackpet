@@ -32,4 +32,5 @@ type ProgressRepo interface {
 	RecordTelemetry(userID, moduleId, step string, payload map[string]interface{}) error
 	RecordQuizAnswer(userID, quizId, questionId string, answer int, correct bool) error
 	GetQuizStats(userID, quizId string) (correct int, total int, err error)
+	GetQuizAnswers(userID, quizId string) (map[string]int, error)
 }

@@ -208,3 +208,10 @@ func (c *CompositeStore) GetQuizStats(userID, quizId string) (correct int, total
 	}
 	return 0, 0, nil
 }
+
+func (c *CompositeStore) GetQuizAnswers(userID, quizId string) (map[string]int, error) {
+	if userID != "" && c.Pg != nil {
+		return c.Pg.GetQuizAnswers(userID, quizId)
+	}
+	return map[string]int{}, nil
+}

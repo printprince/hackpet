@@ -1,4 +1,4 @@
-export default function Theory({ theory, onNext }) {
+export default function Theory({ theory, onNext, locked = false }) {
   const t = theory || {}
   const hasParagraphs = Array.isArray(t.paragraphs) && t.paragraphs.length > 0
   return (
@@ -39,7 +39,7 @@ export default function Theory({ theory, onNext }) {
         </div>
       </div>
       <div className="card-actions">
-        <button type="button" className="btn btn-primary" onClick={onNext}>
+        <button type="button" className="btn btn-primary" onClick={locked ? undefined : onNext} disabled={locked} title={locked ? 'Режим просмотра' : undefined}>
           Дальше →
         </button>
       </div>

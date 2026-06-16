@@ -156,3 +156,7 @@ func (s *ProgressService) isQuizAnswerCorrect(quizId, questionId string, answer 
 func (s *ProgressService) GetQuizStats(userID, quizId string) (correct int, total int, err error) {
 	return s.Progress.GetQuizStats(userID, quizId)
 }
+
+func (s *ProgressService) GetQuizAnswers(userID, quizId string) (map[string]int, error) {
+	return s.Progress.GetQuizAnswers(userID, quizId)
+}

@@ -102,10 +102,10 @@ export default function Summary({
   }
 
   useEffect(() => {
-    if (typeof onApplyResult === 'function') {
+    if (typeof onApplyResult === 'function' && progress?.completed !== true) {
       onApplyResult(overallPassed)
     }
-  }, [overallPassed, onApplyResult])
+  }, [overallPassed, onApplyResult, progress?.completed])
 
   return (
     <div className="card">

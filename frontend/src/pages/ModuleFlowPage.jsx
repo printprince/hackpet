@@ -30,6 +30,7 @@ export default function ModuleFlowPage() {
 
   const flow = useModuleFlowState({
     moduleId,
+    userId: user?.id,
     continueFromProgress,
     initialPanel,
     onNavigateToCourse: () => navigate(`/courses/${courseId}`, { replace: true }),
@@ -131,6 +132,7 @@ export default function ModuleFlowPage() {
             activeModuleMaxStepIndex={flow.maxReachedIndex}
             lockMode={flow.lockMode}
             currentPanel={flow.panel}
+            canOpenStep={flow.canOpenPanel}
             onSelectOverview={() => navigate(`/courses/${courseId}`, { replace: true })}
             onSelectModule={(targetModuleId) => {
               if (!targetModuleId) {
@@ -150,6 +152,7 @@ export default function ModuleFlowPage() {
             onStepClick={flow.showPanel}
             maxReachableStepIndex={flow.maxReachedIndex}
             lockMode={flow.lockMode}
+            canOpenStep={flow.canOpenPanel}
           />
           <div className="card module-header-card">
             <h2>{flow.currentModule.title}</h2>
@@ -159,7 +162,7 @@ export default function ModuleFlowPage() {
           </div>
 
           {flow.panel === 'theory' && (
-            <Theory theory={flow.currentModule.theory} onNext={() => flow.showPanel('quiz')} />
+            <Theory theory={flow.currentModule.theory} onNext={() => flow.showPanel('quiz')} locked={flow.isReadOnlyReview} />
           )}
           {flow.panel === 'quiz' && (
             <CheckpointQuiz
@@ -170,6 +173,7 @@ export default function ModuleFlowPage() {
               onReveal={() => flow.setQuizRevealed(true)}
               onSyncAnswers={flow.syncCheckpointQuizAnswers}
               onNextToLab={() => flow.showPanel('lab')}
+              locked={flow.isReadOnlyReview}
             />
           )}
           {flow.panel === 'lab' && (

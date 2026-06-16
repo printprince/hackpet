@@ -1,4 +1,4 @@
-export default function CheckpointQuiz({ quiz, answers, onAnswer, revealed, onReveal, onSyncAnswers, onNextToLab }) {
+export default function CheckpointQuiz({ quiz, answers, onAnswer, revealed, onReveal, onSyncAnswers, onNextToLab, locked = false }) {
   const q = quiz || {}
   const questions = q.questions || []
   const allAnswered = questions.length > 0 && questions.every((_, i) => answers[i] != null)
@@ -11,7 +11,7 @@ export default function CheckpointQuiz({ quiz, answers, onAnswer, revealed, onRe
           <div className="radio-group">
             {(quest.options || []).map((opt, j) => (
               <label key={j}>
-                <input type="radio" name={`cq_${i}`} value={j} checked={answers[i] === j} onChange={() => onAnswer(i, j)} disabled={revealed} />
+                <input type="radio" name={`cq_${i}`} value={j} checked={answers[i] === j} onChange={() => onAnswer(i, j)} disabled={revealed || locked} />
                 {opt}
               </label>
             ))}
@@ -28,7 +28,7 @@ export default function CheckpointQuiz({ quiz, answers, onAnswer, revealed, onRe
           <button
             type="button"
             className="btn btn-primary"
-            disabled={!allAnswered}
+            disabled={locked || !allAnswered}
             onClick={() => {
               onSyncAnswers?.()
               onReveal?.()
@@ -37,7 +37,7 @@ export default function CheckpointQuiz({ quiz, answers, onAnswer, revealed, onRe
             Дальше
           </button>
         ) : (
-          <button type="button" className="btn btn-primary" onClick={onNextToLab}>Дальше →</button>
+          <button type="button" className="btn btn-primary" onClick={locked ? undefined : onNextToLab} disabled={locked} title={locked ? 'Режим просмотра' : undefined}>Дальше →</button>
         )}
       </div>
     </div>

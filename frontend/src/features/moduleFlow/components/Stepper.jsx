@@ -1,20 +1,23 @@
 import { MODULE_STEP_LABELS } from '../../../constants'
 import { PANEL_ORDER } from '../constants'
 
-export default function Stepper({ current, onStepClick, maxReachableStepIndex, lockMode }) {
-  // В режиме summary-only показываем только Итог (не перечисляем недоступные этапы).
-  const stepsToShow = lockMode === 'summary-only' ? ['summary'] : PANEL_ORDER
+export default function Stepper({ current, onStepClick, maxReachableStepIndex, lockMode, canOpenStep }) {
+  const stepsToShow = PANEL_ORDER
   const currentIndex = PANEL_ORDER.indexOf(current)
   const reachable =
     maxReachableStepIndex != null ? maxReachableStepIndex : PANEL_ORDER.length - 1
 
   return (
     <nav className="stepper" aria-label="Шаги модуля">
-      {stepsToShow.map((p, i) => {
+      {stepsToShow.map((p) => {
         const idxInFull = PANEL_ORDER.indexOf(p)
         const done =
           idxInFull < currentIndex || (current === 'summary' && idxInFull <= currentIndex)
-        let isLocked = lockMode === 'summary-only' ? p !== 'summary' : idxInFull > reachable
+        const isLocked = lockMode === 'review'
+          ? false
+          : typeof canOpenStep === 'function'
+            ? !canOpenStep(p)
+            : idxInFull > reachable
         const isCurrent = p === current
         const label = MODULE_STEP_LABELS[p] || p
         const canClick = onStepClick && !isLocked
@@ -28,7 +31,7 @@ export default function Stepper({ current, onStepClick, maxReachableStepIndex, l
             onClick={() => onStepClick(p)}
             disabled={isLocked}
             aria-current={isCurrent ? 'step' : undefined}
-            title={isLocked ? 'Сначала пройдите предыдущий этап' : undefined}
+            title={lockMode === 'review' ? 'Режим просмотра: редактирование отключено' : isLocked ? 'Сначала пройдите предыдущий этап' : undefined}
           >
             {label}
           </button>

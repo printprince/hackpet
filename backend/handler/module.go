@@ -45,16 +45,23 @@ func (h *ModuleHandler) Get(w http.ResponseWriter, r *http.Request) {
 		prog = &store.ModuleProgress{}
 	}
 	quizStats := map[string]map[string]int{}
-	// Агрегированная статистика по квизам (по сохранённым ответам в БД).
+	savedQuizAnswers := map[string]map[string]int{}
+	// Агрегированная статистика и сохранённые ответы по квизам (из БД).
 	if userID != "" && h.Progress != nil {
 		if m.CheckpointQuiz.ID != "" {
 			if correct, total, err := h.Progress.GetQuizStats(userID, m.CheckpointQuiz.ID); err == nil && total > 0 {
 				quizStats["checkpoint"] = map[string]int{"correct": correct, "total": total}
 			}
+			if answers, err := h.Progress.GetQuizAnswers(userID, m.CheckpointQuiz.ID); err == nil && len(answers) > 0 {
+				savedQuizAnswers["checkpoint"] = answers
+			}
 		}
 		if m.FinalQuiz.ID != "" {
 			if correct, total, err := h.Progress.GetQuizStats(userID, m.FinalQuiz.ID); err == nil && total > 0 {
 				quizStats["final"] = map[string]int{"correct": correct, "total": total}
+			}
+			if answers, err := h.Progress.GetQuizAnswers(userID, m.FinalQuiz.ID); err == nil && len(answers) > 0 {
+				savedQuizAnswers["final"] = answers
 			}
 		}
 	}
@@ -70,8 +77,9 @@ func (h *ModuleHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"lab":              m.Lab,
 		"fix_explanation":  m.FixExplanation,
 		"final_quiz":       m.FinalQuiz,
-		"progress":         prog,
-		"quiz_stats":       quizStats,
+		"progress":            prog,
+		"quiz_stats":          quizStats,
+		"saved_quiz_answers":  savedQuizAnswers,
 	}
 	if userID != "" && h.Progress != nil {
 		if status, ruleResults, err := h.Progress.GetLastLabAttempt(userID, moduleId); err == nil && (status != "" || len(ruleResults) > 0) {

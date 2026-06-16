@@ -290,7 +290,7 @@ export default function CourseDetailPage() {
               onStartModule={() =>
                 startModule(
                   selectedModule.id,
-                  selectedModule.progress === PROGRESS_STATUS.IN_PROGRESS && selectedModule.last_step
+                  selectedModule.progress === PROGRESS_STATUS.IN_PROGRESS && Boolean(selectedModule.last_step)
                 )
               }
             />
