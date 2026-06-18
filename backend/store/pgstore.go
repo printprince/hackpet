@@ -1287,6 +1287,39 @@ func (s *PgStore) ListBestPractices(userID string, limit int) ([]BestPractice, e
 	return list, rows.Err()
 }
 
+// SaveBugSmashScore сохраняет результат партии Bug Smash.
+func (s *PgStore) SaveBugSmashScore(userID string, score int) error {
+	_, err := s.pool.Exec(context.Background(), `
+		INSERT INTO bugsmash_scores (user_id, score)
+		VALUES ($1, $2)
+	`, userID, score)
+	return err
+}
+
+// GetBugSmashTopScores возвращает топ-N результатов с именами пользователей.
+func (s *PgStore) GetBugSmashTopScores(limit int) ([]BugSmashScore, error) {
+	rows, err := s.pool.Query(context.Background(), `
+		SELECT u.username, bs.score, to_char(bs.created_at, 'DD.MM.YYYY') as created_at
+		FROM bugsmash_scores bs
+		JOIN users u ON u.id::text = bs.user_id
+		ORDER BY bs.score DESC
+		LIMIT $1
+	`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var result []BugSmashScore
+	for rows.Next() {
+		var s BugSmashScore
+		if err := rows.Scan(&s.Username, &s.Score, &s.CreatedAt); err != nil {
+			continue
+		}
+		result = append(result, s)
+	}
+	return result, nil
+}
+
 // GetRandomPlaySnippet выбирает случайный активный фрагмент вместе с вариантами фикса.
 func (s *PgStore) GetRandomPlaySnippet(language string) (*PlaySnippet, error) {
 	query := `

@@ -304,3 +304,11 @@ CREATE TRIGGER tr_user_module_progress_updated_at
     BEFORE UPDATE ON user_module_progress FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 CREATE TRIGGER tr_user_course_progress_updated_at
     BEFORE UPDATE ON user_course_progress FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+
+CREATE TABLE IF NOT EXISTS bugsmash_scores (
+    id         BIGSERIAL PRIMARY KEY,
+    user_id    TEXT NOT NULL,
+    score      INT  NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_bugsmash_scores_score ON bugsmash_scores (score DESC);

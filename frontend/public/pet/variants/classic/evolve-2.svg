@@ -1,23 +1,61 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-<defs>
-  <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
-    <stop offset="0%" stop-color="#f6efe0"/>
-    <stop offset="100%" stop-color="#d5c0a0"/>
-  </linearGradient>
-  <pattern id="p2" width="8" height="8" patternUnits="userSpaceOnUse">
-    <path d="M0 8 L8 0" stroke="#ffffff" stroke-opacity="0.18" stroke-width="1"/>
-  </pattern>
-</defs>
-<rect width="100" height="100" fill="url(#bg2)"/>
-<rect width="100" height="100" fill="url(#p2)"/>
-<ellipse cx="50" cy="91" rx="23" ry="5" fill="#000" opacity="0.14"/>
-<circle cx="50" cy="52" r="22.5" fill="#6a5f54" stroke="#352e28" stroke-width="1.9"/>
-<path d="M37 41 C32 37,31 28,36 22 C41 17,48 20,47 28 C46 34,40 34,38 30 C36 27,38 24,42 25" fill="none" stroke="#8a837a" stroke-width="1.9" stroke-linecap="round"/>
-<path d="M63 41 C68 37,69 28,64 22 C59 17,52 20,53 28 C54 34,60 34,62 30 C64 27,62 24,58 25" fill="none" stroke="#8a837a" stroke-width="1.9" stroke-linecap="round"/>
-<rect x="24" y="50" width="11" height="5" rx="2" fill="#7a6c5d"/>
-<rect x="65" y="50" width="11" height="5" rx="2" fill="#7a6c5d"/>
-<path d="M41 45 Q50 40 59 45 Q57 63 50 67 Q43 63 41 45 Z" fill="#d8d0c4"/>
-<path d="M45 49.5 Q50 47.5 55 49.5 Q54 56.5 50 58.5 Q46 56.5 45 49.5 Z" fill="#2a3b4f"/>
-<path d="M46 52.5 L48.3 51.2 L46.2 49.9 Z" fill="#9dd6ef"/>
-<path d="M53.8 52.5 L51.7 51.2 L53.9 49.9 Z" fill="#9dd6ef"/>
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff4e0"/>
+      <stop offset="100%" stop-color="#dfc890"/>
+    </radialGradient>
+    <radialGradient id="fur" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#daa050"/>
+      <stop offset="100%" stop-color="#a86020"/>
+    </radialGradient>
+    <radialGradient id="muzz" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff0d0"/>
+      <stop offset="100%" stop-color="#ecd098"/>
+    </radialGradient>
+    <radialGradient id="screen" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#0a1a0a"/>
+      <stop offset="100%" stop-color="#020802"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="50" cy="50" r="49" fill="url(#bg)"/>
+  <ellipse cx="50" cy="88" rx="19" ry="4.5" fill="#b08040" opacity="0.3"/>
+  <!-- Body (taller) -->
+  <ellipse cx="50" cy="67" rx="18" ry="18" fill="url(#fur)"/>
+  <!-- Head -->
+  <circle cx="50" cy="42" r="22" fill="url(#fur)"/>
+  <!-- Ears -->
+  <circle cx="31" cy="26" r="9.5" fill="#a86020"/>
+  <circle cx="31" cy="26" r="6" fill="#e0906a"/>
+  <circle cx="69" cy="26" r="9.5" fill="#a86020"/>
+  <circle cx="69" cy="26" r="6" fill="#e0906a"/>
+  <!-- Muzzle -->
+  <ellipse cx="50" cy="49" rx="11" ry="8" fill="url(#muzz)"/>
+  <!-- Eyes -->
+  <circle cx="42" cy="39" r="5" fill="#1a0d04"/>
+  <circle cx="58" cy="39" r="5" fill="#1a0d04"/>
+  <circle cx="43.5" cy="37.5" r="1.8" fill="white"/>
+  <circle cx="59.5" cy="37.5" r="1.8" fill="white"/>
+  <!-- Nose -->
+  <ellipse cx="50" cy="46.5" rx="2.8" ry="2" fill="#5a2a10"/>
+  <path d="M45.5 50.5 Q50 54 54.5 50.5" stroke="#5a2a10" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="35" cy="45" rx="4" ry="2.5" fill="#f0a060" opacity="0.4"/>
+  <ellipse cx="65" cy="45" rx="4" ry="2.5" fill="#f0a060" opacity="0.4"/>
+  <!-- Terminal screen on belly -->
+  <rect x="38" y="58" width="24" height="16" rx="3" fill="url(#screen)" stroke="#22c55e" stroke-width="0.8"/>
+  <!-- Green text lines on terminal -->
+  <line x1="41" y1="62" x2="53" y2="62" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round" filter="url(#glow)"/>
+  <line x1="41" y1="65" x2="58" y2="65" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round" filter="url(#glow)"/>
+  <line x1="41" y1="68" x2="50" y2="68" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round" filter="url(#glow)"/>
+  <!-- cursor blink rect -->
+  <rect x="50.5" y="66.5" width="2.5" height="2.5" fill="#22c55e" filter="url(#glow)"/>
+  <!-- Arms -->
+  <ellipse cx="33" cy="69" rx="7" ry="5.5" fill="#a86020" transform="rotate(-25 33 69)"/>
+  <ellipse cx="67" cy="69" rx="7" ry="5.5" fill="#a86020" transform="rotate(25 67 69)"/>
+  <!-- Feet -->
+  <ellipse cx="42" cy="83" rx="8" ry="5" fill="#a86020"/>
+  <ellipse cx="58" cy="83" rx="8" ry="5" fill="#a86020"/>
 </svg>

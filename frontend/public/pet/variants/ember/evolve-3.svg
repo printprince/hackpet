@@ -1,12 +1,106 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-<rect width="100" height="100" fill="#351814"/>
-<ellipse cx="50" cy="90" rx="23" ry="6" fill="#000" opacity="0.22"/>
-<path d="M50 30 L68 44 L63 72 L37 72 L32 44 Z" fill="#de4d2d" stroke="#682316" stroke-width="1.5"/>
-<path d="M50 35 L61 45 L58 62 L42 62 L39 45 Z" fill="#f5a03b" opacity="0.9"/>
-<path d="M35 53 L25 57 L29 66 L37 61 Z" fill="#8f2f1d"/>
-<path d="M65 53 L75 57 L71 66 L63 61 Z" fill="#8f2f1d"/>
-<rect x="42" y="74" width="6" height="9" rx="2" fill="#7f1d1d"/>
-<rect x="52" y="74" width="6" height="9" rx="2" fill="#7f1d1d"/>
-<path d="M42 50 L47 47 L42 44 Z" fill="#fff"/><path d="M58 50 L53 47 L58 44 Z" fill="#fff"/>
-<rect x="47" y="55" width="6" height="3" rx="1" fill="#2b0f0a"/>
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#421c08"/>
+      <stop offset="100%" stop-color="#0e0404"/>
+    </radialGradient>
+    <radialGradient id="body" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#5a2c08"/>
+      <stop offset="100%" stop-color="#321408"/>
+    </radialGradient>
+    <radialGradient id="scales" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8b2500"/>
+      <stop offset="100%" stop-color="#4a1200"/>
+    </radialGradient>
+    <radialGradient id="ember-aura" cx="50%" cy="55%" r="55%">
+      <stop offset="0%" stop-color="#fb923c" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="fire-glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softglow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="50" cy="50" r="49" fill="url(#bg)"/>
+  <circle cx="50" cy="60" r="38" fill="url(#ember-aura)"/>
+  <circle cx="50" cy="50" r="47" fill="none" stroke="#f97316" stroke-width="0.5" opacity="0.4"/>
+  <ellipse cx="50" cy="88" rx="19" ry="5" fill="#f97316" opacity="0.4" filter="url(#softglow)"/>
+  <!-- Growing wings -->
+  <path d="M27 52 Q10 35 12 14 Q20 26 24 44 Q16 36 22 50 Z" fill="#f97316" opacity="0.65" filter="url(#fire-glow)"/>
+  <path d="M27 52 Q10 35 12 14" stroke="#fbbf24" stroke-width="1" fill="none" filter="url(#fire-glow)"/>
+  <path d="M26 60 Q8 52 6 32 Q16 40 20 56 Z" fill="#fb923c" opacity="0.5" filter="url(#fire-glow)"/>
+  <path d="M26 60 Q8 52 6 32" stroke="#fbbf24" stroke-width="0.8" fill="none" filter="url(#fire-glow)"/>
+  <path d="M73 52 Q90 35 88 14 Q80 26 76 44 Q84 36 78 50 Z" fill="#f97316" opacity="0.65" filter="url(#fire-glow)"/>
+  <path d="M73 52 Q90 35 88 14" stroke="#fbbf24" stroke-width="1" fill="none" filter="url(#fire-glow)"/>
+  <path d="M74 60 Q92 52 94 32 Q84 40 80 56 Z" fill="#fb923c" opacity="0.5" filter="url(#fire-glow)"/>
+  <path d="M74 60 Q92 52 94 32" stroke="#fbbf24" stroke-width="0.8" fill="none" filter="url(#fire-glow)"/>
+  <!-- Body with scale texture -->
+  <ellipse cx="50" cy="65" rx="19" ry="18" fill="url(#body)"/>
+  <!-- Scale rows -->
+  <path d="M38 60 Q42 57 46 60" stroke="#8b2500" stroke-width="1" fill="none"/>
+  <path d="M44 60 Q48 57 52 60" stroke="#8b2500" stroke-width="1" fill="none"/>
+  <path d="M50 60 Q54 57 58 60" stroke="#8b2500" stroke-width="1" fill="none"/>
+  <path d="M35 65 Q39 62 43 65" stroke="#8b2500" stroke-width="1" fill="none"/>
+  <path d="M41 65 Q45 62 49 65" stroke="#8b2500" stroke-width="1" fill="none"/>
+  <path d="M47 65 Q51 62 55 65" stroke="#8b2500" stroke-width="1" fill="none"/>
+  <path d="M53 65 Q57 62 61 65" stroke="#8b2500" stroke-width="1" fill="none"/>
+  <path d="M38 70 Q42 67 46 70" stroke="#8b2500" stroke-width="1" fill="none"/>
+  <path d="M44 70 Q48 67 52 70" stroke="#8b2500" stroke-width="1" fill="none"/>
+  <path d="M50 70 Q54 67 58 70" stroke="#8b2500" stroke-width="1" fill="none"/>
+  <!-- Head -->
+  <circle cx="50" cy="41" r="23" fill="url(#body)"/>
+  <!-- Scale on head -->
+  <path d="M36 45 Q40 42 44 45" stroke="#7a2000" stroke-width="0.8" fill="none"/>
+  <path d="M43 42 Q47 39 51 42" stroke="#7a2000" stroke-width="0.8" fill="none"/>
+  <path d="M50 45 Q54 42 58 45" stroke="#7a2000" stroke-width="0.8" fill="none"/>
+  <!-- Horn crown (prominent) -->
+  <path d="M40 26 L36 10 L44 20 Z" fill="#6b2200"/>
+  <path d="M40 26 L36 10 L44 20 Z" fill="none" stroke="#f97316" stroke-width="1" filter="url(#softglow)"/>
+  <path d="M50 24 L50 8 L55 18 L45 18 Z" fill="#6b2200"/>
+  <path d="M50 24 L50 8 L55 18 L45 18 Z" fill="none" stroke="#f97316" stroke-width="1" filter="url(#softglow)"/>
+  <path d="M60 26 L56 10 L64 20 Z" fill="#6b2200"/>
+  <path d="M60 26 L56 10 L64 20 Z" fill="none" stroke="#f97316" stroke-width="1" filter="url(#softglow)"/>
+  <!-- Horn glow tips -->
+  <circle cx="36" cy="10" r="1.8" fill="#fbbf24" filter="url(#fire-glow)"/>
+  <circle cx="50" cy="8" r="2" fill="#fbbf24" filter="url(#fire-glow)"/>
+  <circle cx="56" cy="10" r="1.8" fill="#fbbf24" filter="url(#fire-glow)"/>
+  <!-- Flame mane around head -->
+  <path d="M28 42 Q22 28 30 18 Q32 28 28 38" fill="#f97316" opacity="0.7" filter="url(#fire-glow)"/>
+  <path d="M30 36 Q26 25 32 15 Q35 25 30 34" fill="#fbbf24" opacity="0.5" filter="url(#fire-glow)"/>
+  <path d="M72 42 Q78 28 70 18 Q68 28 72 38" fill="#f97316" opacity="0.7" filter="url(#fire-glow)"/>
+  <path d="M70 36 Q74 25 68 15 Q65 25 70 34" fill="#fbbf24" opacity="0.5" filter="url(#fire-glow)"/>
+  <!-- Eyes (fierce) -->
+  <circle cx="42" cy="40" r="5.5" fill="#200800"/>
+  <circle cx="58" cy="40" r="5.5" fill="#200800"/>
+  <circle cx="42" cy="40" r="4" fill="#f97316" filter="url(#fire-glow)"/>
+  <circle cx="58" cy="40" r="4" fill="#f97316" filter="url(#fire-glow)"/>
+  <circle cx="42" cy="40" r="1.8" fill="#fbbf24"/>
+  <circle cx="58" cy="40" r="1.8" fill="#fbbf24"/>
+  <!-- Fierce brows -->
+  <path d="M38 35 L46 37" stroke="#200800" stroke-width="2" stroke-linecap="round"/>
+  <path d="M54 37 L62 35" stroke="#200800" stroke-width="2" stroke-linecap="round"/>
+  <!-- Muzzle -->
+  <ellipse cx="50" cy="49" rx="9.5" ry="7" fill="#3a1808"/>
+  <ellipse cx="47.5" cy="47.5" rx="1.5" ry="1" fill="#f97316" opacity="0.7"/>
+  <ellipse cx="52.5" cy="47.5" rx="1.5" ry="1" fill="#f97316" opacity="0.7"/>
+  <!-- Snarl -->
+  <path d="M44.5 51.5 Q47 54 50 52 Q53 54 55.5 51.5" stroke="#8b2500" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <!-- Fangs -->
+  <path d="M47.5 52 L47 55" stroke="#e0c0a0" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M52.5 52 L53 55" stroke="#e0c0a0" stroke-width="1.2" stroke-linecap="round"/>
+  <!-- Arms -->
+  <ellipse cx="32" cy="67" rx="7.5" ry="5.5" fill="#321408"/>
+  <ellipse cx="68" cy="67" rx="7.5" ry="5.5" fill="#321408"/>
+  <!-- Feet -->
+  <ellipse cx="41" cy="82" rx="8.5" ry="5.5" fill="#321408"/>
+  <ellipse cx="59" cy="82" rx="8.5" ry="5.5" fill="#321408"/>
+  <!-- Ember sparks -->
+  <circle cx="18" cy="38" r="1.5" fill="#fbbf24" filter="url(#fire-glow)" opacity="0.9"/>
+  <circle cx="82" cy="33" r="1.5" fill="#fbbf24" filter="url(#fire-glow)" opacity="0.9"/>
+  <circle cx="15" cy="60" r="1" fill="#f97316" filter="url(#softglow)" opacity="0.8"/>
+  <circle cx="85" cy="55" r="1" fill="#f97316" filter="url(#softglow)" opacity="0.8"/>
 </svg>

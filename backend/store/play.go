@@ -1,5 +1,13 @@
 package store
 
+// BugSmashScore — запись в таблице лидеров Bug Smash.
+type BugSmashScore struct {
+	UserID    string `json:"user_id"`
+	Username  string `json:"username"`
+	Score     int    `json:"score"`
+	CreatedAt string `json:"created_at"`
+}
+
 // PlaySnippet — фрагмент кода для мини‑игры "Vulnerable or Safe?".
 type PlaySnippet struct {
 	ID                   string          `json:"id"`

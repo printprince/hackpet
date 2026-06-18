@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"log/slog"
@@ -32,6 +33,46 @@ func (h *PlayHandler) Round(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.JSON(w, http.StatusOK, sn)
+}
+
+// BugSmashScore сохраняет результат партии Bug Smash и начисляет XP питомцу.
+func (h *PlayHandler) BugSmashScore(w http.ResponseWriter, r *http.Request) {
+	u := request.UserFromContext(r.Context())
+	if u == nil {
+		response.Error(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	var body struct {
+		Score int `json:"score"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Score < 0 {
+		response.Error(w, http.StatusBadRequest, "invalid score")
+		return
+	}
+	pet, err := h.Play.SaveBugSmashScore(u.ID, body.Score)
+	if err != nil {
+		h.Log.Error("bugsmash save score", "error", err, "user_id", u.ID)
+		response.Error(w, http.StatusInternalServerError, "failed to save score")
+		return
+	}
+	scores, _ := h.Play.GetBugSmashTopScores()
+	xpReward := body.Score / 2
+	response.JSON(w, http.StatusOK, map[string]any{
+		"xp_reward": xpReward,
+		"pet":       pet,
+		"scores":    scores,
+	})
+}
+
+// BugSmashScores возвращает топ-10 таблицы лидеров.
+func (h *PlayHandler) BugSmashScores(w http.ResponseWriter, r *http.Request) {
+	scores, err := h.Play.GetBugSmashTopScores()
+	if err != nil {
+		h.Log.Error("bugsmash get scores", "error", err)
+		response.Error(w, http.StatusInternalServerError, "failed to load scores")
+		return
+	}
+	response.JSON(w, http.StatusOK, map[string]any{"scores": scores})
 }
 
 // Win начисляет опыт питомцу за успешное прохождение сессии.

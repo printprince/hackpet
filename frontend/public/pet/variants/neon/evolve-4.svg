@@ -1,1 +1,85 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#2b115f"/><circle cx="16" cy="18" r="1.2" fill="#67e8f9"/><circle cx="84" cy="82" r="1.2" fill="#f472b6"/><rect x="31" y="30" width="38" height="44" rx="10" fill="#a855f7" stroke="#67e8f9" stroke-width="1.4"/><path d="M39 30 L34 13 L46 26 Z" fill="#22d3ee"/><path d="M61 30 L66 13 L54 26 Z" fill="#22d3ee"/><path d="M31 54 L20 58 L22 65 L31 61 Z" fill="#0ea5e9"/><path d="M69 54 L80 58 L78 65 L69 61 Z" fill="#0ea5e9"/><rect x="40" y="74" width="6" height="10" rx="2" fill="#2563eb"/><rect x="54" y="74" width="6" height="10" rx="2" fill="#2563eb"/><path d="M42 42 H58" stroke="#f472b6" stroke-width="1.6"/><rect x="44" y="63" width="12" height="7" rx="2" fill="#9333ea" stroke="#e9d5ff" stroke-width="0.8"/><rect x="42" y="46" width="16" height="11" rx="2" fill="#0f172a" stroke="#67e8f9"/><circle cx="46" cy="51" r="1.8" fill="#67e8f9"/><circle cx="54" cy="51" r="1.8" fill="#67e8f9"/><path d="M46 57 H54" stroke="#22d3ee" stroke-width="1.2"/></svg>
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#12102a"/>
+      <stop offset="100%" stop-color="#04040e"/>
+    </radialGradient>
+    <radialGradient id="body" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#1c1c5a"/>
+      <stop offset="100%" stop-color="#0e0e30"/>
+    </radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="cyan-glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="purple-glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softglow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="50" cy="50" r="49" fill="url(#bg)"/>
+  <!-- Purple aura -->
+  <circle cx="50" cy="55" r="40" fill="url(#aura)"/>
+  <!-- Aura rings -->
+  <circle cx="50" cy="50" r="45" fill="none" stroke="#a855f7" stroke-width="0.6" opacity="0.5" filter="url(#softglow)"/>
+  <circle cx="50" cy="50" r="40" fill="none" stroke="#a855f7" stroke-width="0.4" opacity="0.3"/>
+  <ellipse cx="50" cy="89" rx="19" ry="4.5" fill="#a855f7" opacity="0.3" filter="url(#softglow)"/>
+  <!-- Neon blade tail -->
+  <path d="M50 76 Q60 82 75 95 Q70 92 65 84 Q60 82 55 78" fill="#00e5ff" opacity="0.7" filter="url(#cyan-glow)"/>
+  <path d="M50 76 Q60 82 75 95" stroke="#00e5ff" stroke-width="1.5" fill="none" filter="url(#cyan-glow)"/>
+  <!-- Shoulder armor plates -->
+  <path d="M20 52 Q15 42 22 34 L32 44 Z" fill="#1c1c5a" stroke="#a855f7" stroke-width="1.2" filter="url(#softglow)"/>
+  <path d="M80 52 Q85 42 78 34 L68 44 Z" fill="#1c1c5a" stroke="#a855f7" stroke-width="1.2" filter="url(#softglow)"/>
+  <!-- Highlight on armor -->
+  <path d="M21 50 Q17 43 23 37" stroke="#00e5ff" stroke-width="0.8" fill="none" opacity="0.7"/>
+  <path d="M79 50 Q83 43 77 37" stroke="#00e5ff" stroke-width="0.8" fill="none" opacity="0.7"/>
+  <!-- Body -->
+  <ellipse cx="50" cy="65" rx="19" ry="18" fill="url(#body)"/>
+  <!-- Angular body panels -->
+  <path d="M36 57 L50 53 L64 57 L61 74 L50 78 L39 74 Z" fill="#1c1c5a" stroke="#00e5ff" stroke-width="0.7" opacity="0.6"/>
+  <!-- Center chest glow -->
+  <circle cx="50" cy="65" r="5" fill="#a855f7" opacity="0.4" filter="url(#purple-glow)"/>
+  <circle cx="50" cy="65" r="2.5" fill="#a855f7" filter="url(#purple-glow)"/>
+  <!-- Head -->
+  <circle cx="50" cy="42" r="22" fill="url(#body)"/>
+  <!-- Half-face visor -->
+  <path d="M28 38 Q50 30 72 38 L72 46 Q50 50 28 46 Z" fill="#0a0a20" opacity="0.8"/>
+  <path d="M28 38 Q50 30 72 38 L72 46 Q50 50 28 46 Z" fill="none" stroke="#00e5ff" stroke-width="0.8" filter="url(#cyan-glow)"/>
+  <!-- Visor scan line -->
+  <line x1="29" y1="43" x2="71" y2="43" stroke="#00e5ff" stroke-width="0.5" opacity="0.6"/>
+  <!-- Eyes through visor -->
+  <circle cx="43" cy="41" r="5.5" fill="#001020"/>
+  <circle cx="57" cy="41" r="5.5" fill="#001020"/>
+  <circle cx="43" cy="41" r="4" fill="#00e5ff" filter="url(#cyan-glow)"/>
+  <circle cx="57" cy="41" r="4" fill="#00e5ff" filter="url(#cyan-glow)"/>
+  <circle cx="43" cy="41" r="1.5" fill="white"/>
+  <circle cx="57" cy="41" r="1.5" fill="white"/>
+  <!-- Ears angular -->
+  <polygon points="30,26 24,9 40,18" fill="#0d1a35"/>
+  <polygon points="30,26 24,9 40,18" fill="none" stroke="#00e5ff" stroke-width="1.2" filter="url(#cyan-glow)"/>
+  <polygon points="30,24 27,14 38,19" fill="#00e5ff" opacity="0.5"/>
+  <polygon points="70,26 60,9 76,18" fill="#0d1a35"/>
+  <polygon points="70,26 60,9 76,18" fill="none" stroke="#00e5ff" stroke-width="1.2" filter="url(#cyan-glow)"/>
+  <polygon points="70,24 62,14 73,19" fill="#00e5ff" opacity="0.5"/>
+  <!-- Lower face (muzzle) -->
+  <ellipse cx="50" cy="50" rx="9" ry="6" fill="#0d1230"/>
+  <ellipse cx="50" cy="48.5" rx="2" ry="1.3" fill="#00e5ff" filter="url(#softglow)"/>
+  <path d="M46 52 Q50 55 54 52" stroke="#00e5ff" stroke-width="1" fill="none" stroke-linecap="round" filter="url(#softglow)"/>
+  <!-- Paws with claws -->
+  <ellipse cx="32" cy="72" rx="7" ry="5" fill="#0d1230" stroke="#00e5ff" stroke-width="0.8"/>
+  <ellipse cx="68" cy="72" rx="7" ry="5" fill="#0d1230" stroke="#00e5ff" stroke-width="0.8"/>
+  <!-- Claw marks -->
+  <path d="M29 70 L27 74 M32 69 L31 74 M35 70 L34 74" stroke="#00e5ff" stroke-width="0.7" filter="url(#softglow)"/>
+  <path d="M65 70 L63 74 M68 69 L67 74 M71 70 L70 74" stroke="#00e5ff" stroke-width="0.7" filter="url(#softglow)"/>
+  <!-- Feet -->
+  <ellipse cx="41" cy="83" rx="9" ry="5.5" fill="#0d1230" stroke="#a855f7" stroke-width="0.8"/>
+  <ellipse cx="59" cy="83" rx="9" ry="5.5" fill="#0d1230" stroke="#a855f7" stroke-width="0.8"/>
+</svg>

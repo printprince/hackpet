@@ -1,37 +1,103 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-<defs>
-  <radialGradient id="bg5" cx="50%" cy="24%" r="90%">
-    <stop offset="0%" stop-color="#d4d6db"/>
-    <stop offset="100%" stop-color="#33445f"/>
-  </radialGradient>
-  <filter id="shine" x="-30%" y="-30%" width="160%" height="160%">
-    <feGaussianBlur stdDeviation="1.4" result="b"/>
-    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-  </filter>
-</defs>
-<rect width="100" height="100" fill="url(#bg5)"/>
-
-
-<path d="M14 20 L18 27 L11 27 Z" fill="#f8e4c3" opacity="0.72"/>
-<path d="M86 20 L90 27 L83 27 Z" fill="#cfe4fa" opacity="0.72"/>
-<circle cx="20" cy="80" r="1.6" fill="#dcefff" opacity="0.6"/>
-<circle cx="80" cy="80" r="1.6" fill="#f7e3bf" opacity="0.6"/>
-<ellipse cx="50" cy="93" rx="25" ry="6" fill="#000" opacity="0.16"/>
-<circle cx="50" cy="48" r="24.8" fill="#394657" stroke="#141a22" stroke-width="2.2"/>
-
-
-
-
-<path d="M35 36 C29 32,28 21,34 15 C40 10,49 13,48 24 C47 31,40 31,38 26 C36 22,39 19,43 21" fill="none" stroke="#9fb1c8" stroke-width="2.2" stroke-linecap="round"/>
-<path d="M65 36 C71 32,72 21,66 15 C60 10,51 13,52 24 C53 31,60 31,62 26 C64 22,61 19,57 21" fill="none" stroke="#9fb1c8" stroke-width="2.2" stroke-linecap="round"/>
-<rect x="18" y="47" width="14" height="6" rx="2" fill="#4f5f73"/>
-<rect x="68" y="47" width="14" height="6" rx="2" fill="#4f5f73"/>
-<rect x="35" y="70" width="6.5" height="12" rx="2" fill="#4f5f73"/>
-<rect x="58.5" y="70" width="6.5" height="12" rx="2" fill="#4f5f73"/>
-<path d="M43 38 L50 30 L57 38" fill="none" stroke="#c8d6ea" stroke-width="1.8"/>
-<rect x="45" y="58" width="10" height="7" rx="2" fill="#718399"/>
-<path d="M39 42 Q50 35 61 42 Q58 66 50 71 Q42 66 39 42 Z" fill="#e1e4ea"/>
-<path d="M44.5 48 Q50 45.5 55.5 48 Q54.5 58.5 50 61 Q45.5 58.5 44.5 48 Z" fill="#203244"/>
-<path d="M45.8 51.5 L48.5 50 L46 48.6 Z" fill="#c3efff"/>
-<path d="M54.2 51.5 L51.5 50 L54 48.6 Z" fill="#c3efff"/>
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fffbe8"/>
+      <stop offset="60%" stop-color="#fde68a"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </radialGradient>
+    <radialGradient id="fur" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#b87030"/>
+      <stop offset="100%" stop-color="#6a3008"/>
+    </radialGradient>
+    <radialGradient id="armor" cx="30%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#fde68a"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </radialGradient>
+    <radialGradient id="muzz" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff4d0"/>
+      <stop offset="100%" stop-color="#d8b868"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softglow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="50" cy="50" r="49" fill="url(#bg)"/>
+  <!-- Outer radiance -->
+  <circle cx="50" cy="50" r="47" fill="none" stroke="#fbbf24" stroke-width="2" opacity="0.5" filter="url(#glow)"/>
+  <circle cx="50" cy="50" r="43" fill="none" stroke="#f59e0b" stroke-width="1" opacity="0.4" filter="url(#glow)"/>
+  <!-- Code stream wings (left) -->
+  <g opacity="0.8">
+    <path d="M22 50 Q8 35 5 20 Q12 22 16 30 Q10 35 18 42" stroke="#818cf8" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <path d="M20 55 Q4 45 2 28 Q9 32 12 42 Q6 47 15 52" stroke="#a78bfa" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M21 60 Q5 58 2 42 Q10 44 14 52" stroke="#6366f1" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <!-- Wing feather-lines from code -->
+    <path d="M22 45 Q10 28 8 12" stroke="#c7d2fe" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.7"/>
+    <path d="M19 50 Q6 38 5 22" stroke="#c7d2fe" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.7"/>
+    <path d="M18 57 Q4 50 3 35" stroke="#c7d2fe" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.7"/>
+  </g>
+  <!-- Code stream wings (right) -->
+  <g opacity="0.8">
+    <path d="M78 50 Q92 35 95 20 Q88 22 84 30 Q90 35 82 42" stroke="#818cf8" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <path d="M80 55 Q96 45 98 28 Q91 32 88 42 Q94 47 85 52" stroke="#a78bfa" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M79 60 Q95 58 98 42 Q90 44 86 52" stroke="#6366f1" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M78 45 Q90 28 92 12" stroke="#c7d2fe" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.7"/>
+    <path d="M81 50 Q94 38 95 22" stroke="#c7d2fe" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.7"/>
+    <path d="M82 57 Q96 50 97 35" stroke="#c7d2fe" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.7"/>
+  </g>
+  <ellipse cx="50" cy="89" rx="22" ry="5.5" fill="#a07020" opacity="0.4"/>
+  <!-- Full ornate armor body -->
+  <ellipse cx="50" cy="65" rx="20" ry="19" fill="url(#fur)"/>
+  <!-- Armor plates -->
+  <path d="M32 55 Q50 48 68 55 L65 74 Q50 80 35 74 Z" fill="url(#armor)" opacity="0.7"/>
+  <path d="M38 55 L50 52 L62 55 L60 62 L50 65 L40 62 Z" fill="#fde68a" opacity="0.9"/>
+  <!-- Rune symbols on armor -->
+  <circle cx="50" cy="58" r="3.5" fill="none" stroke="#f59e0b" stroke-width="1" filter="url(#softglow)"/>
+  <path d="M50 54.5 L50 61.5 M46.5 58 L53.5 58" stroke="#f59e0b" stroke-width="0.8" filter="url(#softglow)"/>
+  <!-- Head -->
+  <circle cx="50" cy="40" r="23" fill="url(#fur)"/>
+  <!-- Ornate crown of light -->
+  <path d="M30 32 L34 18 L40 27 L50 13 L60 27 L66 18 L70 32 Z" fill="#fbbf24" filter="url(#softglow)"/>
+  <path d="M30 32 L70 32 L68 38 L32 38 Z" fill="#f59e0b"/>
+  <!-- Crown gems -->
+  <circle cx="50" cy="17" r="3" fill="#ef4444" filter="url(#glow)"/>
+  <circle cx="38" cy="23" r="2.2" fill="#a855f7" filter="url(#glow)"/>
+  <circle cx="62" cy="23" r="2.2" fill="#a855f7" filter="url(#glow)"/>
+  <circle cx="32" cy="28" r="1.8" fill="#06b6d4" filter="url(#glow)"/>
+  <circle cx="68" cy="28" r="1.8" fill="#06b6d4" filter="url(#glow)"/>
+  <!-- Floating runes around body -->
+  <circle cx="20" cy="42" r="2.5" fill="none" stroke="#fbbf24" stroke-width="1" filter="url(#glow)" opacity="0.9"/>
+  <circle cx="80" cy="42" r="2.5" fill="none" stroke="#fbbf24" stroke-width="1" filter="url(#glow)" opacity="0.9"/>
+  <circle cx="16" cy="68" r="2" fill="none" stroke="#818cf8" stroke-width="1" filter="url(#glow)" opacity="0.8"/>
+  <circle cx="84" cy="68" r="2" fill="none" stroke="#818cf8" stroke-width="1" filter="url(#glow)" opacity="0.8"/>
+  <!-- Ears (armored tips) -->
+  <circle cx="29" cy="22" r="10" fill="#6a3008"/>
+  <circle cx="29" cy="22" r="6.5" fill="#b06030"/>
+  <path d="M24 18 L29 12 L34 18" fill="#fbbf24" opacity="0.8"/>
+  <circle cx="71" cy="22" r="10" fill="#6a3008"/>
+  <circle cx="71" cy="22" r="6.5" fill="#b06030"/>
+  <path d="M66 18 L71 12 L76 18" fill="#fbbf24" opacity="0.8"/>
+  <!-- Eyes glowing gold -->
+  <circle cx="42" cy="39" r="5.5" fill="#1a0d04"/>
+  <circle cx="58" cy="39" r="5.5" fill="#1a0d04"/>
+  <circle cx="42" cy="39" r="3.5" fill="#fbbf24" filter="url(#glow)"/>
+  <circle cx="58" cy="39" r="3.5" fill="#fbbf24" filter="url(#glow)"/>
+  <circle cx="42" cy="39" r="1.2" fill="white"/>
+  <circle cx="58" cy="39" r="1.2" fill="white"/>
+  <!-- Muzzle -->
+  <ellipse cx="50" cy="47" rx="10" ry="7" fill="url(#muzz)"/>
+  <ellipse cx="50" cy="44.5" rx="2.5" ry="1.8" fill="#5a2010"/>
+  <path d="M44.5 49.5 Q50 53.5 55.5 49.5" stroke="#5a2010" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <!-- Arms with armor -->
+  <ellipse cx="31" cy="67" rx="8" ry="5.5" fill="#6a3008"/>
+  <ellipse cx="69" cy="67" rx="8" ry="5.5" fill="#6a3008"/>
+  <ellipse cx="25" cy="68" rx="5" ry="3.5" fill="url(#armor)"/>
+  <ellipse cx="75" cy="68" rx="5" ry="3.5" fill="url(#armor)"/>
+  <!-- Feet -->
+  <ellipse cx="41" cy="83" rx="9" ry="5.5" fill="#6a3008"/>
+  <ellipse cx="59" cy="83" rx="9" ry="5.5" fill="#6a3008"/>
 </svg>

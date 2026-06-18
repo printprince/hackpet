@@ -112,7 +112,7 @@ export default function ArticlesPage() {
       {isAddModalOpen && (
         <div className="dev-modal-overlay" role="presentation" onClick={() => setIsAddModalOpen(false)}>
           <div
-            className="dev-modal"
+            className="contact-modal"
             role="dialog"
             aria-modal="true"
             aria-labelledby="add-article-modal-title"
@@ -121,20 +121,33 @@ export default function ArticlesPage() {
             <button
               type="button"
               className="dev-modal-close"
-              aria-label="Закрыть модалку"
+              aria-label="Закрыть"
               onClick={() => setIsAddModalOpen(false)}
             >
               ×
             </button>
-            <h2 id="add-article-modal-title">Создание статьи в разработке</h2>
-            <p className="muted">
-              Мы уже заложили каркас для добавления материалов. Скоро здесь будет полноценный редактор статьи.
+            <div className="contact-modal-icon">✍️</div>
+            <h2 id="add-article-modal-title" className="contact-modal-title">Хочешь опубликовать статью?</h2>
+            <p className="contact-modal-desc">
+              Напиши нам — рассмотрим твою статью и опубликуем на платформе.
             </p>
-            <div className="dev-modal-actions">
-              <button type="button" className="btn btn-primary btn-sm" onClick={() => setIsAddModalOpen(false)}>
-                Понятно
-              </button>
+            <div className="contact-modal-links">
+              <a className="contact-modal-item" href="mailto:kairollaadilet@gmail.com">
+                <span className="contact-modal-icon-sm">✉️</span>
+                <span>kairollaadilet@gmail.com</span>
+              </a>
+              <a className="contact-modal-item" href="tel:+77067873600">
+                <span className="contact-modal-icon-sm">📞</span>
+                <span>+7 706 787 3600</span>
+              </a>
+              <a className="contact-modal-item" href="https://t.me/adiletqayrolla" target="_blank" rel="noreferrer">
+                <span className="contact-modal-icon-sm">✈️</span>
+                <span>@adiletqayrolla</span>
+              </a>
             </div>
+            <button type="button" className="btn btn-primary" style={{ marginTop: '1.5rem', width: '100%' }} onClick={() => setIsAddModalOpen(false)}>
+              Закрыть
+            </button>
           </div>
         </div>
       )}

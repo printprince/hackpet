@@ -1,1 +1,55 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="bg1" cx="50%" cy="30%" r="82%"><stop offset="0%" stop-color="#f6f1e6"/><stop offset="100%" stop-color="#dccfb7"/></radialGradient></defs><rect width="100" height="100" fill="url(#bg1)"/><ellipse cx="50" cy="90" rx="22" ry="5" fill="#000" opacity="0.12"/><circle cx="50" cy="53" r="21" fill="#6f5b47" stroke="#3a2f26" stroke-width="1.8"/><path d="M38 42 C33 38,32 30,37 24 C42 19,48 22,47 29 C46 35,40 35,38 31 C36 28,38 25,42 26" fill="none" stroke="#8f7a63" stroke-width="1.8" stroke-linecap="round"/><path d="M62 42 C67 38,68 30,63 24 C58 19,52 22,53 29 C54 35,60 35,62 31 C64 28,62 25,58 26" fill="none" stroke="#8f7a63" stroke-width="1.8" stroke-linecap="round"/><path d="M41 46 Q50 42 59 46 Q57 62 50 66 Q43 62 41 46 Z" fill="#d7c9b3"/><path d="M45 50 Q50 48 55 50 Q54 56 50 58 Q46 56 45 50 Z" fill="#2a3b4f"/><path d="M46 52.8 L48.3 51.5 L46.2 50.2 Z" fill="#9dd6ef"/><path d="M53.8 52.8 L51.7 51.5 L53.9 50.2 Z" fill="#9dd6ef"/></svg>
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff8ee"/>
+      <stop offset="100%" stop-color="#e8d4a8"/>
+    </radialGradient>
+    <radialGradient id="fur" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#e8b46a"/>
+      <stop offset="100%" stop-color="#c07830"/>
+    </radialGradient>
+    <radialGradient id="muzz" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff4e0"/>
+      <stop offset="100%" stop-color="#f0d8a8"/>
+    </radialGradient>
+  </defs>
+  <circle cx="50" cy="50" r="49" fill="url(#bg)"/>
+  <!-- Shadow -->
+  <ellipse cx="50" cy="88" rx="18" ry="4" fill="#c09050" opacity="0.3"/>
+  <!-- Body -->
+  <ellipse cx="50" cy="68" rx="17" ry="16" fill="url(#fur)"/>
+  <!-- Head -->
+  <circle cx="50" cy="44" r="22" fill="url(#fur)"/>
+  <!-- Ears -->
+  <circle cx="32" cy="28" r="9" fill="#c07830"/>
+  <circle cx="32" cy="28" r="5.5" fill="#e8a070"/>
+  <circle cx="68" cy="28" r="9" fill="#c07830"/>
+  <circle cx="68" cy="28" r="5.5" fill="#e8a070"/>
+  <!-- Muzzle -->
+  <ellipse cx="50" cy="50" rx="11" ry="8" fill="url(#muzz)"/>
+  <!-- Eyes -->
+  <circle cx="42" cy="41" r="4.5" fill="#1a0d04"/>
+  <circle cx="58" cy="41" r="4.5" fill="#1a0d04"/>
+  <circle cx="43.5" cy="39.5" r="1.5" fill="white"/>
+  <circle cx="59.5" cy="39.5" r="1.5" fill="white"/>
+  <!-- Nose -->
+  <ellipse cx="50" cy="47.5" rx="2.8" ry="2" fill="#5a2a10"/>
+  <!-- Smile -->
+  <path d="M45.5 52 Q50 55.5 54.5 52" stroke="#5a2a10" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <!-- Cheek blush -->
+  <ellipse cx="36" cy="47" rx="4" ry="2.5" fill="#f0a060" opacity="0.4"/>
+  <ellipse cx="64" cy="47" rx="4" ry="2.5" fill="#f0a060" opacity="0.4"/>
+  <!-- Badge on chest -->
+  <rect x="42" y="62" width="16" height="11" rx="3" fill="#6366f1"/>
+  <rect x="43" y="63" width="14" height="9" rx="2" fill="#4f46e5"/>
+  <!-- </> code symbol as shapes -->
+  <path d="M46.5 65.5 L44.5 67.5 L46.5 69.5" stroke="#a5b4fc" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M53.5 65.5 L55.5 67.5 L53.5 69.5" stroke="#a5b4fc" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="51.5" y1="65" x2="48.5" y2="70" stroke="#a5b4fc" stroke-width="1.1" stroke-linecap="round"/>
+  <!-- Arms -->
+  <ellipse cx="34" cy="70" rx="7" ry="5" fill="#c07830" transform="rotate(-20 34 70)"/>
+  <ellipse cx="66" cy="70" rx="7" ry="5" fill="#c07830" transform="rotate(20 66 70)"/>
+  <!-- Feet -->
+  <ellipse cx="42" cy="82" rx="8" ry="5" fill="#c07830"/>
+  <ellipse cx="58" cy="82" rx="8" ry="5" fill="#c07830"/>
+</svg>

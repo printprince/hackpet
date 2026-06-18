@@ -60,6 +60,8 @@ export const API = {
   PLAY: {
     ROUND: '/play/v1/round',
     WIN: '/play/v1/win',
+    BUGSMASH_SCORE: '/play/v1/bugsmash/score',
+    BUGSMASH_SCORES: '/play/v1/bugsmash/scores',
   },
 }
 

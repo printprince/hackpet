@@ -1,8 +1,70 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-<rect width="100" height="100" fill="#221311"/>
-<ellipse cx="50" cy="90" rx="22" ry="6" fill="#000" opacity="0.2"/>
-<path d="M50 32 L66 44 L61 70 L39 70 L34 44 Z" fill="#b53d24" stroke="#5f2015" stroke-width="1.4"/>
-<path d="M50 37 L59 45 L56 60 L44 60 L41 45 Z" fill="#ef7b2d" opacity="0.85"/>
-<path d="M42 51 L47 48 L42 45 Z" fill="#fff"/><path d="M58 51 L53 48 L58 45 Z" fill="#fff"/>
-<rect x="47" y="56" width="6" height="2.5" rx="1" fill="#2b0f0a"/>
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="60%" r="55%">
+      <stop offset="0%" stop-color="#3a1a08"/>
+      <stop offset="100%" stop-color="#0e0704"/>
+    </radialGradient>
+    <radialGradient id="body" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#4a2510"/>
+      <stop offset="100%" stop-color="#2a1006"/>
+    </radialGradient>
+    <radialGradient id="ember-aura" cx="50%" cy="70%" r="50%">
+      <stop offset="0%" stop-color="#f97316" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="fire-glow">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softglow">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="50" cy="50" r="49" fill="url(#bg)"/>
+  <!-- Ember glow at bottom -->
+  <circle cx="50" cy="75" r="30" fill="url(#ember-aura)"/>
+  <ellipse cx="50" cy="88" rx="17" ry="4" fill="#f97316" opacity="0.3" filter="url(#softglow)"/>
+  <!-- Body round -->
+  <circle cx="50" cy="66" r="17" fill="url(#body)"/>
+  <!-- Body glow -->
+  <circle cx="50" cy="66" r="17" fill="none" stroke="#f97316" stroke-width="0.6" opacity="0.6" filter="url(#softglow)"/>
+  <!-- Head -->
+  <circle cx="50" cy="44" r="21" fill="url(#body)"/>
+  <!-- Head glow -->
+  <circle cx="50" cy="44" r="21" fill="none" stroke="#f97316" stroke-width="0.5" opacity="0.5" filter="url(#softglow)"/>
+  <!-- Horn nubs -->
+  <ellipse cx="40" cy="26" r="3" ry="4" fill="#6b2200" transform="rotate(-20 40 26)"/>
+  <ellipse cx="60" cy="26" r="3" ry="4" fill="#6b2200" transform="rotate(20 60 26)"/>
+  <ellipse cx="40" cy="26" r="1.5" ry="2" fill="#f97316" opacity="0.5" transform="rotate(-20 40 26)" filter="url(#softglow)"/>
+  <ellipse cx="60" cy="26" r="1.5" ry="2" fill="#f97316" opacity="0.5" transform="rotate(20 60 26)" filter="url(#softglow)"/>
+  <!-- Eyes glowing orange -->
+  <circle cx="43" cy="43" r="4.5" fill="#200800"/>
+  <circle cx="57" cy="43" r="4.5" fill="#200800"/>
+  <circle cx="43" cy="43" r="3" fill="#f97316" filter="url(#fire-glow)"/>
+  <circle cx="57" cy="43" r="3" fill="#f97316" filter="url(#fire-glow)"/>
+  <circle cx="43" cy="43" r="1.2" fill="#fbbf24"/>
+  <circle cx="57" cy="43" r="1.2" fill="#fbbf24"/>
+  <!-- Muzzle -->
+  <ellipse cx="50" cy="50" rx="8.5" ry="6" fill="#3a1808"/>
+  <!-- Nostrils -->
+  <ellipse cx="47.5" cy="49" rx="1.5" ry="1" fill="#f97316" opacity="0.6"/>
+  <ellipse cx="52.5" cy="49" rx="1.5" ry="1" fill="#f97316" opacity="0.6"/>
+  <!-- Mouth -->
+  <path d="M45.5 53 Q50 56 54.5 53" stroke="#8b2500" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <!-- Blush/ember cheeks -->
+  <ellipse cx="35" cy="47" rx="4" ry="2.5" fill="#f97316" opacity="0.35" filter="url(#softglow)"/>
+  <ellipse cx="65" cy="47" rx="4" ry="2.5" fill="#f97316" opacity="0.35" filter="url(#softglow)"/>
+  <!-- Flame-tip tail -->
+  <path d="M50 81 Q60 85 64 92 Q58 88 54 84 Q56 88 53 93 Q50 87 50 83" fill="#f97316" filter="url(#fire-glow)"/>
+  <path d="M52 83 Q58 87 60 93" stroke="#fbbf24" stroke-width="1" fill="none" filter="url(#fire-glow)"/>
+  <!-- Arms/legs -->
+  <ellipse cx="34" cy="68" rx="6" ry="5" fill="#2a1006"/>
+  <ellipse cx="66" cy="68" rx="6" ry="5" fill="#2a1006"/>
+  <ellipse cx="42" cy="81" rx="7.5" ry="4.5" fill="#2a1006"/>
+  <ellipse cx="58" cy="81" rx="7.5" ry="4.5" fill="#2a1006"/>
+  <!-- Ember particles -->
+  <circle cx="28" cy="55" r="1" fill="#f97316" filter="url(#fire-glow)" opacity="0.8"/>
+  <circle cx="73" cy="50" r="1" fill="#f97316" filter="url(#fire-glow)" opacity="0.8"/>
+  <circle cx="32" cy="72" r="0.8" fill="#fbbf24" filter="url(#softglow)" opacity="0.7"/>
 </svg>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { get } from '../api'
+import { get, post } from '../api'
 import { API } from '../constants'
 import PlaySnippetViewer from './PlaySnippetViewer'
 
@@ -7,6 +7,7 @@ const GRID_SIZE = 6
 const GAME_DURATION = 60
 const HIT_SCORE = 10
 const MISS_PENALTY = 5
+const SCORE_FLOOR = -10  // игра проиграна при достижении этого счёта
 const COMBO_THRESHOLD = 3
 const COMBO_BONUS = 5
 const AUTO_ROTATE_MS = 8000
@@ -24,21 +25,6 @@ function makeCard(snippet) {
   return { id: nextId(), snippet, anim: null }
 }
 
-function saveScore(score) {
-  try {
-    const prev = JSON.parse(localStorage.getItem('hackpet_bugsmash') || '[]')
-    const next = [...prev, { score, date: new Date().toLocaleDateString('ru') }]
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 10)
-    localStorage.setItem('hackpet_bugsmash', JSON.stringify(next))
-    return next
-  } catch { return [] }
-}
-
-function loadScores() {
-  try { return JSON.parse(localStorage.getItem('hackpet_bugsmash') || '[]') } catch { return [] }
-}
-
 export default function BugSmashGame({ onExit }) {
   const [phase, setPhase] = useState('ready') // ready | playing | gameover
   const [cards, setCards] = useState([])
@@ -48,23 +34,54 @@ export default function BugSmashGame({ onExit }) {
   const [misses, setMisses] = useState(0)
   const [combo, setCombo] = useState(0)
   const [comboFlash, setComboFlash] = useState(false)
-  const [scores, setScores] = useState(loadScores)
+  const [scores, setScores] = useState([])
   const [loading, setLoading] = useState(false)
+  const [xpReward, setXpReward] = useState(null)
 
   const phaseRef = useRef('ready')
   const replacingRef = useRef(new Set())
   const comboRef = useRef(0)
+  const scoreRef = useRef(0)
+  const missesRef = useRef(0)
 
   useEffect(() => { phaseRef.current = phase }, [phase])
   useEffect(() => { comboRef.current = combo }, [combo])
+  useEffect(() => { scoreRef.current = score }, [score])
+  useEffect(() => { missesRef.current = misses }, [misses])
+
+  const fetchScores = useCallback(async () => {
+    try {
+      const data = await get(API.PLAY.BUGSMASH_SCORES)
+      setScores(data?.scores ?? [])
+    } catch { /* ignore */ }
+  }, [])
+
+  useEffect(() => {
+    fetchScores()
+  }, [fetchScores])
+
+  const endGame = useCallback(async (finalScore) => {
+    setPhase('gameover')
+    try {
+      const data = await post(API.PLAY.BUGSMASH_SCORE, { score: finalScore })
+      if (data?.scores) setScores(data.scores)
+      if (data?.xp_reward) {
+        setXpReward(data.xp_reward)
+        if (data?.pet) {
+          window.dispatchEvent(new CustomEvent('pet:xp_gained', {
+            detail: { xp: data.xp_reward, pet: data.pet },
+          }))
+        }
+      }
+    } catch { /* ignore — score shown anyway */ }
+  }, [])
 
   const replaceCard = useCallback(async (cardId) => {
-    if (!phaseRef.current === 'playing') return
+    if (phaseRef.current !== 'playing') return
     try {
       const snippet = await loadSnippet()
       setCards(prev => prev.map(c => c.id === cardId ? makeCard(snippet) : c))
     } catch {
-      // silently retry after delay
       setTimeout(() => replaceCard(cardId), 1000)
     } finally {
       replacingRef.current.delete(cardId)
@@ -81,6 +98,7 @@ export default function BugSmashGame({ onExit }) {
       setHits(0)
       setMisses(0)
       setCombo(0)
+      setXpReward(null)
       replacingRef.current.clear()
       setPhase('playing')
     } catch {
@@ -97,14 +115,14 @@ export default function BugSmashGame({ onExit }) {
       setTimeLeft(t => {
         if (t <= 1) {
           clearInterval(id)
-          setPhase('gameover')
+          endGame(scoreRef.current)
           return 0
         }
         return t - 1
       })
     }, 1000)
     return () => clearInterval(id)
-  }, [phase])
+  }, [phase, endGame])
 
   // Auto-rotate oldest idle card
   useEffect(() => {
@@ -123,15 +141,6 @@ export default function BugSmashGame({ onExit }) {
     return () => clearInterval(id)
   }, [phase, replaceCard])
 
-  // Save score on gameover
-  useEffect(() => {
-    if (phase !== 'gameover') return
-    setScores(prev => {
-      if (score <= 0) return prev
-      return saveScore(score)
-    })
-  }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
-
   const handleClick = useCallback((card) => {
     if (phaseRef.current !== 'playing') return
     if (replacingRef.current.has(card.id) || card.anim) return
@@ -139,7 +148,6 @@ export default function BugSmashGame({ onExit }) {
     replacingRef.current.add(card.id)
     const isVuln = Boolean(card.snippet?.is_vulnerable)
 
-    // animate
     setCards(prev => prev.map(c => c.id === card.id ? { ...c, anim: isVuln ? 'hit' : 'miss' } : c))
 
     if (isVuln) {
@@ -152,15 +160,20 @@ export default function BugSmashGame({ onExit }) {
         setComboFlash(true)
         setTimeout(() => setComboFlash(false), 600)
       }
+      setTimeout(() => replaceCard(card.id), ANIM_HIT_MS)
     } else {
       setCombo(0)
-      setScore(s => Math.max(0, s - MISS_PENALTY))
+      const newScore = scoreRef.current - MISS_PENALTY
+      scoreRef.current = newScore
+      setScore(newScore)
       setMisses(m => m + 1)
+      if (newScore <= SCORE_FLOOR) {
+        setTimeout(() => endGame(newScore), ANIM_MISS_MS)
+      } else {
+        setTimeout(() => replaceCard(card.id), ANIM_MISS_MS)
+      }
     }
-
-    const delay = isVuln ? ANIM_HIT_MS : ANIM_MISS_MS
-    setTimeout(() => replaceCard(card.id), delay)
-  }, [replaceCard])
+  }, [replaceCard, endGame])
 
   const timerPct = (timeLeft / GAME_DURATION) * 100
   const timerColor = timeLeft > 20 ? '#10b981' : timeLeft > 10 ? '#f59e0b' : '#ef4444'
@@ -177,6 +190,7 @@ export default function BugSmashGame({ onExit }) {
           <div className="bugsmash-rule bugsmash-rule-hit">✓ уязвимый <strong>+{HIT_SCORE} очков</strong></div>
           <div className="bugsmash-rule bugsmash-rule-miss">✗ безопасный <strong>−{MISS_PENALTY} очков</strong></div>
           <div className="bugsmash-rule">⚡ комбо ×{COMBO_THRESHOLD}+ <strong>+{COMBO_BONUS} бонус</strong></div>
+          <div className="bugsmash-rule bugsmash-rule-miss">💀 счёт {SCORE_FLOOR} = конец игры</div>
           <div className="bugsmash-rule">⏱ {GAME_DURATION} секунд</div>
         </div>
         <div className="bugsmash-ready-actions">
@@ -192,8 +206,8 @@ export default function BugSmashGame({ onExit }) {
               {scores.map((s, i) => (
                 <li key={i} className={`bugsmash-lb-item ${i === 0 ? 'bugsmash-lb-first' : ''}`}>
                   <span className="bugsmash-lb-rank">#{i + 1}</span>
+                  <span className="bugsmash-lb-name">{s.username}</span>
                   <span className="bugsmash-lb-score">{s.score} очков</span>
-                  <span className="bugsmash-lb-date">{s.date}</span>
                 </li>
               ))}
             </ol>
@@ -212,6 +226,9 @@ export default function BugSmashGame({ onExit }) {
           {isNewRecord && <div className="bugsmash-new-record">🏆 Новый рекорд!</div>}
           <h2 className="bugsmash-gameover-score">{score}</h2>
           <p className="bugsmash-gameover-label">очков</p>
+          {xpReward > 0 && (
+            <p className="bugsmash-xp-reward">+{xpReward} XP питомцу</p>
+          )}
           <div className="bugsmash-gameover-stats">
             <div className="bugsmash-stat">
               <span className="bugsmash-stat-val bugsmash-stat-hit">{hits}</span>
@@ -239,8 +256,8 @@ export default function BugSmashGame({ onExit }) {
                 {scores.map((s, i) => (
                   <li key={i} className={`bugsmash-lb-item ${i === 0 ? 'bugsmash-lb-first' : ''}`}>
                     <span className="bugsmash-lb-rank">#{i + 1}</span>
+                    <span className="bugsmash-lb-name">{s.username}</span>
                     <span className="bugsmash-lb-score">{s.score} очков</span>
-                    <span className="bugsmash-lb-date">{s.date}</span>
                   </li>
                 ))}
               </ol>

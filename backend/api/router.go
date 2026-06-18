@@ -141,6 +141,8 @@ func NewRouter(cfg RouterConfig) http.Handler {
 	if cfg.Play != nil {
 		r.With(RequireAuth).Get("/api/play/v1/round", cfg.Play.Round)
 		r.With(RequireAuth).Post("/api/play/v1/win", cfg.Play.Win)
+		r.With(RequireAuth).Post("/api/play/v1/bugsmash/score", cfg.Play.BugSmashScore)
+		r.With(RequireAuth).Get("/api/play/v1/bugsmash/scores", cfg.Play.BugSmashScores)
 	}
 
 	// API: курсы
