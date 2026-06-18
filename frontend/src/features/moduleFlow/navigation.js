@@ -47,18 +47,20 @@ export function canNavigateToPanel(targetPanel, currentPanel, ctx) {
   // Текущий этап.
   if (targetIdx === currentIdx) return true
 
-  // Уже достигнутый этап — всегда доступен (назад или вперёд к пройденному).
-  if (targetIdx <= maxReachedIndex) return true
-
-  // Новый этап вперёд — только на один шаг с выполнением требований.
-  if (targetIdx !== currentIdx + 1) return false
-
-  return meetsStepEntryRequirements(targetPanel, {
+  // Жёсткие гейты проверяются всегда, даже для уже достигнутых шагов.
+  // Без отправки лабы final-quiz и summary недоступны независимо от maxReachedIndex.
+  if (!meetsStepEntryRequirements(targetPanel, {
     quizRevealed,
     quizAnswers,
     checkpointQuiz,
     finalQuizAnswers,
     finalQuiz,
     effectiveLabResult,
-  })
+  })) return false
+
+  // Уже достигнутый этап — доступен (назад или вперёд к пройденному).
+  if (targetIdx <= maxReachedIndex) return true
+
+  // Новый этап вперёд — только на один шаг.
+  return targetIdx === currentIdx + 1
 }
