@@ -1,0 +1,50 @@
+@startuml Hackpet_Architecture
+title Архитектура платформы HackPet
+
+skinparam componentStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #444444
+skinparam ArrowFontSize 11
+
+actor "Пользователь" as User
+
+rectangle "Docker Compose" {
+
+  rectangle "Frontend\nContainer" as FE_BOX {
+    component "ThemeContext\n(dark / light)" as Theme
+    component "React Router\n(SPA, RequireAuth)" as Router
+    component "Monaco Editor\n(VS Code engine)" as Monaco
+    component "React 18" as React
+  }
+
+  rectangle "Backend\nContainer" as BE_BOX {
+    component "bcrypt\n(cost = 12)" as Bcrypt
+    component "HTTP Server" as HTTPServer
+    component "AST Validator" as AST
+    component "Auth Middleware" as JWT
+  }
+
+  rectangle "Database\nContainer" as DB_BOX {
+    database "PostgreSQL 16" as PG
+  }
+
+}
+
+User -right-> React : HTTPS
+React -right-> HTTPServer : REST API
+React -right-> HTTPServer : POST /api/labs/submit
+
+HTTPServer -right-> JWT : проверка токена
+HTTPServer -right-> AST : валидация кода
+
+BE_BOX -up-> PG : чтение / запись
+
+note bottom of AST
+  Разбирает код в AST,
+  проверяет паттерны
+  SSRF / Logging
+end note
+
+@enduml
