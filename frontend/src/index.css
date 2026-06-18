@@ -4883,6 +4883,130 @@ pre, .code-block {
 }
 .editor-loading { color: var(--text-muted); padding: 1rem; }
 .lab-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+
+/* Lab attempt badge in editor chrome */
+.lab-attempt-badge {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 99px;
+  padding: 0.1rem 0.55rem;
+}
+
+/* ── Lab feedback panel ─────────────────────────────────────────── */
+.lf-wrap { padding: 0.25rem 0 1rem; }
+.lf-icon-row { font-size: 1.9rem; line-height: 1; margin-bottom: 0.45rem; }
+
+.lf-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 0.45rem;
+}
+.lf-title-warn  { color: #d97706; }
+.lf-title-exhausted { color: var(--text-muted); }
+
+.lf-subtitle {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin: 0 0 1.35rem;
+  line-height: 1.55;
+}
+
+/* Failed rules */
+.lf-failed-list { display: flex; flex-direction: column; gap: 0; margin-bottom: 1.5rem; }
+.lf-failed-item {
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.lf-failed-item:first-child { border-top: 1px solid var(--border); }
+
+.lf-failed-header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.55rem;
+  flex-wrap: wrap;
+}
+.lf-pill {
+  display: inline-block;
+  background: rgba(139, 92, 246, 0.13);
+  color: var(--accent, #8b5cf6);
+  border: 1px solid rgba(139, 92, 246, 0.28);
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.15rem 0.65rem;
+  flex-shrink: 0;
+  letter-spacing: 0.01em;
+}
+.lf-failed-name {
+  font-weight: 700;
+  font-size: 0.93rem;
+  color: var(--text);
+}
+
+/* Hint box — серый блок с левой полосой */
+.lf-hint-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: var(--bg-elevated, #f3f4f8);
+  border-left: 3px solid var(--border);
+  border-radius: 0 6px 6px 0;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.lf-hint-icon { flex-shrink: 0; font-size: 0.92rem; margin-top: 0.05rem; }
+.lf-hint-text  { color: var(--text-muted); }
+
+/* Passed rules */
+.lf-passed-section  { margin-bottom: 1.4rem; }
+.lf-passed-label    { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 0.6rem; }
+.lf-passed-list     { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+.lf-passed-item     { display: flex; align-items: center; gap: 0.6rem; font-size: 0.92rem; color: var(--text); }
+.lf-check-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--success, #10b981);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* Retry button */
+.lf-retry-btn {
+  display: inline-block;
+  padding: 0.8rem 2.25rem;
+  background: var(--accent-grad, linear-gradient(135deg, #6366f1, #8b5cf6));
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.97rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  margin-top: 0.5rem;
+}
+.lf-retry-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* Dark-mode overrides — bg-elevated is already set in dark vars */
+[data-theme="dark"] .lf-title-warn { color: #fbbf24; }
+[data-theme="dark"] .lf-pill {
+  background: rgba(139, 92, 246, 0.18);
+  border-color: rgba(139, 92, 246, 0.35);
+  color: #c084fc;
+}
 .rule {
   padding: 0.75rem;
   margin-bottom: 0.5rem;

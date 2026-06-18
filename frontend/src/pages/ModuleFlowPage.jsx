@@ -176,6 +176,13 @@ export default function ModuleFlowPage() {
               onReset={flow.handleLabReset}
               onSubmit={flow.handleLabSubmit}
               locked={flow.labLocked}
+              labFeedback={flow.labFeedback}
+              labAttempts={flow.labAttempts}
+              labMaxAttempts={flow.labMaxAttempts}
+              onClearFeedback={() => {
+                // Скрываем фидбек — редактор снова доступен для правки
+                flow.setLabFeedback && flow.setLabFeedback(null)
+              }}
             />
           )}
           {flow.panel === 'final-quiz' && (

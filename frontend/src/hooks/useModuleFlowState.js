@@ -31,6 +31,8 @@ export function useModuleFlowState({ moduleId, userId, continueFromProgress, ini
   const [finalQuizAnswers, setFinalQuizAnswers] = useState({})
   const [summaryProgress, setSummaryProgress] = useState(null)
   const [savedQuizStats, setSavedQuizStats] = useState(null)
+  const [labAttempts, setLabAttempts] = useState(0)   // failed attempts in session
+  const [labFeedback, setLabFeedback] = useState(null) // last failed result to show
   const [maxReachedIndex, setMaxReachedIndex] = useState(() => {
     const idx = PANEL_ORDER.indexOf(initialPanelSafe)
     return idx >= 0 ? idx : 0
@@ -72,6 +74,9 @@ export function useModuleFlowState({ moduleId, userId, continueFromProgress, ini
         setFileContents(draft ? { ...templateContents, ...draft } : templateContents)
 
         setLastSubmitResult(null)
+        setLabFeedback(null)
+        // Restore attempt count from API: if last attempt was failed, count it as 1 used
+        setLabAttempts(apiLab && !labResultPassed(apiLab) ? 1 : 0)
 
         const quizIdx = PANEL_ORDER.indexOf('quiz')
         const progressIdx =
@@ -242,6 +247,8 @@ export function useModuleFlowState({ moduleId, userId, continueFromProgress, ini
         setFileContents(contents)
         setLastSubmitResult(null)
         setLastLabAttemptFromApi(null)
+        setLabFeedback(null)
+        setLabAttempts(0)
         setQuizAnswers({})
         setQuizRevealed(false)
         setFinalQuizAnswers({})
@@ -310,23 +317,41 @@ export function useModuleFlowState({ moduleId, userId, continueFromProgress, ini
     persistQuizAnswer(q, questionIndex, value)
   }, [currentModule?.final_quiz, persistQuizAnswer])
 
+  const LAB_MAX_ATTEMPTS = 3
+
   const handleLabSubmit = useCallback(() => {
     const lab = currentModule?.lab
     if (!lab) return
-    // Не даём пересдавать лабу если результат уже есть (в этой сессии или из БД).
-    if (lastSubmitResult || lastLabAttemptFromApi) return
+    // Заблокировано если лаба пройдена или исчерпаны попытки
+    if (lastSubmitResult) return
     const files = Object.entries(fileContents).map(([path, content]) => ({ path, content }))
     markPetActivity('study')
     post(`/labs/${lab.id}/submit`, { submission_id: `draft-${Date.now()}`, files })
       .then((res) => {
-        setLastSubmitResult(res)
-        clearLabDraft(userId, currentModule.id)
-        setPanel('final-quiz')
-        setMaxReachedIndex((prev) => Math.max(prev, FINAL_QUIZ_INDEX))
-        saveProgress('final-quiz')
+        if (res.status === 'passed') {
+          setLastSubmitResult(res)
+          setLabFeedback(null)
+          clearLabDraft(userId, currentModule.id)
+          setPanel('final-quiz')
+          setMaxReachedIndex((prev) => Math.max(prev, FINAL_QUIZ_INDEX))
+          saveProgress('final-quiz')
+        } else {
+          // Провал — показываем фидбек, считаем попытку
+          const newAttempts = labAttempts + 1
+          setLabAttempts(newAttempts)
+          setLabFeedback(res)
+          if (newAttempts >= LAB_MAX_ATTEMPTS) {
+            // Исчерпаны все попытки — идём на итог с провалом
+            clearLabDraft(userId, currentModule.id)
+            setPanel('summary')
+            setMaxReachedIndex(PANEL_ORDER.length - 1)
+            saveProgress('summary')
+          }
+          // Иначе остаёмся на лабе — пользователь видит фидбек и может попробовать снова
+        }
       })
       .catch((e) => alert('Ошибка: ' + e.message))
-  }, [currentModule?.lab, currentModule?.id, fileContents, saveProgress, lastSubmitResult, userId])
+  }, [currentModule?.lab, currentModule?.id, fileContents, saveProgress, lastSubmitResult, labAttempts, userId])
 
   const handleLabReset = useCallback(() => {
     const lab = currentModule?.lab
@@ -368,7 +393,9 @@ export function useModuleFlowState({ moduleId, userId, continueFromProgress, ini
     syncFinalQuizAnswers,
   ])
 
-  const labLocked = Boolean(effectiveLabResult) || isReadOnlyReview
+  const LAB_MAX_ATTEMPTS_CONST = 3
+  const labExhausted = labAttempts >= LAB_MAX_ATTEMPTS_CONST
+  const labLocked = Boolean(lastSubmitResult) || labExhausted || isReadOnlyReview
   const finalQuizLocked = isReadOnlyReview
 
   return {
@@ -394,6 +421,10 @@ export function useModuleFlowState({ moduleId, userId, continueFromProgress, ini
     isReadOnlyReview,
     handleQuizAnswer,
     handleFinalQuizAnswer,
+    labAttempts,
+    labFeedback,
+    setLabFeedback,
+    labMaxAttempts: LAB_MAX_ATTEMPTS_CONST,
     handleLabSubmit,
     handleLabReset,
     handleTryAgain,
