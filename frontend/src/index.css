@@ -5588,3 +5588,234 @@ h1, h2, h3, h4, h5, h6,
   font-family: var(--font-heading);
   letter-spacing: -0.02em;
 }
+
+/* ═══════════════════════════════════
+   BUG SMASH GAME
+═══════════════════════════════════ */
+
+/* Ready / Gameover screens */
+.bugsmash-ready,
+.bugsmash-gameover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem 0;
+}
+.bugsmash-title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.bugsmash-desc {
+  color: var(--text-muted);
+  max-width: 420px;
+  text-align: center;
+  line-height: 1.6;
+}
+.bugsmash-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+.bugsmash-rule {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+.bugsmash-rule-hit { border-color: #10b981; color: #10b981; }
+.bugsmash-rule-miss { border-color: #ef4444; color: #ef4444; }
+.bugsmash-ready-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Leaderboard */
+.bugsmash-leaderboard { width: 100%; max-width: 360px; }
+.bugsmash-lb-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+.bugsmash-lb-list { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
+.bugsmash-lb-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 0.9rem;
+}
+.bugsmash-lb-first { background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25); }
+.bugsmash-lb-rank { color: var(--text-muted); font-size: 0.78rem; width: 24px; }
+.bugsmash-lb-score { font-weight: 700; flex: 1; }
+.bugsmash-lb-date { color: var(--text-muted); font-size: 0.78rem; }
+
+/* Gameover */
+.bugsmash-gameover-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+.bugsmash-new-record {
+  background: linear-gradient(135deg, #6366f1, #06b6d4);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.3rem 1rem;
+  border-radius: 99px;
+}
+.bugsmash-gameover-score {
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, #6366f1, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.bugsmash-gameover-label { color: var(--text-muted); margin-top: -0.5rem; }
+.bugsmash-gameover-stats { display: flex; gap: 2rem; }
+.bugsmash-stat { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
+.bugsmash-stat-val { font-size: 1.8rem; font-weight: 800; }
+.bugsmash-stat-hit { color: #10b981; }
+.bugsmash-stat-miss { color: #ef4444; }
+.bugsmash-stat-lbl { font-size: 0.78rem; color: var(--text-muted); }
+.bugsmash-gameover-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+
+/* HUD */
+.bugsmash-game { display: flex; flex-direction: column; gap: 1rem; }
+.bugsmash-hud {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+.bugsmash-hud-score { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
+.bugsmash-hud-score-val { font-size: 1.6rem; font-weight: 900; line-height: 1; }
+.bugsmash-hud-score-lbl { font-size: 0.7rem; color: var(--text-muted); }
+.bugsmash-hud-stats { display: flex; gap: 0.75rem; font-size: 0.9rem; font-weight: 600; }
+.bugsmash-hud-hit { color: #10b981; }
+.bugsmash-hud-miss { color: #ef4444; }
+.bugsmash-combo {
+  background: linear-gradient(135deg, #6366f1, #06b6d4);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  transition: transform 0.15s;
+}
+.bugsmash-combo-flash { transform: scale(1.18); }
+
+/* Timer */
+.bugsmash-timer { flex: 1; display: flex; align-items: center; gap: 0.5rem; min-width: 120px; }
+.bugsmash-timer-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 99px;
+  background: var(--border);
+  overflow: hidden;
+}
+.bugsmash-timer-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.9s linear, background 0.4s;
+}
+.bugsmash-timer-val { font-weight: 700; font-size: 0.95rem; min-width: 28px; }
+
+/* Grid */
+.bugsmash-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+@media (max-width: 860px) {
+  .bugsmash-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .bugsmash-grid { grid-template-columns: 1fr; }
+}
+
+/* Card */
+.bugsmash-card {
+  position: relative;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s;
+  overflow: hidden;
+  min-height: 160px;
+}
+.bugsmash-card:hover:not(:disabled) {
+  border-color: #6366f1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(99,102,241,0.15);
+}
+.bugsmash-card:disabled { cursor: default; }
+.bugsmash-card-hit {
+  border-color: #10b981 !important;
+  background: rgba(16,185,129,0.07) !important;
+  transform: scale(0.97);
+}
+.bugsmash-card-miss {
+  border-color: #ef4444 !important;
+  background: rgba(239,68,68,0.07) !important;
+  transform: scale(0.97);
+}
+.bugsmash-card-rotating { opacity: 0.4; pointer-events: none; }
+.bugsmash-card-head {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+.bugsmash-card-verdict {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  font-weight: 900;
+  pointer-events: none;
+  animation: verdict-pop 0.4s ease forwards;
+  white-space: nowrap;
+}
+.bugsmash-card-verdict-hit { color: #10b981; }
+.bugsmash-card-verdict-miss { color: #ef4444; }
+@keyframes verdict-pop {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+  40%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+  100% { opacity: 0; transform: translate(-50%, -60%) scale(1); }
+}
+.bugsmash-card-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+}
+.bugsmash-hint {
+  text-align: center;
+  font-size: 0.82rem;
+}

@@ -5,6 +5,7 @@ import { API } from '../constants'
 import { getPetAura, getPetDisplayName, markPetActivity } from '../utils/pet'
 import PlaySnippetViewer from '../components/PlaySnippetViewer'
 import PetAvatar from '../components/PetAvatar'
+import BugSmashGame from '../components/BugSmashGame'
 
 const PLAY_ROUND_MS = 30_000
 
@@ -17,7 +18,7 @@ const PLAY_WIN_XP_REWARD = 25
 export default function PlayPage() {
   const INITIAL_HP = HACKER_HP_MAX
 
-  const [mode, setMode] = useState('menu') // 'menu' | 'game1'
+  const [mode, setMode] = useState('menu') // 'menu' | 'game1' | 'game2'
   const [language, setLanguage] = useState('python')
   const [loading, setLoading] = useState(false)
   const [snippet, setSnippet] = useState(null)
@@ -338,15 +339,26 @@ export default function PlayPage() {
                 Кликаешь только по реальным уязвимостям. Промахи снижают очки.
               </p>
               <ul className="play-game-list">
-                <li>Темповой режим.</li>
-                <li>Таблица лучших результатов.</li>
+                <li>6 карточек одновременно на экране.</li>
+                <li>Уязвимый: +10 · Безопасный: −5 · Комбо: +5 бонус.</li>
+                <li>60 секунд. Таблица лучших результатов.</li>
               </ul>
-              <Link to="#" className="btn btn-secondary btn-nowrap" aria-disabled="true">
-                В разработке
-              </Link>
+              <button
+                type="button"
+                className="btn btn-primary play-gradient-btn btn-nowrap"
+                onClick={() => setMode('game2')}
+              >
+                Играть
+              </button>
             </section>
           </div>
         </>
+      ) : mode === 'game2' ? (
+        <div className="play-game-full-page">
+          <div className="play-game-card play-game-full-card">
+            <BugSmashGame onExit={() => setMode('menu')} />
+          </div>
+        </div>
       ) : (
         <div className="play-game-full-page">
           <div className="play-game-card play-game-full-card">
