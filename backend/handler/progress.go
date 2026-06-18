@@ -12,9 +12,12 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+const moduleCompleteXP = 50
+
 type ProgressHandler struct {
-	Log     *slog.Logger
+	Log      *slog.Logger
 	Progress *service.ProgressService
+	Pet      *service.PetService
 }
 
 func (h *ProgressHandler) Update(w http.ResponseWriter, r *http.Request) {
@@ -33,12 +36,27 @@ func (h *ProgressHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userID := UserIDFromRequest(r)
+	wasCompleted := false
+	if req.Completed && !req.Reset {
+		if cur, _ := h.Progress.Get(userID, moduleId); cur != nil {
+			wasCompleted = cur.Completed
+		}
+	}
+
 	if err := h.Progress.Update(userID, moduleId, req.LastStep, req.Completed, req.Reset); err != nil {
 		h.Log.Error("progress update", "module_id", moduleId, "error", err)
 		response.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	response.JSON(w, http.StatusOK, map[string]string{"status": "ok"})
+
+	resp := map[string]interface{}{"status": "ok"}
+	if req.Completed && !req.Reset && !wasCompleted && h.Pet != nil {
+		if pet, err := h.Pet.AddXP(userID, moduleCompleteXP); err == nil {
+			resp["xp_reward"] = moduleCompleteXP
+			resp["pet"] = pet
+		}
+	}
+	response.JSON(w, http.StatusOK, resp)
 }
 
 func (h *ProgressHandler) Telemetry(w http.ResponseWriter, r *http.Request) {

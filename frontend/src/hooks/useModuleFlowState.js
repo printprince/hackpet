@@ -344,10 +344,15 @@ export function useModuleFlowState({ moduleId, userId, continueFromProgress, ini
     if (!currentModule?.id) return
     markPetActivity('study')
     await Promise.all([syncCheckpointQuizAnswers(), syncFinalQuizAnswers()])
-    await post(`/modules/${currentModule.id}/progress`, {
+    const progressResp = await post(`/modules/${currentModule.id}/progress`, {
       last_step: 'summary',
       completed: Boolean(passed),
-    }).catch(() => {})
+    }).catch(() => null)
+    if (progressResp?.xp_reward) {
+      window.dispatchEvent(new CustomEvent('pet:xp_gained', {
+        detail: { xp: progressResp.xp_reward, pet: progressResp.pet },
+      }))
+    }
     try {
       const m = await get(`/modules/${currentModule.id}`)
       setSummaryProgress(m.progress)

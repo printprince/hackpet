@@ -40,6 +40,13 @@ func (s *PetService) UpdateVariant(userID, variant string) (*store.Pet, error) {
 	return s.Pets.UpdatePetVariant(userID, variant)
 }
 
+func (s *PetService) AddXP(userID string, amount int) (*store.Pet, error) {
+	if s.Pets == nil || userID == "" {
+		return nil, store.ErrUserNotFound
+	}
+	return s.Pets.AddPetXP(userID, amount)
+}
+
 func (s *PetService) UpdateFrame(userID, frame string) (*store.Pet, error) {
 	if s.Pets == nil || userID == "" {
 		return nil, store.ErrUserNotFound

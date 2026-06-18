@@ -86,7 +86,7 @@ func main() {
 
 	courseH := &handler.CourseHandler{Log: log, Course: courseSvc, Progress: progressSvc, UserStore: userStore}
 	moduleH := &handler.ModuleHandler{Log: log, Module: moduleSvc, Progress: progressSvc}
-	progressH := &handler.ProgressHandler{Log: log, Progress: progressSvc}
+	progressH := &handler.ProgressHandler{Log: log, Progress: progressSvc, Pet: petSvc}
 	labH := &handler.LabHandler{Log: log, Lab: labSvc}
 	var petH *handler.PetHandler
 	var focusH *handler.FocusHandler

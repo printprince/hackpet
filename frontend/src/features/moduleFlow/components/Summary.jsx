@@ -1,4 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+function XPToast({ xp, onDone }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 3000)
+    return () => clearTimeout(t)
+  }, [onDone])
+  return (
+    <div className="xp-toast" role="status" aria-live="polite">
+      +{xp} XP питомцу 🐾
+    </div>
+  )
+}
 
 const WEIGHTS = {
   LAB: 60,
@@ -102,6 +114,14 @@ export default function Summary({
     setExpandedSection((prev) => (prev === key ? null : key))
   }
 
+  const [xpToast, setXpToast] = useState(null)
+  const hideToast = useCallback(() => setXpToast(null), [])
+  useEffect(() => {
+    const handler = (e) => setXpToast(e.detail?.xp || null)
+    window.addEventListener('pet:xp_gained', handler)
+    return () => window.removeEventListener('pet:xp_gained', handler)
+  }, [])
+
   // Only apply result once per mount — prevents re-firing when user navigates back here
   // or when state updates cause a re-render.
   const resultAppliedRef = useRef(false)
@@ -117,6 +137,7 @@ export default function Summary({
 
   return (
     <div className="card">
+      {xpToast && <XPToast xp={xpToast} onDone={hideToast} />}
       <h3>Итог</h3>
       <div className={`summary-status summary-status-${overallPassed ? 'passed' : 'failed'}`}>
         {overallPassed ? 'Модуль пройден' : 'Модуль не пройден'}
