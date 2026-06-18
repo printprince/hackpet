@@ -1,0 +1,78 @@
+@startuml Hackpet_Main_Sequence
+title Hackpet — основные сценарии
+
+actor "Пользователь" as User
+participant "Frontend" as FE
+participant "Backend" as API
+database "PostgreSQL" as DB
+participant "AST Validator" as AST
+
+== 1. Вход ==
+User -> FE : login / register
+FE -> API : POST /auth/login | /register
+API -> DB : найти / создать пользователя
+API --> FE : JWT + профиль
+FE --> User : доступ к платформе
+
+== 2. Каталог и модуль ==
+User -> FE : открыть каталог
+FE -> API : GET /courses
+API -> DB : courses + progress
+API --> FE : список курсов + прогресс
+
+User -> FE : открыть модуль
+FE -> API : GET /modules/{id}
+API -> DB : теория + квиз + лаба + сохранённые ответы
+API --> FE : контент модуля
+FE --> User : theory → quiz → lab → final-quiz → summary
+
+== 3. Квиз и прогресс ==
+User -> FE : ответить на вопрос
+FE -> API : POST /quizzes/{id}/answer
+FE -> API : POST /modules/{id}/progress { last_step }
+note right : состояние сохраняется при перезагрузке
+
+== 4. Лаба (AST) ==
+User -> FE : отправить код
+FE -> API : POST /labs/{id}/submit { files[] }
+API -> DB : загрузить правила
+API -> AST : проверить файлы по правилам
+AST --> API : rule_results[] passed | failed
+API -> DB : сохранить попытку
+API --> FE : результат + объяснения
+FE --> User : Пройдено / Не пройдено
+
+alt пройдена
+  FE --> User : разблокируется финальный тест
+else не пройдена
+  FE --> User : подсказки + повторная попытка
+end
+
+== 5. Play — Vulnerable or Safe? ==
+User -> FE : начать игру
+FE -> API : GET /play/round?lang=python
+API --> FE : сниппет кода
+FE --> User : код + таймер 30 с
+
+User -> FE : Уязвимо / Безопасно
+note over FE : оценка на фронте, объяснение после ответа
+note right : 5 верных → победа · 3 ошибки/таймаут → поражение
+
+FE -> API : POST /play/win
+API --> FE : +XP питомцу
+
+== 6. CTF ==
+note over User, FE : разблокируется после прохождения всех модулей курса
+User -> FE : открыть CTF
+FE -> API : POST /labs/{ctf_id}/submit
+API -> AST : тот же пайплайн
+API --> FE : результат / флаг
+
+== 7. Сертификат ==
+note over User, FE : доступен после завершения всех модулей
+User -> FE : получить сертификат
+FE -> API : GET /courses/{id}/certificate
+API --> FE : PDF
+FE --> User : скачать
+
+@enduml

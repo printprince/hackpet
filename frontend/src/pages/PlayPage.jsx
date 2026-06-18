@@ -8,13 +8,13 @@ import PetAvatar from '../components/PetAvatar'
 
 const PLAY_ROUND_MS = 30_000
 
+const WIN_CORRECT_ANSWERS = 5
+const MAX_WRONG_ANSWERS = 3
 const HACKER_HP_MAX = 150
-const SHOT_DAMAGE = 25
-const WIN_CORRECT_ANSWERS = HACKER_HP_MAX / SHOT_DAMAGE
+const SHOT_DAMAGE = HACKER_HP_MAX / WIN_CORRECT_ANSWERS // 30 HP per hit
 const PLAY_WIN_XP_REWARD = 25
 
 export default function PlayPage() {
-  const MAX_ROUNDS = 10
   const INITIAL_HP = HACKER_HP_MAX
 
   const [mode, setMode] = useState('menu') // 'menu' | 'game1'
@@ -28,6 +28,7 @@ export default function PlayPage() {
   const [result, setResult] = useState(null)
   const [rounds, setRounds] = useState(0)
   const [correctRounds, setCorrectRounds] = useState(0)
+  const [wrongAnswers, setWrongAnswers] = useState(0)
   const [timeLeft, setTimeLeft] = useState(null)
   const [pet, setPet] = useState(null)
   /** Мастер: язык → сложность → playing. */
@@ -38,18 +39,16 @@ export default function PlayPage() {
   const [winRewardGranted, setWinRewardGranted] = useState(false)
 
   const roundsRef = useRef(0)
+  const wrongAnswersRef = useRef(0)
   const targetHPRef = useRef(INITIAL_HP)
   const roundSettledRef = useRef(false)
   const gameOverRef = useRef(false)
   /** Абсолютное время окончания раунда (Date.now()); не зависит от throttling setInterval в фоновых вкладках. */
   const roundEndsAtRef = useRef(null)
 
-  useEffect(() => {
-    roundsRef.current = rounds
-  }, [rounds])
-  useEffect(() => {
-    targetHPRef.current = targetHP
-  }, [targetHP])
+  useEffect(() => { roundsRef.current = rounds }, [rounds])
+  useEffect(() => { targetHPRef.current = targetHP }, [targetHP])
+  useEffect(() => { wrongAnswersRef.current = wrongAnswers }, [wrongAnswers])
 
   const petAuraClasses = useMemo(() => {
     if (!pet) return []
@@ -69,11 +68,13 @@ export default function PlayPage() {
     setTargetHP(INITIAL_HP)
     setRounds(0)
     setCorrectRounds(0)
+    setWrongAnswers(0)
     setGameOver(false)
     setWinRewardGranted(false)
     gameOverRef.current = false
     setError('')
     roundsRef.current = 0
+    wrongAnswersRef.current = 0
     targetHPRef.current = INITIAL_HP
     roundSettledRef.current = false
     roundEndsAtRef.current = null
@@ -150,39 +151,40 @@ export default function PlayPage() {
     const timedOut = Boolean(opts.timedOut)
 
     const nextRounds = roundsRef.current + 1
+    const effectiveCorrect = isCorrect && !timedOut
 
     let targetNext = targetHPRef.current
+    let nextWrong = wrongAnswersRef.current
     let lost = false
     let won = false
     let lossReason = null
 
-    if (timedOut) {
-      lost = true
-      lossReason = 'timeout'
+    if (effectiveCorrect) {
+      targetNext = Math.max(0, targetHPRef.current - SHOT_DAMAGE)
+      if (targetNext <= 0) won = true
     } else {
-      if (isCorrect) {
-        targetNext = Math.max(0, targetHPRef.current - SHOT_DAMAGE)
-      }
-      if (targetNext <= 0) {
-        won = true
-      } else if (nextRounds >= MAX_ROUNDS) {
+      nextWrong = wrongAnswersRef.current + 1
+      if (nextWrong >= MAX_WRONG_ANSWERS) {
         lost = true
-        lossReason = 'target_alive'
+        lossReason = timedOut ? 'timeout' : 'too_many_wrong'
       }
     }
 
     roundsRef.current = nextRounds
     targetHPRef.current = targetNext
+    wrongAnswersRef.current = nextWrong
 
     setRounds(nextRounds)
     setTargetHP(targetNext)
-    setCorrectRounds((c) => (isCorrect && !timedOut ? c + 1 : c))
+    setWrongAnswers(nextWrong)
+    setCorrectRounds((c) => (effectiveCorrect ? c + 1 : c))
     setResult({
-      isCorrect: timedOut ? false : isCorrect,
+      isCorrect: effectiveCorrect,
       explanation,
       correctFix: correctFixText || null,
       endTitle: lost ? 'lost' : won ? 'won' : null,
       lossReason: lost ? lossReason : null,
+      timedOut,
     })
     setStage('result')
     setTimeLeft(null)
@@ -195,7 +197,7 @@ export default function PlayPage() {
       gameOverRef.current = false
       setGameOver(false)
     }
-  }, [MAX_ROUNDS, SHOT_DAMAGE])
+  }, [])
 
   const TIMEOUT_EXPLANATION =
     'Время на раунд закончилось — партия проиграна. В реальной атаке уязвимость не ждёт: решай быстрее или начни заново.'
@@ -314,12 +316,11 @@ export default function PlayPage() {
                 Определи, уязвим код или нет. Если уязвим — выбери правильный фикс.
               </p>
               <ul className="play-game-list">
-                <li>Темы: XSS, SQLi, Path Traversal, логирование.</li>
-                <li>Раунд: {Math.round(PLAY_ROUND_MS / 1000)} секунд. Таймер в ноль — поражение.</li>
-                <li>
-                  Победа: снять {INITIAL_HP} HP хакера ({WIN_CORRECT_ANSWERS} точных ответов по {SHOT_DAMAGE} урона).
-                </li>
-                <li>После ответа показывается короткий разбор.</li>
+                <li>Темы: XSS, SQLi, Path Traversal, SSRF, логирование и другие.</li>
+                <li>Раунд: {Math.round(PLAY_ROUND_MS / 1000)} секунд. Таймер в ноль = ошибка.</li>
+                <li>Победа: {WIN_CORRECT_ANSWERS} верных ответа подряд.</li>
+                <li>Поражение: {MAX_WRONG_ANSWERS} ошибки — и хакер уходит.</li>
+                <li>После каждого ответа — короткий разбор.</li>
               </ul>
               <button
                 type="button"
@@ -451,6 +452,7 @@ export default function PlayPage() {
                           </div>
                           <div className="play-pet-meta">
                             <div className="play-pet-name">{getPetDisplayName(pet)}</div>
+                            {/* Hits row */}
                             <div className="play-weapon-row" aria-label={`Попадания ${correctRounds} из ${WIN_CORRECT_ANSWERS}`}>
                               <span className="play-pet-hp-label">Попадания</span>
                               <div className="play-weapon-pips" role="presentation">
@@ -465,6 +467,21 @@ export default function PlayPage() {
                                 {correctRounds}/{WIN_CORRECT_ANSWERS}
                               </span>
                             </div>
+                            {/* Errors row */}
+                            <div className="play-weapon-row play-errors-row" aria-label={`Ошибки ${wrongAnswers} из ${MAX_WRONG_ANSWERS}`}>
+                              <span className="play-pet-hp-label">Ошибки</span>
+                              <div className="play-weapon-pips" role="presentation">
+                                {Array.from({ length: MAX_WRONG_ANSWERS }, (_, i) => (
+                                  <span
+                                    key={i}
+                                    className={`play-weapon-pip play-error-pip ${i < wrongAnswers ? 'play-error-pip-used' : 'play-error-pip-empty'}`}
+                                  />
+                                ))}
+                              </div>
+                              <span className="play-pet-hp-value play-weapon-charges-count">
+                                {wrongAnswers}/{MAX_WRONG_ANSWERS}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       ) : (
@@ -474,6 +491,7 @@ export default function PlayPage() {
                           </div>
                           <div className="play-pet-meta">
                             <div className="play-pet-name">Hackpet</div>
+                            {/* Hits row */}
                             <div className="play-weapon-row" aria-label={`Попадания ${correctRounds} из ${WIN_CORRECT_ANSWERS}`}>
                               <span className="play-pet-hp-label">Попадания</span>
                               <div className="play-weapon-pips" role="presentation">
@@ -486,6 +504,21 @@ export default function PlayPage() {
                               </div>
                               <span className="play-pet-hp-value play-weapon-charges-count">
                                 {correctRounds}/{WIN_CORRECT_ANSWERS}
+                              </span>
+                            </div>
+                            {/* Errors row */}
+                            <div className="play-weapon-row play-errors-row" aria-label={`Ошибки ${wrongAnswers} из ${MAX_WRONG_ANSWERS}`}>
+                              <span className="play-pet-hp-label">Ошибки</span>
+                              <div className="play-weapon-pips" role="presentation">
+                                {Array.from({ length: MAX_WRONG_ANSWERS }, (_, i) => (
+                                  <span
+                                    key={i}
+                                    className={`play-weapon-pip play-error-pip ${i < wrongAnswers ? 'play-error-pip-used' : 'play-error-pip-empty'}`}
+                                  />
+                                ))}
+                              </div>
+                              <span className="play-pet-hp-value play-weapon-charges-count">
+                                {wrongAnswers}/{MAX_WRONG_ANSWERS}
                               </span>
                             </div>
                           </div>
@@ -507,9 +540,6 @@ export default function PlayPage() {
                           <p className="play-weapon-shot-hint muted">
                             <span className="play-weapon-shot-label">Правильный ответ</span> — это{' '}
                             <strong className="play-weapon-shot-word">выстрел</strong> по хакеру.
-                          </p>
-                          <p className="play-weapon-damage-hint muted">
-                            Урон за выстрел: <span className="play-weapon-damage-value">−{SHOT_DAMAGE} HP</span>
                           </p>
                           <div className="play-pet-hp-row">
                             <span className="play-pet-hp-label">HP</span>
@@ -535,9 +565,7 @@ export default function PlayPage() {
                         )}
                         {rounds > 0 && (
                           <div className="play-session-stats play-session-stats-inline">
-                            <span>
-                              Раунды {rounds} · попадания {correctRounds}/{WIN_CORRECT_ANSWERS}
-                            </span>
+                            <span>Раунд {rounds}</span>
                           </div>
                         )}
                       </div>
@@ -545,7 +573,7 @@ export default function PlayPage() {
 
                     {snippet && (stage === 'choice' || stage === 'fix') && !inputsLocked && (
                       <p className="play-round-rule-hint muted">
-                        6 правильных ответов по {SHOT_DAMAGE} урона снимают все {INITIAL_HP} HP хакера. Таймер в ноль — проигрыш партии.
+                        {WIN_CORRECT_ANSWERS} верных ответов → победа · {MAX_WRONG_ANSWERS} ошибки → поражение · таймер в ноль = ошибка.
                       </p>
                     )}
                   </aside>
@@ -613,16 +641,21 @@ export default function PlayPage() {
                   <div className={`play-result play-result-paused ${resultPresentation.tone}`}>
                     <p className="play-result-verdict">{resultPresentation.verdict}</p>
                     {result.endTitle === 'lost' && result.lossReason === 'timeout' && (
-                      <p className="play-result-sub muted">Лимит времени на раунд исчерпан — сессия завершена.</p>
+                      <p className="play-result-sub muted">Время вышло — засчитана ошибка. {MAX_WRONG_ANSWERS} ошибки исчерпаны, партия проиграна.</p>
                     )}
-                    {result.endTitle === 'lost' && result.lossReason === 'target_alive' && (
+                    {result.endTitle === 'lost' && result.lossReason === 'too_many_wrong' && (
                       <p className="play-result-sub muted">
-                        Лимит в {MAX_ROUNDS} раундов исчерпан, хакер ещё жив — партия проиграна.
+                        {MAX_WRONG_ANSWERS} ошибки допущено — партия проиграна.
                       </p>
                     )}
                     {result.endTitle === 'won' && (
                       <p className="play-result-sub muted">
-                        Хакер нейтрализован: {WIN_CORRECT_ANSWERS} попаданий по {SHOT_DAMAGE} урона сняли все {INITIAL_HP} HP. Hackpet получил +{PLAY_WIN_XP_REWARD} XP.
+                        Хакер нейтрализован: {WIN_CORRECT_ANSWERS} попаданий сняли все {INITIAL_HP} HP. Hackpet получил +{PLAY_WIN_XP_REWARD} XP.
+                      </p>
+                    )}
+                    {!result.endTitle && !result.isCorrect && (
+                      <p className="play-result-sub muted">
+                        Ошибок: {wrongAnswers}/{MAX_WRONG_ANSWERS}
                       </p>
                     )}
                     <p className="play-result-text">{result.explanation}</p>

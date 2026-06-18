@@ -5,7 +5,13 @@
   "difficulty": "medium",
   "minutes": 15,
   "topic": "Безопасность веб-эндпоинтов",
-  "steps": ["theory", "checkpoint_quiz", "lab", "final_quiz", "summary"],
+  "steps": [
+    "theory",
+    "checkpoint_quiz",
+    "lab",
+    "final_quiz",
+    "summary"
+  ],
   "theory": {
     "intro": "Эндпоинт, который отдаёт файл по имени из запроса, может позволить прочитать любой файл на диске, если путь не ограничен.",
     "paragraphs": [
@@ -61,7 +67,12 @@
       {
         "id": "q4",
         "text": "Запрос file=../../../etc/passwd, путь вне baseDir. Какой HTTP-код?",
-        "options": ["200 OK", "404 Not Found", "403 Forbidden", "500 Internal Server Error"],
+        "options": [
+          "200 OK",
+          "404 Not Found",
+          "403 Forbidden",
+          "500 Internal Server Error"
+        ],
         "correct": 2,
         "explanation": "Отказ в доступе — 403, не 404 и не 500."
       },
@@ -178,7 +189,12 @@
       {
         "id": "f3",
         "text": "Путь прошёл Rel, файл внутри baseDir отсутствует. Код ответа:",
-        "options": ["403 Forbidden", "404 Not Found", "500 Internal Server Error", "200 OK"],
+        "options": [
+          "403 Forbidden",
+          "404 Not Found",
+          "500 Internal Server Error",
+          "200 OK"
+        ],
         "correct": 1,
         "explanation": "Ресурс в разрешённой зоне не найден — 404."
       },
@@ -205,6 +221,66 @@
         ],
         "correct": 1,
         "explanation": "Доступ запрещён — 403, как в теории про HTTP-коды."
+      },
+      {
+        "id": "f6",
+        "text": "Атакующий передаёт filename='../../etc/passwd'. Какой шаг в Go блокирует это?",
+        "options": [
+          "http.Error с кодом 400",
+          "filepath.Clean убирает '..' → filepath.Rel или strings.HasPrefix проверяет baseDir",
+          "defer r.Body.Close()",
+          "Проверка Content-Type"
+        ],
+        "correct": 1,
+        "explanation": "filepath.Clean канонизирует путь, затем проверка prefix/rel гарантирует, что он внутри baseDir."
+      },
+      {
+        "id": "f7",
+        "text": "Почему strings.HasPrefix(path, baseDir) без filepath.Clean опасно?",
+        "options": [
+          "HasPrefix не работает на Windows",
+          "Без нормализации '..' в середине пути обходит проверку префикса",
+          "Go не поддерживает HasPrefix для путей",
+          "baseDir всегда абсолютный"
+        ],
+        "correct": 1,
+        "explanation": "'../../../etc/passwd' содержит baseDir как префикс строки, но реально выходит за его пределы."
+      },
+      {
+        "id": "f8",
+        "text": "Какой HTTP-статус при пути вне baseDir?",
+        "options": [
+          "404 Not Found",
+          "500 Internal Server Error",
+          "403 Forbidden",
+          "301 Redirect"
+        ],
+        "correct": 2,
+        "explanation": "Путь существует, но доступ запрещён политикой — 403. 404 — для несуществующих ресурсов."
+      },
+      {
+        "id": "f9",
+        "text": "Зачем ограничивать whitelist разрешённых расширений файлов?",
+        "options": [
+          "Расширение определяет MIME",
+          "Даже внутри baseDir нельзя отдавать .go, .env, private ключи",
+          "os.Open требует расширение",
+          "filepath.Clean работает только с известными расширениями"
+        ],
+        "correct": 1,
+        "explanation": "Path-проверка защищает от выхода за каталог, whitelist расширений — от раскрытия чувствительных файлов внутри."
+      },
+      {
+        "id": "f10",
+        "text": "Минимальный безопасный набор для file-download в Go?",
+        "options": [
+          "os.Open + defer + http.Error",
+          "filepath.Clean + filepath.Rel/HasPrefix(baseDir) + http.Error(403/404) + whitelist расширений",
+          "http.ServeFile без проверок",
+          "ioutil.ReadFile + json.Marshal"
+        ],
+        "correct": 1,
+        "explanation": "Цепочка: нормализация → проверка базового каталога → корректные HTTP-ошибки → ограничение типов файлов."
       }
     ]
   }

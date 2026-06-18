@@ -1,24 +1,143 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="t">
-  <title id="t">Supply chain security</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
   <defs>
-    <linearGradient id="scb" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#3b0764"/>
-      <stop offset="100%" style="stop-color:#1e1b4b"/>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f0a00"/>
+      <stop offset="100%" stop-color="#1a1200"/>
     </linearGradient>
+    <linearGradient id="chainGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
-  <rect width="800" height="450" fill="url(#scb)"/>
-  <g stroke="#a78bfa" stroke-width="3" fill="none">
-    <line x1="140" y1="225" x2="260" y2="225"/>
-    <line x1="320" y1="225" x2="440" y2="225"/>
-    <line x1="500" y1="225" x2="620" y2="225"/>
+
+  <rect width="800" height="450" fill="url(#bg)"/>
+
+  <!-- grid -->
+  <g stroke="#1a1200" stroke-width="1" opacity="0.9">
+    <line x1="0" y1="90" x2="800" y2="90"/><line x1="0" y1="180" x2="800" y2="180"/>
+    <line x1="0" y1="270" x2="800" y2="270"/><line x1="0" y1="360" x2="800" y2="360"/>
+    <line x1="160" y1="0" x2="160" y2="450"/><line x1="320" y1="0" x2="320" y2="450"/>
+    <line x1="480" y1="0" x2="480" y2="450"/><line x1="640" y1="0" x2="640" y2="450"/>
   </g>
-  <circle cx="110" cy="225" r="36" fill="#4c1d95" stroke="#c4b5fd" stroke-width="3"/>
-  <circle cx="290" cy="225" r="36" fill="#5b21b6" stroke="#c4b5fd" stroke-width="3"/>
-  <circle cx="470" cy="225" r="36" fill="#6d28d9" stroke="#c4b5fd" stroke-width="3"/>
-  <circle cx="650" cy="225" r="36" fill="#7c3aed" stroke="#c4b5fd" stroke-width="3"/>
-  <text x="110" y="232" text-anchor="middle" fill="#e9d5ff" font-family="system-ui,sans-serif" font-size="14" font-weight="700">SRC</text>
-  <text x="290" y="232" text-anchor="middle" fill="#e9d5ff" font-family="system-ui,sans-serif" font-size="14" font-weight="700">CI</text>
-  <text x="470" y="232" text-anchor="middle" fill="#e9d5ff" font-family="system-ui,sans-serif" font-size="14" font-weight="700">REG</text>
-  <text x="650" y="232" text-anchor="middle" fill="#e9d5ff" font-family="system-ui,sans-serif" font-size="14" font-weight="700">RUN</text>
-  <text x="400" y="340" text-anchor="middle" fill="#a78bfa" font-family="system-ui,sans-serif" font-size="20" font-weight="600">Provenance - SBOM - policy</text>
+
+  <!-- supply chain flow: top row — packages, bottom row — pipeline -->
+
+  <!-- UPSTREAM SOURCES -->
+  <text x="60" y="38" fill="#64748b" font-family="monospace" font-size="8" letter-spacing="2">UPSTREAM</text>
+
+  <!-- npm package -->
+  <rect x="30" y="48" width="80" height="50" rx="6" fill="#1a1000" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="70" y="68" text-anchor="middle" fill="#f59e0b" font-family="monospace" font-size="9" font-weight="bold">npm</text>
+  <text x="70" y="84" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="7">lodash@4.x</text>
+
+  <!-- github -->
+  <rect x="125" y="48" width="80" height="50" rx="6" fill="#1a1000" stroke="#e2e8f0" stroke-width="1.2"/>
+  <text x="165" y="68" text-anchor="middle" fill="#e2e8f0" font-family="monospace" font-size="9" font-weight="bold">GitHub</text>
+  <text x="165" y="84" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="7">3rd-party lib</text>
+
+  <!-- pypi -->
+  <rect x="220" y="48" width="80" height="50" rx="6" fill="#1a1000" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="260" y="68" text-anchor="middle" fill="#3b82f6" font-family="monospace" font-size="9" font-weight="bold">PyPI</text>
+  <text x="260" y="84" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="7">requests@2.x</text>
+
+  <!-- docker hub -->
+  <rect x="315" y="48" width="80" height="50" rx="6" fill="#1a1000" stroke="#22d3ee" stroke-width="1.2"/>
+  <text x="355" y="68" text-anchor="middle" fill="#22d3ee" font-family="monospace" font-size="9" font-weight="bold">Docker</text>
+  <text x="355" y="84" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="7">base image</text>
+
+  <!-- arrows down to pipeline -->
+  <g stroke="#475569" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.6">
+    <line x1="70" y1="98" x2="70" y2="145"/>
+    <line x1="165" y1="98" x2="165" y2="145"/>
+    <line x1="260" y1="98" x2="260" y2="145"/>
+    <line x1="355" y1="98" x2="355" y2="145"/>
+  </g>
+  <!-- arrowheads -->
+  <g fill="#475569" opacity="0.6">
+    <polygon points="66,145 70,153 74,145"/><polygon points="161,145 165,153 169,145"/>
+    <polygon points="256,145 260,153 264,145"/><polygon points="351,145 355,153 359,145"/>
+  </g>
+
+  <!-- PIPELINE STAGES -->
+  <rect x="20" y="155" width="760" height="90" rx="10" fill="#0f0a00" stroke="#292300" stroke-width="1.5"/>
+
+  <!-- Stage 1: SCA scan -->
+  <rect x="35" y="168" width="140" height="62" rx="6" fill="#1a1000" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="105" y="186" text-anchor="middle" fill="#f59e0b" font-family="monospace" font-size="8" letter-spacing="1">SCA SCAN</text>
+  <text x="50" y="202" fill="#94a3b8" font-family="monospace" font-size="7">CVE lookup</text>
+  <text x="50" y="214" fill="#94a3b8" font-family="monospace" font-size="7">license check</text>
+  <text x="50" y="226" fill="#ef4444" font-family="monospace" font-size="7">! CVE-2023-xxxx</text>
+
+  <!-- arrow -->
+  <polygon points="183,196 193,200 183,204" fill="#f59e0b" opacity="0.7"/>
+  <line x1="175" y1="200" x2="182" y2="200" stroke="#f59e0b" stroke-width="1.5" opacity="0.7"/>
+
+  <!-- Stage 2: SBOM -->
+  <rect x="200" y="168" width="140" height="62" rx="6" fill="#1a1000" stroke="#10b981" stroke-width="1.2"/>
+  <text x="270" y="186" text-anchor="middle" fill="#10b981" font-family="monospace" font-size="8" letter-spacing="1">SBOM</text>
+  <text x="215" y="202" fill="#94a3b8" font-family="monospace" font-size="7">CycloneDX</text>
+  <text x="215" y="214" fill="#94a3b8" font-family="monospace" font-size="7">SPDX format</text>
+  <text x="215" y="226" fill="#10b981" font-family="monospace" font-size="7">full inventory</text>
+
+  <!-- arrow -->
+  <polygon points="348,196 358,200 348,204" fill="#10b981" opacity="0.7"/>
+  <line x1="340" y1="200" x2="347" y2="200" stroke="#10b981" stroke-width="1.5" opacity="0.7"/>
+
+  <!-- Stage 3: Sign -->
+  <rect x="365" y="168" width="140" height="62" rx="6" fill="#1a1000" stroke="#818cf8" stroke-width="1.2"/>
+  <text x="435" y="186" text-anchor="middle" fill="#818cf8" font-family="monospace" font-size="8" letter-spacing="1">SIGN</text>
+  <text x="380" y="202" fill="#94a3b8" font-family="monospace" font-size="7">Sigstore / Cosign</text>
+  <text x="380" y="214" fill="#94a3b8" font-family="monospace" font-size="7">image digest</text>
+  <text x="380" y="226" fill="#818cf8" font-family="monospace" font-size="7">artifact signing</text>
+
+  <!-- arrow -->
+  <polygon points="513,196 523,200 513,204" fill="#818cf8" opacity="0.7"/>
+  <line x1="505" y1="200" x2="512" y2="200" stroke="#818cf8" stroke-width="1.5" opacity="0.7"/>
+
+  <!-- Stage 4: Policy gate -->
+  <rect x="530" y="168" width="140" height="62" rx="6" fill="#1a1000" stroke="#22d3ee" stroke-width="1.2"/>
+  <text x="600" y="186" text-anchor="middle" fill="#22d3ee" font-family="monospace" font-size="8" letter-spacing="1">POLICY GATE</text>
+  <text x="545" y="202" fill="#94a3b8" font-family="monospace" font-size="7">OPA · Conftest</text>
+  <text x="545" y="214" fill="#94a3b8" font-family="monospace" font-size="7">allowed registries</text>
+  <text x="545" y="226" fill="#22d3ee" font-family="monospace" font-size="7">block unapproved</text>
+
+  <!-- arrow -->
+  <polygon points="678,196 688,200 678,204" fill="#22d3ee" opacity="0.7"/>
+  <line x1="670" y1="200" x2="677" y2="200" stroke="#22d3ee" stroke-width="1.5" opacity="0.7"/>
+
+  <!-- Stage 5: Deploy -->
+  <rect x="695" y="168" width="72" height="62" rx="6" fill="#1a1000" stroke="#10b981" stroke-width="1.5"/>
+  <text x="731" y="186" text-anchor="middle" fill="#10b981" font-family="monospace" font-size="7" letter-spacing="1">DEPLOY</text>
+  <circle cx="731" cy="210" r="14" fill="none" stroke="#10b981" stroke-width="1.5" opacity="0.7"/>
+  <polyline points="723,210 729,216 740,204" fill="none" stroke="#10b981" stroke-width="2.5"/>
+
+  <!-- ALERT: compromised package box -->
+  <rect x="30" y="280" width="200" height="80" rx="8" fill="#1a0505" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="130" y="300" text-anchor="middle" fill="#ef4444" font-family="monospace" font-size="9" letter-spacing="1">SUPPLY CHAIN ATTACK</text>
+  <text x="45" y="318" fill="#94a3b8" font-family="monospace" font-size="8">! typosquatting: coIors.js</text>
+  <text x="45" y="332" fill="#94a3b8" font-family="monospace" font-size="8">! malicious postinstall</text>
+  <text x="45" y="346" fill="#ef4444" font-family="monospace" font-size="8">BLOCKED by policy gate</text>
+
+  <!-- SBOM detail -->
+  <rect x="260" y="280" width="220" height="80" rx="8" fill="#001a0a" stroke="#10b981" stroke-width="1.2"/>
+  <text x="370" y="298" text-anchor="middle" fill="#10b981" font-family="monospace" font-size="9" letter-spacing="1">SBOM CONTENTS</text>
+  <text x="275" y="316" fill="#64748b" font-family="monospace" font-size="7">react@18.2.0          MIT</text>
+  <text x="275" y="328" fill="#64748b" font-family="monospace" font-size="7">express@4.18.2        MIT</text>
+  <text x="275" y="340" fill="#f59e0b" font-family="monospace" font-size="7">lodash@4.17.20    ! outdated</text>
+  <text x="275" y="352" fill="#64748b" font-family="monospace" font-size="7">axios@1.6.0           MIT</text>
+
+  <!-- Pinning strategy -->
+  <rect x="510" y="280" width="260" height="80" rx="8" fill="#00001a" stroke="#818cf8" stroke-width="1.2"/>
+  <text x="640" y="298" text-anchor="middle" fill="#818cf8" font-family="monospace" font-size="9" letter-spacing="1">PINNING STRATEGY</text>
+  <text x="525" y="316" fill="#64748b" font-family="monospace" font-size="7">npm ci  --frozen-lockfile</text>
+  <text x="525" y="328" fill="#64748b" font-family="monospace" font-size="7">pip install --require-hashes</text>
+  <text x="525" y="340" fill="#64748b" font-family="monospace" font-size="7">image@sha256:abc123...</text>
+  <text x="525" y="352" fill="#10b981" font-family="monospace" font-size="7">reproducible builds</text>
+
+  <text x="400" y="420" text-anchor="middle" fill="#334155" font-family="monospace" font-size="10">SCA · SBOM · Signing · Policy gates · Pinning</text>
 </svg>

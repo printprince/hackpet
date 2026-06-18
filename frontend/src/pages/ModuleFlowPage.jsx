@@ -7,7 +7,6 @@ import {
   Lab,
   FinalQuiz,
   Summary,
-  ResultsPanel,
 } from '../features/moduleFlow'
 import { useModuleFlowState } from '../hooks/useModuleFlowState'
 import { CourseSidebarNav } from '../features/courses'
@@ -84,13 +83,6 @@ export default function ModuleFlowPage() {
       navigate(`/courses/${courseId}`, { replace: true })
     }
   }, [courseLoading, course, modules, moduleId, courseId, navigate, fromPrevCompleted])
-
-  useEffect(() => {
-    // Если оказались на шаге «Результат» без данных проверки — вернуть к лабе.
-    if (flow.panel === 'results' && !flow.effectiveLabResult) {
-      flow.showPanel('lab')
-    }
-  }, [flow.panel, flow.effectiveLabResult, flow.showPanel])
 
   if (!flow.currentModule) return <div className="container">Загрузка модуля…</div>
 
@@ -186,15 +178,6 @@ export default function ModuleFlowPage() {
               locked={flow.labLocked}
             />
           )}
-          {flow.panel === 'results' && (
-            <ResultsPanel
-              result={flow.effectiveLabResult}
-              labRules={flow.currentModule.lab?.rules}
-              onNext={() => flow.showPanel('final-quiz')}
-              onStartOver={flow.handleTryAgain}
-              nextLabel="Дальше →"
-            />
-          )}
           {flow.panel === 'final-quiz' && (
             <FinalQuiz
               quiz={flow.currentModule.final_quiz}
@@ -216,6 +199,7 @@ export default function ModuleFlowPage() {
               finalQuiz={flow.currentModule.final_quiz}
               onApplyResult={flow.applyModuleResult}
               onNextModule={goToNextModuleOrCourse}
+              onGoToCourse={() => navigate(ROUTES.COURSE(courseId))}
               hasNextModule={hasNextModule}
               hasCTFNext={hasCTFAfterLast}
               onTryAgain={flow.handleTryAgain}

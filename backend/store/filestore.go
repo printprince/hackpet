@@ -411,3 +411,7 @@ func (s *fileStore) GetQuizStats(userID, quizId string) (correct int, total int,
 func (s *fileStore) GetQuizAnswers(userID, quizId string) (map[string]int, error) {
 	return map[string]int{}, nil
 }
+
+func (s *fileStore) ClearModuleAttempts(userID, moduleId string) error {
+	return nil
+}

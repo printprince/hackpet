@@ -5,7 +5,13 @@
   "difficulty": "medium",
   "minutes": 15,
   "topic": "Безопасность фронтенда",
-  "steps": ["theory", "checkpoint_quiz", "lab", "final_quiz", "summary"],
+  "steps": [
+    "theory",
+    "checkpoint_quiz",
+    "lab",
+    "final_quiz",
+    "summary"
+  ],
   "theory": {
     "intro": "XSS в Python-приложениях появляется, когда пользовательский ввод попадает в HTML без экранирования.",
     "paragraphs": [
@@ -190,8 +196,67 @@
         ],
         "correct": 1,
         "explanation": "Данные из request/БД без санитизации — не кандидаты на |safe."
+      },
+      {
+        "id": "f6",
+        "text": "Атакующий вводит name='<script>alert(1)</script>'. Что делает Jinja2 автоматически?",
+        "options": [
+          "Удаляет script-теги",
+          "Экранирует < > & ' \" в HTML-entities",
+          "Блокирует запрос",
+          "Отправляет в sandbox"
+        ],
+        "correct": 1,
+        "explanation": "Jinja2 с autoescaping включает HTML-экранирование по умолчанию в .html шаблонах."
+      },
+      {
+        "id": "f7",
+        "text": "Когда Jinja2 autoescaping НЕ защищает от XSS?",
+        "options": [
+          "Никогда, Jinja2 всегда защищает",
+          "При использовании фильтра |safe или Markup() с непроверенными данными",
+          "При использовании {{ name }}",
+          "При рендере .html шаблонов"
+        ],
+        "correct": 1,
+        "explanation": "|safe и Markup() отключают экранирование — применять только к заведомо безопасным строкам."
+      },
+      {
+        "id": "f8",
+        "text": "Что такое Stored XSS?",
+        "options": [
+          "XSS через URL-параметры",
+          "XSS-payload сохраняется в БД и исполняется при просмотре другими пользователями",
+          "XSS через HTTP-заголовки",
+          "XSS в PDF-файлах"
+        ],
+        "correct": 1,
+        "explanation": "Stored XSS опаснее Reflected: payload доставляется всем пользователям, просматривающим заражённые данные."
+      },
+      {
+        "id": "f9",
+        "text": "Какой HTTP-заголовок дополнительно защищает от XSS?",
+        "options": [
+          "Authorization",
+          "Content-Security-Policy (CSP)",
+          "X-Request-ID",
+          "Accept-Encoding"
+        ],
+        "correct": 1,
+        "explanation": "CSP ограничивает источники скриптов, блокируя выполнение inline-скриптов и загрузку с чужих доменов."
+      },
+      {
+        "id": "f10",
+        "text": "f-строка f'<p>Привет, {name}!</p>' возвращается через make_response. Что с этим не так?",
+        "options": [
+          "f-строки медленнее шаблонов",
+          "name вставляется без экранирования — XSS уязвимость",
+          "Flask не поддерживает f-строки в ответах",
+          "Кодировка может быть неверной"
+        ],
+        "correct": 1,
+        "explanation": "f-строки не экранируют HTML; нужен шаблон Jinja2 или явный вызов escape()."
       }
     ]
   }
 }
-

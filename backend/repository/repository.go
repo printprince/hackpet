@@ -33,4 +33,5 @@ type ProgressRepo interface {
 	RecordQuizAnswer(userID, quizId, questionId string, answer int, correct bool) error
 	GetQuizStats(userID, quizId string) (correct int, total int, err error)
 	GetQuizAnswers(userID, quizId string) (map[string]int, error)
+	ClearModuleAttempts(userID, moduleId string) error
 }

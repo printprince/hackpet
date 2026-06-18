@@ -15,10 +15,8 @@ function meetsStepEntryRequirements(panel, ctx) {
         ctx.quizRevealed &&
         allQuizQuestionsAnswered(ctx.checkpointQuiz, ctx.quizAnswers)
       )
-    case 'results':
-      return Boolean(ctx.effectiveLabResult)
     case 'final-quiz':
-      return labResultPassed(ctx.effectiveLabResult)
+      return Boolean(ctx.effectiveLabResult)
     case 'summary':
       return allQuizQuestionsAnswered(ctx.finalQuiz, ctx.finalQuizAnswers)
     default:
@@ -46,15 +44,13 @@ export function canNavigateToPanel(targetPanel, currentPanel, ctx) {
   const currentIdx = PANEL_ORDER.indexOf(currentPanel)
   if (targetIdx < 0 || currentIdx < 0) return false
 
-  // Назад — только к уже достигнутым этапам.
-  if (targetIdx < currentIdx) {
-    return targetIdx <= maxReachedIndex
-  }
-
   // Текущий этап.
   if (targetIdx === currentIdx) return true
 
-  // Вперёд — строго на один шаг и с выполнением требований этапа.
+  // Уже достигнутый этап — всегда доступен (назад или вперёд к пройденному).
+  if (targetIdx <= maxReachedIndex) return true
+
+  // Новый этап вперёд — только на один шаг с выполнением требований.
   if (targetIdx !== currentIdx + 1) return false
 
   return meetsStepEntryRequirements(targetPanel, {

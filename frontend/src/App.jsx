@@ -15,6 +15,7 @@ import ArticleDetailPage from './pages/ArticleDetailPage'
 import CoursesListPage from './pages/CoursesListPage'
 import CourseDetailPage from './pages/CourseDetailPage'
 import ModuleFlowPage from './pages/ModuleFlowPage'
+import PremiumPage from './pages/PremiumPage'
 import { ROUTES } from './constants'
 import RequireAuth from './RequireAuth'
 
@@ -53,6 +54,7 @@ export default function App() {
             <Route path="articles" element={<ArticlesPage />} />
             <Route path="articles/:articleId" element={<ArticleDetailPage />} />
             <Route path="courses" element={<CoursesListPage />} />
+            <Route path="premium" element={<PremiumPage />} />
             <Route path="courses/:courseId" element={<CourseDetailPage />} />
             <Route
               path="courses/:courseId/module/:moduleId"

@@ -34,6 +34,7 @@ func (s *ProgressService) Update(userID, moduleId string, lastStep string, compl
 	var p store.ModuleProgress
 	if reset {
 		p = store.ModuleProgress{}
+		_ = s.Progress.ClearModuleAttempts(userID, moduleId)
 	} else {
 		cur, _ := s.Progress.GetProgress(userID, moduleId)
 		if cur != nil {

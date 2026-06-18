@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 const WEIGHTS = {
   LAB: 60,
@@ -17,6 +17,7 @@ export default function Summary({
   finalQuiz,
   onApplyResult,
   onNextModule,
+  onGoToCourse,
   hasNextModule,
   hasCTFNext = false,
   onTryAgain,
@@ -101,11 +102,18 @@ export default function Summary({
     setExpandedSection((prev) => (prev === key ? null : key))
   }
 
+  // Only apply result once per mount — prevents re-firing when user navigates back here
+  // or when state updates cause a re-render.
+  const resultAppliedRef = useRef(false)
   useEffect(() => {
+    if (resultAppliedRef.current) return
     if (typeof onApplyResult === 'function' && progress?.completed !== true) {
+      resultAppliedRef.current = true
       onApplyResult(overallPassed)
     }
-  }, [overallPassed, onApplyResult, progress?.completed])
+  // overallPassed is a computed value that stabilizes on first render — safe to include.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onApplyResult, progress?.completed])
 
   return (
     <div className="card">
@@ -204,17 +212,23 @@ export default function Summary({
             Попробовать снова
           </button>
         )}
-        <button
-          type="button"
-          className={overallPassed ? 'btn btn-primary' : 'btn btn-secondary'}
-          onClick={onNextModule}
-        >
-          {overallPassed && hasNextModule
-            ? 'К следующему модулю'
-            : overallPassed && hasCTFNext
-              ? 'Дальше'
-              : 'К курсу'}
-        </button>
+        {overallPassed ? (
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={onNextModule}
+          >
+            {hasNextModule ? 'К следующему модулю' : hasCTFNext ? 'Дальше' : 'К курсу'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onGoToCourse || onNextModule}
+          >
+            К курсу
+          </button>
+        )}
       </div>
     </div>
   )

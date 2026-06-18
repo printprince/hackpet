@@ -94,24 +94,6 @@ export default function AccountPetSection({
               Тренировать питомца
             </Link>
           </div>
-          <div className="pet-stats-dev-block">
-            <div className="pet-stats">
-              {petStats.map((s) => (
-                <div key={s.id} className="pet-stat-row">
-                  <span className="pet-stat-label-wrap">
-                    <span className="pet-stat-label">{s.label}</span>
-                    {s.hint ? <span className="pet-stat-hint">{s.hint}</span> : null}
-                  </span>
-                  <div className="pet-stat-track">
-                    <div className="pet-stat-fill" style={{ width: `${s.value}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="pet-dev-overlay" aria-hidden="true">
-              <span className="pet-dev-overlay-badge">В разработке</span>
-            </div>
-          </div>
         </div>
       </div>
       <PetAppearancePicker

@@ -151,4 +151,6 @@ type Store interface {
 	GetQuizStats(userID, quizId string) (correct int, total int, err error)
 	// GetQuizAnswers — последний ответ пользователя на каждый вопрос квиза (question_id → индекс варианта).
 	GetQuizAnswers(userID, quizId string) (map[string]int, error)
+	// ClearModuleAttempts удаляет все попытки лабы и ответы на квизы при reset модуля.
+	ClearModuleAttempts(userID, moduleId string) error
 }

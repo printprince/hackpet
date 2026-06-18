@@ -11,14 +11,13 @@ export default function Stepper({ current, onStepClick, maxReachableStepIndex, l
     <nav className="stepper" aria-label="Шаги модуля">
       {stepsToShow.map((p) => {
         const idxInFull = PANEL_ORDER.indexOf(p)
-        const done =
-          idxInFull < currentIndex || (current === 'summary' && idxInFull <= currentIndex)
+            const isCurrent = p === current
+        const done = !isCurrent && idxInFull <= reachable
         const isLocked = lockMode === 'review'
           ? false
           : typeof canOpenStep === 'function'
             ? !canOpenStep(p)
             : idxInFull > reachable
-        const isCurrent = p === current
         const label = MODULE_STEP_LABELS[p] || p
         const canClick = onStepClick && !isLocked
         return canClick ? (

@@ -13,7 +13,7 @@ import {
 } from '../utils/modulePersistence'
 
 const POST_LAB_PANELS = new Set(['final-quiz', 'summary'])
-const RESULTS_INDEX = PANEL_ORDER.indexOf('results')
+const FINAL_QUIZ_INDEX = PANEL_ORDER.indexOf('final-quiz')
 
 function labResultPassed(result) {
   return result?.status === 'passed'
@@ -37,10 +37,19 @@ export function useModuleFlowState({ moduleId, userId, continueFromProgress, ini
   })
   const skipLabDraftSaveRef = useRef(false)
   const moduleHydratedRef = useRef(false)
+  const panelRef = useRef(panel)
+  // Track which initialPanel value we last navigated to, so the effect only fires on actual changes.
+  const lastAppliedInitialPanelRef = useRef(null)
+  // Stable ref for initialPanel so the module-load effect can read it without it being a dep.
+  // Using initialPanel as a dep would re-run the full module load on every sidebar step click.
+  const initialPanelRef = useRef(initialPanel)
+  useEffect(() => { initialPanelRef.current = initialPanel }, [initialPanel])
 
   useEffect(() => {
     if (!moduleId) return
     moduleHydratedRef.current = false
+    // Reset lastApplied so the initialPanel effect re-applies for this module.
+    lastAppliedInitialPanelRef.current = null
     get(`/modules/${moduleId}`)
       .then((m) => {
         setCurrentModule(m)
@@ -74,41 +83,64 @@ export function useModuleFlowState({ moduleId, userId, continueFromProgress, ini
           completed || progressIdx > quizIdx || (checkpointComplete && progressIdx >= quizIdx)
         )
 
+        // Use ref so sidebar step clicks (which change initialPanel) don't re-trigger this effect.
+        const ip = initialPanelRef.current
         let startPanel = 'theory'
-        // Завершённый модуль: уважаем initialPanel (просмотр этапа), иначе открываем Итог.
-        if (normalizeFlowPanel(initialPanel)) {
-          startPanel = normalizeFlowPanel(initialPanel)
-        } else if (completed || prog.last_step === 'summary') {
+        if (normalizeFlowPanel(ip)) {
+          startPanel = normalizeFlowPanel(ip)
+        } else if (completed) {
+          // Only auto-open Summary for truly completed modules.
+          // If completed=false but last_step='summary', we drop back to final-quiz so the
+          // Summary's onApplyResult does not fire again and overwrite progress on reload.
           startPanel = 'summary'
         } else if (continueFromProgress && normalizeFlowPanel(prog.last_step)) {
-          startPanel = normalizeFlowPanel(prog.last_step)
+          const ls = normalizeFlowPanel(prog.last_step)
+          // If the saved step is 'summary' but the module isn't completed, open final-quiz instead.
+          startPanel = ls === 'summary' ? 'final-quiz' : ls
         }
-        if (POST_LAB_PANELS.has(startPanel) && !labPassed && !completed) {
-          startPanel = apiLab ? 'results' : 'lab'
+        if (POST_LAB_PANELS.has(startPanel) && !apiLab && !completed) {
+          startPanel = 'lab'
         }
+        // Mark as handled so the initialPanel effect doesn't double-navigate on mount.
+        lastAppliedInitialPanelRef.current = ip
         setPanel(startPanel)
+        panelRef.current = startPanel
         const startIdx = PANEL_ORDER.indexOf(startPanel)
+        const labSubmitted = Boolean(apiLab)
         let initialMax = completed
           ? PANEL_ORDER.length - 1
           : Math.max(startIdx >= 0 ? startIdx : 0, progressIdx, 0)
-        if (!labPassed && !completed) {
-          initialMax = Math.min(initialMax, RESULTS_INDEX)
+        if (!labSubmitted && !completed) {
+          initialMax = Math.min(initialMax, PANEL_ORDER.indexOf('lab'))
         }
         setMaxReachedIndex(initialMax)
         moduleHydratedRef.current = true
       })
       .catch((e) => alert('Ошибка загрузки модуля: ' + e.message))
-  }, [moduleId, userId, continueFromProgress, initialPanel])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [moduleId, userId, continueFromProgress])
 
+  // Keep panelRef in sync so the initialPanel effect can read latest panel without it being a dep.
+  useEffect(() => { panelRef.current = panel }, [panel])
+
+  // Navigate to initialPanel ONLY when initialPanel changes to a new value (e.g. sidebar/stepper click).
+  // We intentionally avoid other deps to prevent this effect from resetting the panel during normal
+  // flow transitions (lab submit, quiz answer, etc.).
   useEffect(() => {
     const normalized = normalizeFlowPanel(initialPanel)
     if (!normalized) return
+    // Skip if we already handled this exact initialPanel value.
+    if (lastAppliedInitialPanelRef.current === initialPanel) return
+    // Skip until module has loaded — the module load effect already sets startPanel on mount.
+    if (!moduleHydratedRef.current) return
+    lastAppliedInitialPanelRef.current = initialPanel
+
     const apiLab = lastLabAttemptFromApi
     const labPassed = labResultPassed(lastSubmitResult || apiLab)
     const completed = currentModule?.progress?.completed
     let panelName = normalized
-    if (POST_LAB_PANELS.has(panelName) && !labPassed && !completed) {
-      panelName = apiLab || lastSubmitResult ? 'results' : 'lab'
+    if (POST_LAB_PANELS.has(panelName) && !(apiLab || lastSubmitResult) && !completed) {
+      panelName = 'lab'
     }
     const navCtx = {
       lockMode: completed ? 'review' : 'normal',
@@ -121,16 +153,17 @@ export function useModuleFlowState({ moduleId, userId, continueFromProgress, ini
       effectiveLabResult: lastSubmitResult || apiLab,
       completed,
     }
-    if (!completed && !canNavigateToPanel(panelName, panel, navCtx)) return
+    if (!completed && !canNavigateToPanel(panelName, panelRef.current, navCtx)) return
     setPanel(panelName)
     const idx = PANEL_ORDER.indexOf(panelName)
     if (idx >= 0) {
       setMaxReachedIndex((prev) => {
         const next = Math.max(prev, idx)
-        return !labPassed && !completed ? Math.min(next, RESULTS_INDEX) : next
+        return !labPassed && !completed ? Math.min(next, FINAL_QUIZ_INDEX) : next
       })
     }
-  }, [initialPanel, lastLabAttemptFromApi, lastSubmitResult, currentModule?.progress?.completed, maxReachedIndex, quizRevealed, quizAnswers, finalQuizAnswers, currentModule?.checkpoint_quiz, currentModule?.final_quiz, panel])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialPanel])
 
   useEffect(() => {
     if (!moduleId || !userId || !moduleHydratedRef.current) return
@@ -183,12 +216,8 @@ export function useModuleFlowState({ moduleId, userId, continueFromProgress, ini
       if (!canNavigateToPanel(name, panel, navigationCtx)) return
       const labPassed = labResultPassed(lastSubmitResult || lastLabAttemptFromApi)
       const completed = currentModule?.progress?.completed
-      if (POST_LAB_PANELS.has(name) && !labPassed && !completed) {
-        if (lastSubmitResult || lastLabAttemptFromApi) {
-          name = 'results'
-        } else {
-          name = 'lab'
-        }
+      if (POST_LAB_PANELS.has(name) && !(lastSubmitResult || lastLabAttemptFromApi) && !completed) {
+        name = 'lab'
       }
       setPanel(name)
       const idx = PANEL_ORDER.indexOf(name)
@@ -197,7 +226,7 @@ export function useModuleFlowState({ moduleId, userId, continueFromProgress, ini
         if (!completed && idx > prev) {
           saveProgress(name)
         }
-        return !labPassed && !completed ? Math.min(next, RESULTS_INDEX) : next
+        return next
       })
     },
     [saveProgress, lastSubmitResult, lastLabAttemptFromApi, currentModule?.progress?.completed, panel, navigationCtx]
@@ -284,23 +313,17 @@ export function useModuleFlowState({ moduleId, userId, continueFromProgress, ini
   const handleLabSubmit = useCallback(() => {
     const lab = currentModule?.lab
     if (!lab) return
-    // Не даём пересдавать лабу в рамках одной попытки (пока есть результат в этой сессии).
-    if (lastSubmitResult) return
+    // Не даём пересдавать лабу если результат уже есть (в этой сессии или из БД).
+    if (lastSubmitResult || lastLabAttemptFromApi) return
     const files = Object.entries(fileContents).map(([path, content]) => ({ path, content }))
     markPetActivity('study')
     post(`/labs/${lab.id}/submit`, { submission_id: `draft-${Date.now()}`, files })
       .then((res) => {
         setLastSubmitResult(res)
-        if (labResultPassed(res)) {
-          clearLabDraft(userId, currentModule.id)
-          setPanel('results')
-          setMaxReachedIndex((prev) => Math.max(prev, RESULTS_INDEX))
-          saveProgress('results')
-        } else {
-          setPanel('results')
-          setMaxReachedIndex((prev) => Math.min(Math.max(prev, RESULTS_INDEX), RESULTS_INDEX))
-          saveProgress('results')
-        }
+        clearLabDraft(userId, currentModule.id)
+        setPanel('final-quiz')
+        setMaxReachedIndex((prev) => Math.max(prev, FINAL_QUIZ_INDEX))
+        saveProgress('final-quiz')
       })
       .catch((e) => alert('Ошибка: ' + e.message))
   }, [currentModule?.lab, currentModule?.id, fileContents, saveProgress, lastSubmitResult, userId])
@@ -340,7 +363,7 @@ export function useModuleFlowState({ moduleId, userId, continueFromProgress, ini
     syncFinalQuizAnswers,
   ])
 
-  const labLocked = Boolean(lastSubmitResult) || isReadOnlyReview
+  const labLocked = Boolean(effectiveLabResult) || isReadOnlyReview
   const finalQuizLocked = isReadOnlyReview
 
   return {

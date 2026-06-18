@@ -5,7 +5,13 @@
   "difficulty": "medium",
   "minutes": 15,
   "topic": "Безопасность сетевого взаимодействия",
-  "steps": ["theory", "checkpoint_quiz", "lab", "final_quiz", "summary"],
+  "steps": [
+    "theory",
+    "checkpoint_quiz",
+    "lab",
+    "final_quiz",
+    "summary"
+  ],
   "theory": {
     "intro": "SSRF в Python обычно прячется там, где backend делает requests.get по URL, который прислал пользователь.",
     "paragraphs": [
@@ -214,8 +220,67 @@
         ],
         "correct": 1,
         "explanation": "Сетевой вызов только после прохождения всех проверок."
+      },
+      {
+        "id": "f6",
+        "text": "Атакующий передаёт url='file:///etc/passwd'. Какой шаг блокирует это?",
+        "options": [
+          "timeout=3 в requests.get",
+          "Проверка parsed.scheme in ('http','https')",
+          "try/except вокруг requests.get",
+          "User-Agent заголовок"
+        ],
+        "correct": 1,
+        "explanation": "Проверка схемы — первый барьер; file:// не входит в белый список."
+      },
+      {
+        "id": "f7",
+        "text": "Почему блокировки только по схеме недостаточно против SSRF?",
+        "options": [
+          "requests не поддерживает кастомные схемы",
+          "Атакующий может использовать http://127.0.0.1 или http://169.254.x.x",
+          "Python парсит схему неверно",
+          "Timeout защищает от всех SSRF"
+        ],
+        "correct": 1,
+        "explanation": "После проверки схемы нужно валидировать hostname, блокируя loopback и link-local адреса."
+      },
+      {
+        "id": "f8",
+        "text": "Что такое DNS Rebinding в контексте SSRF?",
+        "options": [
+          "Атака подмены DNS-записи во время проверки hostname",
+          "Метод ускорения DNS-резолвинга",
+          "Техника кеширования DNS в Flask",
+          "Замена IP на имя в логах"
+        ],
+        "correct": 0,
+        "explanation": "DNS Rebinding: hostname проходит валидацию, но при реальном запросе DNS отвечает приватным IP. Защита — резолвить IP до запроса и проверять его."
+      },
+      {
+        "id": "f9",
+        "text": "Зачем устанавливать timeout при внешних HTTP-запросах?",
+        "options": [
+          "Для логирования времени запроса",
+          "Чтобы не держать поток занятым бесконечно при атаке Slowloris/зависшем сервере",
+          "Flask требует timeout",
+          "requests не работает без timeout"
+        ],
+        "correct": 1,
+        "explanation": "Без timeout один запрос к зависшему сервису заблокирует поток навсегда, что приведёт к DoS."
+      },
+      {
+        "id": "f10",
+        "text": "Какой минимальный набор защит от SSRF в Python?",
+        "options": [
+          "try/except + logging",
+          "urlparse + scheme whitelist + hostname check + timeout",
+          "User-Agent фильтр + rate limit",
+          "SSL verify=True"
+        ],
+        "correct": 1,
+        "explanation": "Все четыре слоя: разбор URL, проверка схемы, проверка hostname, ограничение времени ожидания."
       }
     ]
   }
 }
-

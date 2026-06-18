@@ -10,10 +10,13 @@ export default function CoursesListPage() {
   const { user } = useAuth()
 
   const sortedCourses = (courses || []).slice().sort((a, b) => {
-    const aAvailable = a.status === COURSE_STATUS.AVAILABLE
-    const bAvailable = b.status === COURSE_STATUS.AVAILABLE
-    if (aAvailable && !bAvailable) return -1
-    if (!aAvailable && bAvailable) return 1
+    const order = (s) => {
+      if (s === COURSE_STATUS.AVAILABLE) return 0
+      if (s === COURSE_STATUS.PREMIUM) return 1
+      return 2
+    }
+    const diff = order(a.status) - order(b.status)
+    if (diff !== 0) return diff
     return a.title.localeCompare(b.title, 'ru')
   })
 
@@ -25,17 +28,32 @@ export default function CoursesListPage() {
 
       <div className="catalog-grid courses-grid">
         {!loading && !error && sortedCourses.map((c) => {
-          const isComingSoon = c.status === COURSE_STATUS.COMING_SOON
+          const isPremium = c.status === COURSE_STATUS.PREMIUM || c.status === COURSE_STATUS.COMING_SOON
           const details = courseDetails.find((d) => d.id === c.id)
           const allModulesCompleted =
             typeof details?.completed === 'boolean'
               ? details.completed
               : (details?.modules?.length > 0 &&
                 details.modules.every((m) => m.progress === PROGRESS_STATUS.COMPLETED))
-          const isStarted = !isComingSoon && !allModulesCompleted && isCourseManuallyStarted(user?.id, c.id)
-          const content = (
-            <>
-              {isComingSoon && <span className="course-badge coming-soon">В разработке</span>}
+          const isStarted = !isPremium && !allModulesCompleted && isCourseManuallyStarted(user?.id, c.id)
+
+          if (isPremium) {
+            return (
+              <Link key={c.id} to={ROUTES.PREMIUM} className="course-card course-card-premium">
+                <span className="course-badge premium">♛ Premium</span>
+                <div className="course-card-head">
+                  <h3>{c.title}</h3>
+                </div>
+                <p className="meta">{c.description || ''}</p>
+                <div className="course-card-footer">
+                  <span className="card-link">Открыть доступ →</span>
+                </div>
+              </Link>
+            )
+          }
+
+          return (
+            <Link key={c.id} to={ROUTES.COURSE(c.id)} className="course-card">
               {!allModulesCompleted && isStarted && <span className="course-badge in-progress">Начат</span>}
               <div className="course-card-head">
                 <h3>{c.title}</h3>
@@ -44,20 +62,9 @@ export default function CoursesListPage() {
                 )}
               </div>
               <p className="meta">{c.description || ''}</p>
-              {!isComingSoon && (
-                <div className="course-card-footer">
-                  <span className="card-link">Подробнее →</span>
-                </div>
-              )}
-            </>
-          )
-          return isComingSoon ? (
-            <div key={c.id} className="course-card course-card-disabled">
-              {content}
-            </div>
-          ) : (
-            <Link key={c.id} to={ROUTES.COURSE(c.id)} className="course-card">
-              {content}
+              <div className="course-card-footer">
+                <span className="card-link">Подробнее →</span>
+              </div>
             </Link>
           )
         })}

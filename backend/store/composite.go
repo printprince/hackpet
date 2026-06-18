@@ -215,3 +215,10 @@ func (c *CompositeStore) GetQuizAnswers(userID, quizId string) (map[string]int, 
 	}
 	return map[string]int{}, nil
 }
+
+func (c *CompositeStore) ClearModuleAttempts(userID, moduleId string) error {
+	if userID != "" && c.Pg != nil {
+		return c.Pg.ClearModuleAttempts(userID, moduleId)
+	}
+	return c.File.ClearModuleAttempts(userID, moduleId)
+}

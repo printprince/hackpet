@@ -69,3 +69,7 @@ func (a *StoreAdapter) GetQuizStats(userID, quizId string) (correct int, total i
 func (a *StoreAdapter) GetQuizAnswers(userID, quizId string) (map[string]int, error) {
 	return a.St.GetQuizAnswers(userID, quizId)
 }
+
+func (a *StoreAdapter) ClearModuleAttempts(userID, moduleId string) error {
+	return a.St.ClearModuleAttempts(userID, moduleId)
+}

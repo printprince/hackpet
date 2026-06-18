@@ -25,6 +25,7 @@ export const ROUTES = {
   /** Профиль с открытой вкладкой «Питомец» (имя, аура). */
   ACCOUNT_PET: '/account?section=pet',
   ACHIEVEMENTS: '/achievements',
+  PREMIUM: '/premium',
 }
 
 export const AUTH_TOKEN_KEY = 'hackpet_token'
@@ -65,6 +66,7 @@ export const API = {
 export const COURSE_STATUS = {
   AVAILABLE: 'available',
   COMING_SOON: 'coming_soon',
+  PREMIUM: 'premium',
 }
 
 export const PROGRESS_STATUS = {

@@ -5,7 +5,13 @@
   "difficulty": "medium",
   "minutes": 15,
   "topic": "Безопасность файловых эндпоинтов",
-  "steps": ["theory", "checkpoint_quiz", "lab", "final_quiz", "summary"],
+  "steps": [
+    "theory",
+    "checkpoint_quiz",
+    "lab",
+    "final_quiz",
+    "summary"
+  ],
   "theory": {
     "intro": "Эндпоинт, который отдаёт файл по имени из запроса, в Python так же уязвим к Path Traversal, как и в Go: если путь не ограничен, можно читать произвольные файлы.",
     "paragraphs": [
@@ -215,8 +221,67 @@
         ],
         "correct": 1,
         "explanation": "Отказ в доступе к ресурсу вне разрешённой зоны — 403, не 404 и не 500."
+      },
+      {
+        "id": "f6",
+        "text": "Атакующий передаёт filename='../../etc/passwd'. Какой шаг блокирует это первым?",
+        "options": [
+          "abort(403) в маршруте",
+          "os.path.normpath убирает '..' и канонизирует путь",
+          "try/except вокруг open",
+          "Проверка расширения файла"
+        ],
+        "correct": 1,
+        "explanation": "normpath преобразует '../..' в реальный путь; следующий шаг commonpath подтверждает, что результат внутри BASE_DIR."
+      },
+      {
+        "id": "f7",
+        "text": "Почему не стоит возвращать пользователю полный traceback при ошибке файловой операции?",
+        "options": [
+          "Трейсбек занимает много байт",
+          "Трейсбек раскрывает структуру файловой системы и стек кода",
+          "Python не умеет сериализовать traceback",
+          "Flask запрещает traceback в production"
+        ],
+        "correct": 1,
+        "explanation": "Детали ОС и пути помогают атакующему точнее нацелиться на следующую попытку."
+      },
+      {
+        "id": "f8",
+        "text": "os.path.commonpath([BASE_DIR, safe_path]) == BASE_DIR возвращает False. Что делаем?",
+        "options": [
+          "Логируем и продолжаем с safe_path",
+          "abort(403) — путь вне разрешённой зоны",
+          "Заменяем safe_path на BASE_DIR",
+          "Возвращаем 404"
+        ],
+        "correct": 1,
+        "explanation": "Если commonpath не совпадает с BASE_DIR, путь вышел за пределы — доступ запрещён (403)."
+      },
+      {
+        "id": "f9",
+        "text": "Зачем ограничивать список разрешённых расширений файлов (whitelist) в дополнение к path-проверкам?",
+        "options": [
+          "Расширение определяет кодировку",
+          "Даже при корректном пути нельзя отдавать .py, .env, .key",
+          "Flask требует явный список расширений",
+          "normpath не работает с .env файлами"
+        ],
+        "correct": 1,
+        "explanation": "Path-проверки защищают от выхода за каталог, но не от раскрытия чувствительных файлов внутри него."
+      },
+      {
+        "id": "f10",
+        "text": "Какой минимальный набор функций нужен для безопасного file-download эндпоинта в Python?",
+        "options": [
+          "open() + try/except",
+          "os.path.join + os.path.normpath + os.path.commonpath + abort(403/404)",
+          "send_file + login_required",
+          "hashlib.md5 пути + whitelist"
+        ],
+        "correct": 1,
+        "explanation": "Цепочка join→normpath→commonpath даёт полную защиту; ошибки доступа закрыты кодами 403/404."
       }
     ]
   }
 }
-
