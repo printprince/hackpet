@@ -10,12 +10,11 @@ participant "AST Validator" as AST
 User -> FE : login / register
 FE -> API : POST /auth/login | /register
 API --> FE : JWT + профиль
-FE --> User : доступ к платформе
 
-== Прохождение модуля ==
-User -> FE : выбрать курс → модуль
-FE -> API : GET /courses, GET /modules/{id}
-API --> FE : контент + прогресс
+== Курс ==
+User -> FE : выбрать модуль
+FE -> API : GET /modules/{id}
+API --> FE : теория + квиз + лаба
 FE --> User : theory → quiz → lab → final-quiz → summary
 note right : прогресс сохраняется при перезагрузке
 
@@ -23,36 +22,30 @@ note right : прогресс сохраняется при перезагруз
 User -> FE : отправить код
 FE -> API : POST /labs/{id}/submit
 API -> AST : проверить по правилам
-AST --> API : rule_results
-API --> FE : результаты (скрыты до Summary)
+AST --> API : passed | failed
+API --> FE : результат (скрыт до Summary)
 FE --> User : переход на финальный тест
 
-== Итог модуля ==
-User -> FE : финальный тест → Summary
-FE -> API : POST /modules/{id}/progress { completed }
-API --> FE : итоговый балл
-FE --> User : Пройден / Не пройден
-
-== Play — Vulnerable or Safe? ==
+== Play ==
 User -> FE : начать игру
 FE -> API : GET /play/round
 API --> FE : сниппет кода
-FE --> User : 5 верных → победа · 3 ошибки → поражение
-FE -> API : POST /play/win
-API --> FE : +25 XP питомцу
+User -> FE : Уязвимо / Безопасно
+note over FE : 5 верных → победа · 3 ошибки → поражение
+FE -> API : POST /play/win → +25 XP питомцу
 
 == CTF ==
-note over User : разблокируется после всех модулей
+note over User : после прохождения всех модулей
 User -> FE : отправить решение
 FE -> API : POST /labs/{ctf_id}/submit
 API -> AST : проверить
-API --> FE : результат / флаг
+API --> FE : флаг / результат
 
-== Сертификат ==
-note over User : доступен после завершения курса
-User -> FE : получить сертификат
+== Итог и сертификат ==
+User -> FE : Summary
+FE --> User : результат лабы + квизов + итоговый балл
+User -> FE : запросить сертификат
 FE -> API : GET /courses/{id}/certificate
 API --> FE : PDF
-FE --> User : скачать
 
 @enduml
