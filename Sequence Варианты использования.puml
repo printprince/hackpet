@@ -4,48 +4,56 @@ title Hackpet — основные сценарии
 actor "Пользователь" as User
 participant "Frontend" as FE
 participant "Backend" as API
+database "PostgreSQL" as DB
 participant "AST Validator" as AST
 
 == Вход ==
 User -> FE : login / register
 FE -> API : POST /auth/login | /register
+API -> DB : найти / создать пользователя
 API --> FE : JWT + профиль
 
 == Курс ==
 User -> FE : выбрать модуль
 FE -> API : GET /modules/{id}
-API --> FE : теория + квиз + лаба
+API -> DB : теория + квиз + лаба + прогресс
+API --> FE : контент модуля
 FE --> User : theory → quiz → lab → final-quiz → summary
 note right : прогресс сохраняется при перезагрузке
 
 == Лаба ==
 User -> FE : отправить код
 FE -> API : POST /labs/{id}/submit
-API -> AST : проверить по правилам
+API -> DB : загрузить правила
+API -> AST : проверить файлы
 AST --> API : passed | failed
+API -> DB : сохранить попытку
 API --> FE : результат (скрыт до Summary)
 FE --> User : переход на финальный тест
 
 == Play ==
 User -> FE : начать игру
 FE -> API : GET /play/round
-API --> FE : сниппет кода
+API -> DB : случайный сниппет
+API --> FE : код + is_vulnerable
 User -> FE : Уязвимо / Безопасно
 note over FE : 5 верных → победа · 3 ошибки → поражение
-FE -> API : POST /play/win → +25 XP питомцу
+FE -> API : POST /play/win
+API -> DB : +25 XP питомцу
 
 == CTF ==
 note over User : после прохождения всех модулей
 User -> FE : отправить решение
 FE -> API : POST /labs/{ctf_id}/submit
 API -> AST : проверить
+API -> DB : сохранить результат
 API --> FE : флаг / результат
 
 == Итог и сертификат ==
-User -> FE : Summary
 FE --> User : результат лабы + квизов + итоговый балл
 User -> FE : запросить сертификат
 FE -> API : GET /courses/{id}/certificate
+API -> DB : все модули completed?
 API --> FE : PDF
 
 @enduml
