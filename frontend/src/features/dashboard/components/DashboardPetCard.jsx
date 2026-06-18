@@ -1,12 +1,31 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '../../../constants'
 import { PET } from '../../../constants'
 import { getEvolutionLevelBand, getPetAura, getPetDisplayName, getPetActivityStatus, getPetEvolutionStage } from '../../../utils/pet'
 import PetAvatar from '../../../components/PetAvatar'
 
+const XP_PER_LEVEL = 100
+
 export default function DashboardPetCard({ pet, petLevel, petProgress = 0, petStats = [], hasActiveCourse = false }) {
   const isMaxLevel = petLevel >= PET.LEVEL_MAX
   const ringPct = isMaxLevel ? 100 : Math.max(0, Math.min(100, Math.round(petProgress)))
+
+  // Live XP state — updates instantly on pet:xp_gained without waiting for page refetch
+  const [liveXP, setLiveXP] = useState(null)
+  useEffect(() => { setLiveXP(null) }, [pet?.xp])
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail?.pet?.xp != null) setLiveXP(e.detail.pet.xp)
+    }
+    window.addEventListener('pet:xp_gained', handler)
+    return () => window.removeEventListener('pet:xp_gained', handler)
+  }, [])
+
+  const displayXP = liveXP ?? (pet?.xp ?? 0)
+  const displayLevel = isMaxLevel ? petLevel : Math.min(PET.LEVEL_MAX, 1 + Math.floor(displayXP / XP_PER_LEVEL))
+  const xpInLevel = isMaxLevel ? XP_PER_LEVEL : displayXP % XP_PER_LEVEL
+  const xpBarPct = isMaxLevel ? 100 : Math.round((xpInLevel / XP_PER_LEVEL) * 100)
   const baseAura = getPetAura(petLevel)
   const equippedId = pet?.equipped_aura
   const aura = equippedId ? { ...baseAura, id: equippedId } : baseAura
@@ -77,10 +96,18 @@ export default function DashboardPetCard({ pet, petLevel, petProgress = 0, petSt
             auraClassNames={aura?.id && aura.id !== 'none' ? [`pet-avatar-aura-${aura.id}`] : []}
           />
         </div>
-        <span className="pet-level">Ур. {petLevel}</span>
-        <span className="pet-xp-caption">
-          {isMaxLevel ? 'Максимальная форма' : `${ringPct}% до Ур. ${petLevel + 1}`}
-        </span>
+        <span className="pet-level">Ур. {displayLevel}</span>
+        <div className="pet-xp-bar-wrap" title={isMaxLevel ? 'Максимальный уровень' : `${xpInLevel} / ${XP_PER_LEVEL} XP`}>
+          <div className="pet-xp-bar">
+            <div
+              className="pet-xp-bar-fill"
+              style={{ width: `${xpBarPct}%` }}
+            />
+          </div>
+          <span className="pet-xp-bar-label">
+            {isMaxLevel ? 'MAX' : `${xpInLevel} / ${XP_PER_LEVEL} XP`}
+          </span>
+        </div>
       </div>
       <div className="pet-info">
         <h2 className="pet-name">{getPetDisplayName(pet)}</h2>
