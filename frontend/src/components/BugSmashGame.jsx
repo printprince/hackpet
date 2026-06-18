@@ -297,7 +297,7 @@ export default function BugSmashGame({ onExit }) {
                   key={card.snippet.id}
                   code={card.snippet.code}
                   language={card.snippet.language}
-                  maxVisibleLines={5}
+                  maxVisibleLines={10}
                 />
                 {card.anim === 'hit' && (
                   <div className="bugsmash-card-verdict bugsmash-card-verdict-hit">

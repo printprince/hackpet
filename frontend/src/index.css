@@ -5743,13 +5743,10 @@ h1, h2, h3, h4, h5, h6,
 /* Grid */
 .bugsmash-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
 }
-@media (max-width: 860px) {
-  .bugsmash-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 560px) {
+@media (max-width: 640px) {
   .bugsmash-grid { grid-template-columns: 1fr; }
 }
 
@@ -5764,7 +5761,7 @@ h1, h2, h3, h4, h5, h6,
   text-align: left;
   transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s;
   overflow: hidden;
-  min-height: 160px;
+  min-height: 220px;
 }
 .bugsmash-card:hover:not(:disabled) {
   border-color: #6366f1;
